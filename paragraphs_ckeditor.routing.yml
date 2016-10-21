@@ -1,0 +1,6 @@
+paragraphs_ckeditor.edit_paragraph_form:
+  path: '/paragraphs-ckeditor/edit-paragraph/{paragraph}'
+  defaults:
+    _entity_form: 'paragraph.edit'
+  requirements:
+    _permission: 'administer site configuration'

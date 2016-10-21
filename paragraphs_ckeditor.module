@@ -1,0 +1,358 @@
+<?php
+///**
+// * @file
+// * Supports CKEDITOR integration for the paragraphs module.
+// */
+//
+///**
+// * Implements hook_paragraphs_extra_widget_info().
+// */
+//function paragraphs_ckeditor_paragraphs_extra_widget_info() {
+//  return array(
+//    'ckeditor' => array(
+//      'title' => t('Text Editor'),
+//      'weight' => -10,
+//      'settings callback' => 'paragraphs_ckeditor_widget_settings',
+//      'class' => '\Drupal\paragraphs_ckeditor\Widget\Plugins\Ckeditor',
+//    ),
+//  );
+//}
+//
+///**
+// * Implements hook_menu().
+// */
+//function paragraphs_ckeditor_menu() {
+//  $info = array();
+//  $info['admin/paragraphs-ckeditor/%ctools_js/embed-form/%/%/%'] = array(
+//    'title' => 'Embed',
+//    'page callback' => 'paragraphs_ckeditor_paragraphs_embed_page',
+//    'page arguments' => array(2, 4, 5, 6),
+//    'access callback' => TRUE,
+//    'type' => MENU_CALLBACK,
+//  );
+//  $info['admin/paragraphs-ckeditor/preview/%'] = array(
+//    'title' => 'Preview',
+//    'page callback' => 'paragraphs_ckeditor_previews',
+//    'page arguments' => array(3),
+//    'access callback' => TRUE,
+//    'delivery callback' => 'drupal_json_output',
+//    'type' => MENU_CALLBACK,
+//  );
+//  return $info;
+//}
+//
+//function paragraphs_ckeditor_previews($form_build_id) {
+//  $output = array();
+//  $widget_form_state = array();
+//  form_get_cache($form_build_id, $widget_form_state);
+//  if (isset($widget_form_state['paragraphs_ckeditor']['entities'])) {
+//    foreach ($widget_form_state['paragraphs_ckeditor']['entities'] as $entity_form_id => $entity) {
+//      $render = entity_view('paragraphs_item', array($entity));
+//      $output[$entity_form_id] = drupal_render($render);
+//    }
+//  }
+//  return $output;
+//}
+//
+//function paragraphs_ckeditor_paragraphs_entity_embed_paragraph($entity, &$form_state) {
+//  $entity->form_id = md5(drupal_json_encode($entity));
+//  $form_state['paragraphs_ckeditor']['entities'][$entity->form_id] = $entity;
+//  $render = entity_view('paragraphs_item', array($entity));
+//  $preview = drupal_render($render);
+//  $markup = '<paragraphs-ckeditor-paragraph entity-form-id="' . $entity->form_id . '">';
+//  $markup .= '</paragraphs-ckeditor-paragraph>';
+//  $output = array(
+//    '#markup' => $markup,
+//    'preview' => $preview,
+//    'entity_form_id' => $entity->form_id,
+//  );
+//  return $output;
+//}
+//
+//function paragraphs_ckeditor_paragraphs_embed_form($form, &$form_state) {
+//  $form = array(
+//    '#parents' => array(),
+//  );
+//
+//  // Ensure that we have all necessary form build arguments. 
+//  for ($i = 0; $i < 3; $i++) {
+//    if (!isset($form_state['build_info']['args'][$i])) {
+//      return $form;
+//    }
+//  }
+//
+//  // Get the form id for the form that the entity is being embedded in.
+//  $form_build_id = $form_state['build_info']['args'][0];
+//  $widget_form_state = array();
+//  form_get_cache($form_build_id, $widget_form_state);
+//
+//  // Check if the entity being embedded already exists or if we have to create a
+//  // new entity to accept the updated field values.
+//  $entity_form_id = $form_state['build_info']['args'][2];
+//  if (isset($widget_form_state['paragraphs_ckeditor']['entities'][$entity_form_id])) {
+//    $entity = $widget_form_state['paragraphs_ckeditor']['entities'][$entity_form_id];
+//  }
+//  else {
+//    $bundle = $form_state['build_info']['args'][1];
+//    $entity = entity_create('paragraphs_item', array('bundle' => $bundle));
+//  }
+//
+//  // Attach the form fields for the embedded entity.
+//  field_attach_form('paragraphs_item', $entity, $form, $form_state);
+//  $form['#entity'] = $entity;
+//
+//  // Attach a submit button with a class that is easily locatable in javascript.
+//  $form['submit'] = array(
+//    '#type' => 'submit',
+//    '#value' => t('Done'),
+//    '#weight' => 999,
+//    '#attributes' => array(
+//      'class' => array('paragraphs-ckeditor-modal-submit'),
+//    ),
+//  );
+//  
+//  if($form_state['ajax']) {
+//    $form['cancel'] = array(
+//      '#markup' => l('Cancel', '#', array('attributes' => array('class' => 'ctools-close-modal'))),
+//      '#weight' => 1000
+//    );
+//  }
+//
+//  return $form;
+//}
+//
+//function paragraphs_ckeditor_paragraphs_embed_form_submit($form, &$form_state) {
+//  // Locate the form being embedded into.
+//  $form_build_id = $form_state['build_info']['args'][0];
+//  $widget_form_state = array();
+//  $widget_form = form_get_cache($form_build_id, $widget_form_state);
+//
+//  $entity = $form['#entity'];
+//
+//  if ($entity) {
+//    // Update the embedded entity field values from the form.
+//    field_attach_submit('paragraphs_item', $entity, $form, $form_state);
+//
+//    // Create a results array to be rendered from the paragraph entity. This
+//    // will store a copy of the entity in the form state of the form being
+//    // embedded into, and provide a rendered preview of the entity to show.
+//    $output = paragraphs_ckeditor_paragraphs_entity_embed_paragraph($entity, $widget_form_state);
+//    $results = array(
+//      'rendered' => $output['preview'],
+//      'form_id' => $output['entity_form_id'],
+//    );
+//
+//    // Create the appropriate arguments to trigger a custom javascript event in
+//    // jQuery that contains the updated preview for the embedded entity.
+//    $args = array('paragraphs_ckeditor_embed_sent', array(drupal_json_encode($results)));
+//
+//    ctools_include('ajax');
+//    ctools_include('modal');
+//
+//    // Issue javascript commands to close the embed modal and trigger an update
+//    // of the embedded entity preview.
+//    $form_state['ajax_commands'][] = ctools_modal_command_dismiss();
+//    $form_state['ajax_commands'][] = ajax_command_invoke('body', 'trigger', $args);
+//
+//    // Store changes we've made to the form state of the form being embedded
+//    // into.
+//    form_set_cache($form_build_id, $widget_form, $widget_form_state);
+//  }
+//  else {
+//    throw new \Exception('No entity found to attach to.');
+//  }
+//}
+//
+//function paragraphs_ckeditor_paragraphs_embed_page($js, $form_build_id, $bundle, $entity_form_id) {
+//
+//  if ($js) {
+//    $form_state = array(
+//      'ajax' => TRUE,
+//      'title' => t('Embed Paragraph'),
+//      'build_info' => array(
+//        'args' => array(
+//          $form_build_id,
+//          $bundle,
+//          $entity_form_id,
+//        ),
+//      ),
+//    );
+//
+//    ctools_include('ajax');
+//    ctools_include('modal');
+//
+//    $output = ctools_modal_form_wrapper('paragraphs_ckeditor_paragraphs_embed_form', $form_state);
+//
+//    if (!empty($form_state['ajax_commands'])) {
+//      $output = $form_state['ajax_commands'];
+//    }
+//
+//    print ajax_render($output);
+//    drupal_exit();
+//  }
+//  else {
+//    return MENU_ACCESS_DENIED;
+//  }
+//}
+//
+///**
+// * Implements hook_ckeditor_plugin().
+// */
+//function paragraphs_ckeditor_ckeditor_plugin() {
+//  $plugin_path = drupal_get_path('module', 'paragraphs_ckeditor');
+//  $plugin_path .= '/plugins/ckeditor';
+//  return array(
+//    'paragraphsInsertParagraph' => array(
+//      'name' => t('paragraphsInsertParagraph'),
+//      'desc' => t('Insert a Paragraph in CKEDITOR.'),
+//      'path' => $plugin_path . '/paragraphsInsertParagraph/',
+//      'buttons' => array(
+//        'paragraphsInsertParagraph' => array(
+//          'icon' => 'images/component.png',
+//          'label' => 'Insert Paragraph',
+//        ),
+//      ),
+//    ),
+//    'paragraphsSplitParagraph' => array(
+//      'name' => t('paragraphsSplitParagraph'),
+//      'desc' => t('Split a paragraph in CKEDITOR.'),
+//      'path' => $plugin_path . '/paragraphsSplitParagraph/',
+//      'buttons' => array(
+//        'paragraphsSplitParagraph' => array(
+//          'icon' => 'images/split.png',
+//          'label' => 'Split Paragraph',
+//        ),
+//      ),
+//    ),
+//    'paragraphsEmbedParagraph' => array(
+//      'name' => t('paragraphsEmbedParagraph'),
+//      'desc' => t('Embed a paragraph in CKEDITOR'),
+//      'path' => $plugin_path . '/paragraphsEmbedParagraph/',
+//      'buttons' => array(
+//        'paragraphsEmbedParagraph' => array(
+//          'icon' => 'icons/paragraphsEmbedParagraph.png',
+//          'label' => 'Embed Paragraph',
+//        ),
+//      ),
+//    ),
+//  );
+//}
+//
+//function paragraphs_ckeditor_attach_wysiwyg(&$element, &$form_state, $context) {
+//
+//  $classes = array(
+//    'element-invisible',
+//    _paragraphs_extra_class('ckeditor', 'modal-trigger'),
+//  );
+//
+//  $element['add_more']['paragraphs_extra']['ckeditor']['modal_trigger'] = array(
+//    '#markup' => ctools_modal_text_button(
+//      t('Embed Paragraph'),
+//      'admin/paragraphs-ckeditor/nojs/embed-form/',
+//      t('Embed Paragraph'),
+//      implode(' ', $classes)
+//    ),
+//  );
+//}
+//
+///**
+// * Implements hook_field_widget_form_alter().
+// */
+//function paragraphs_ckeditor_field_widget_form_alter(&$element, &$form_state, $context) {
+//  $element['#attached']['js'][] = drupal_get_path('module', 'paragraphs_ckeditor') . '/js/ParagraphsCkeditorData.js';
+//  $element['#attached']['js'][] = drupal_get_path('module', 'paragraphs_ckeditor') . '/js/CkeditorDomSplitter.js';
+//  $wrapper_id = paragraphs_extra_get_widget_wrapper_id($element, $context);
+//  if ($wrapper_id) {
+//    module_load_include('inc', 'paragraphs_ckeditor', 'includes/paragraphs_ckeditor.decorator');
+//    paragraphs_ckeditor_decorator_decorate($element);
+//  }
+//}
+//
+//function paragraphs_ckeditor_widget_settings(&$element, &$form_state, $settings) {
+//  $entity_info = entity_get_info('paragraphs_item');
+//  $form_state['paragraphs_ckeditor_fields'] = array();
+//
+//  $options = array();
+//  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+//    $instances = field_info_instances('paragraphs_item', $bundle_name);
+//    if ($instances) {
+//      $instance = array_shift($instances);
+//      if ($instance) {
+//        $field_info = field_info_field($instance['field_name']);
+//        if ($field_info) {
+//          $is_text = $field_info['type'] == 'text_long';
+//          $processing_enabled = isset($instance['settings']['text_processing']) ? $instance['settings']['text_processing'] : FALSE;
+//          if ($is_text && $processing_enabled) {
+//            $options[$bundle_name] = $bundle_name;
+//            $form_state['paragraphs_ckeditor_fields'][$bundle_name] = $field_info['field_name'];
+//          }
+//        }
+//      }
+//    }
+//  }
+//
+//  if (empty($options)) {
+//    $element['message'] = array(
+//      '#markup' => t('No valid bundles exist that can be used with the CKEditor integration. To remedy this you should create a Paragraphs Item bundle that contains a single long text field with filtering enabled. Note that for the bundle to be a valid option it must contain only one long text field, and no additional fields.'),
+//    );
+//    return;
+//  }
+//
+//  $default = NULL;
+//  if (isset($settings['editor_bundle'])) {
+//    if (isset($options[$settings['editor_bundle']])) {
+//      $default = $settings['editor_bundle'];
+//    }
+//  }
+//
+//  if (!isset($default)) {
+//    $default = reset($options);
+//  }
+//
+//  $element['editor_bundle'] = array(
+//    '#type' => 'select',
+//    '#title' => t('Text Bundle'),
+//    '#description' => t('The bundle that will be used as the default text bundle. The content entered as text into the CKEditor instance will be stored in paragraph entities of this bundle.'),
+//    '#options' => $options,
+//    '#default_value' => $default,
+//  );
+//  $element['#element_validate'][] = 'paragraphs_ckeditor_widget_settings_validate';
+//
+//  $format_options = array();
+//
+//  $profiles = ckeditor_profile_load();
+//  foreach ($profiles as $name => $profile) {
+//    foreach ($profile->input_formats as $format_name => $format_title) {
+//      $format_options[$format_name] = $format_title;
+//    }
+//  }
+//
+//  $element['editor_filter'] = array(
+//    '#type' => 'select',
+//    '#title' => t('Editor Filter'),
+//    '#description' => t('The filter to use for the provided CKEditor interface. This filter should be configured with a CKEditor profile.'),
+//    '#options' => $format_options,
+//    '#default_value' => isset($settings['editor_filter']) ? $settings['editor_filter'] : '',
+//  );
+//
+//  $element['target_filter'] = array(
+//    '#type' => 'select',
+//    '#title' => t('Storage Filter'),
+//    '#description' => t('The filter to use for the stored paragraphs items. Usually this should be the same as the Editor Filter.'),
+//    '#options' => $format_options,
+//    '#default_value' => isset($settings['target_filter']) ? $settings['target_filter'] : '',
+//  );
+//
+//  $element['help'] = array(
+//    '#markup' => t('If you are using the "Limit HTML Tags" filter provided by drupal core, you will need to allow the paragraphs-ckeditor-preview tag.'),
+//  );
+//}
+//
+//function paragraphs_ckeditor_widget_settings_validate($element, &$form_state, $complete_form) {
+//  $bundle = $form_state['values']['instance']['settings']['paragraphs_extra']['behaviors']['widget']['widgets']['settings']['ckeditor']['editor_bundle'];
+//  $values = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
+//  if ($values) {
+//    $values['editor_field'] = isset($form_state['paragraphs_ckeditor_fields'][$bundle]) ? $form_state['paragraphs_ckeditor_fields'][$bundle] : '';
+//    form_set_value($element, $values, $form_state);
+//  }
+//}
