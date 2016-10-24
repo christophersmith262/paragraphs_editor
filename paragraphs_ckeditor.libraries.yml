@@ -1,0 +1,11 @@
+ajax.command:
+  version: 1.x
+  js:
+    js/paragraphs_ckeditor.js: {}
+    js/paragraphs_ckeditor.paragraphsckeditor.js: {}
+    js/models/CommandModel.js: {}
+    js/views/ParagraphCKEditorPreviewView.js: {}
+    js/include/CommandQueueProcessor.js: {}
+  dependencies:
+    - core/backbone
+    - core/drupal.ajax

@@ -1,0 +1,7 @@
+services:
+
+  paragraphs_ckeditor.editor_state_cache:
+    class: Drupal\paragraphs_ckeditor\CKEditorState\ParagraphsCKEditorStateCache
+    arguments:
+      - '@keyvalue.expirable'
+      - 24000
