@@ -69,48 +69,6 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
 
     $elements = parent::formMultipleElements($items, $form, $form_state, $get_delta);
-    $command_emitter_id = \Drupal\Component\Utility\Html::getUniqueId('paragraphs-ckeditor-command-emitter');
-
-    $elements['paragraphs_ckeditor'] = array(
-      '#type' => 'container',
-      '#attributes' => array('class' => array('paragraphs-ckeditor')),
-    );
-
-    $elements['paragraphs_ckeditor']['editor'] = array(
-      '#type' => 'text_format',
-      '#format' => 'paragraphs_ckeditor',
-      '#attributes' => array('class' => array('paragraphs-ckeditor__editor')),
-    );
-
-    $elements['paragraphs_ckeditor']['command_emitter'] = array(
-      '#type' => 'textfield',
-      '#attributes' => array('class' => array(
-        'paragraphs-ckeditor__command-emitter',
-        'visually-hidden',
-      )),
-      '#ajax' => array(
-        'callback' => array(get_class($this), 'ajaxProcessCKEditorCommand'),
-        'event' => 'paragraphs-ckeditor-emit-command',
-        'progress' => array(
-          'message' => '',
-        ),
-      ),
-      '#attached' => array(
-        'library' => array(
-          'paragraphs_ckeditor/ajax.command',
-        )
-      ),
-    );
-
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
-    // Create the widget form element.
-    $element = parent::form($items, $form, $form_state, $get_delta);
 
     // Load the widget state so we can set the widget build id, which associates
     // the widget instance with a collection of paragraph entities that are
@@ -152,53 +110,34 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       $this->editorCache->setCache($widget_build_id, $editor_state);
     }
 
-    // Attach the widget build id to the form element so the ckeditor plugin can
-    // target the correct editor cache instance.
-    $element['#attributes']['class'][] = 'paragraphs-ckeditor-widget';
-    $element['#attributes']['data-paragraphs-ckeditor-build-id'] = $widget_build_id;
-    $element['#attributes']['data-paragraphs-ckeditor-field-id'] = $this->fieldDefinition->uuid();
+    $elements['paragraphs_ckeditor'] = array(
+      '#type' => 'text_format',
+      '#format' => 'paragraphs_ckeditor',
+      '#attributes' => array(
+        'class' => array(
+          'paragraphs-ckeditor'
+        ),
+        'data-paragraphs-ckeditor-build-id' => $widget_build_id,
+        'data-paragraphs-ckeditor-field-id' => $this->fieldDefinition->uuid(),
+      ),
+      '#attached' => array(
+        'library' => array(
+          'core/drupal.dialog.ajax',
+          'paragraphs_ckeditor/widget',
+        )
+      ),
+    );
 
-    return $element;
+    return $elements;
   }
 
-  public static function ajaxProcessCKEditorCommand(array $form, FormStateInterface $form_state) {
-    $command_emitter = $form_state->getTriggeringElement();
-    $paragraphs_ckeditor = \Drupal\Component\Utility\NestedArray::getValue($form, array_slice($command_emitter['#array_parents'], 0, -1));
-    $raw_command = $command_emitter['#value'];
-    $command = json_decode($raw_command, TRUE);
+  /**
+   * {@inheritdoc}
+   */
+  public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
+    // Create the widget form element.
+    $element = parent::form($items, $form, $form_state, $get_delta);
 
-    $selector = $paragraphs_ckeditor['#attributes']['data-drupal-selector'];
-    $id = $command['id'];
-
-    $command_name = NULL;
-    if (!empty($command['name'])) {
-      if (preg_match('/^[a-z\-]{1,20}$/', $command['name'])) {
-        $command_name = $command['name'];
-        unset($command['name']);
-      }
-      else {
-        throw new \Exception('Command name must be composed of alpha characters and must not exceed 20 characters.');
-      }
-    }
-
-    $renderer = \Drupal::service('renderer');
-    $render_context = new \Drupal\Core\Render\RenderContext();
-    $form_class = 'Drupal\system\Form\SiteInformationForm';
-    $subform_state = new FormState();
-    $callable = function() use ($form_class, &$subform_state) {
-      return \Drupal::formBuilder()->getForm($form_class, $subform_state);
-    };
-    $form = $renderer->executeInRenderContext($render_context, $callable);
-    $output = $renderer->renderRoot($form);
-
-
-    $title = $subform_state->get('title') ? : '';
-
-    $response = new AjaxResponse();
-    $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
-    $response->setAttachments($form['#attached']);
-    //$response->addCommand(new OpenModalDialogCommand($title, $output));
-    $response->addCommand(new \Drupal\paragraphs_ckeditor\Ajax\ParagraphsCKEditorDataCommand($selector, $command['id'], $command['data']));
-    return $response;
+    return $element;
   }
 }
