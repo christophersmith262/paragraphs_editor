@@ -1,11 +1,15 @@
-ajax.command:
+widget:
   version: 1.x
   js:
     js/paragraphs_ckeditor.js: {}
     js/paragraphs_ckeditor.paragraphsckeditor.js: {}
-    js/models/CommandModel.js: {}
+    js/models/ParagraphPreviewModel.js: {}
+    js/models/ParagraphPreviewWidgetModel.js: {}
     js/views/ParagraphCKEditorPreviewView.js: {}
-    js/include/CommandQueueProcessor.js: {}
+    js/include/CKEditorCommandFilter.js: {}
+    js/include/ParagraphCommandController.js: {}
+    js/include/ParagraphPreviewFetcher.js: {}
+    js/include/ParagraphWidgetManager.js: {}
   dependencies:
     - core/backbone
     - core/drupal.ajax

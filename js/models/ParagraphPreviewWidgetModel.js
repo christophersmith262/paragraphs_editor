@@ -14,37 +14,26 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.paragraphs_ckeditor.CommandModel = Backbone.Model.extend({
+  Drupal.paragraphs_ckeditor.ParagraphPreviewWidgetModel = Backbone.Model.extend({
 
     /**
      * @type {object}
      *
-     * @prop data
-     * @prop success
-     * @prop response
+     * @prop markup
      */
     defaults: /** @lends Drupal.paragraphs_ckeditor.CommandModel# */{
 
       /**
        * The data to be sent with the command.
        *
-       * @type {object}
+       * @type {string}
        */
-      "data": {},
+      "markup": "",
+      "previewId": 0,
+    },
 
-      /**
-       * The callback to be fired once the command has finished processing.
-       *
-       * @type {function}
-       */
-      "success": function() {},
-
-      /**
-       * The data that was sent back in a ParagraphsCKEditorDataCommand.
-       *
-       * @type {@object}
-       */
-      "response": '',
+    copyMarkupFromModel: function(model) {
+      this.set({markup: model.get('markup')});
     },
 
   });

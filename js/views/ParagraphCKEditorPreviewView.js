@@ -17,7 +17,8 @@
   Drupal.paragraphs_ckeditor.ParagraphCKEditorPreviewView = Backbone.View.extend({
 
     initialize: function(options) {
-      this.$paragraphsCKEditor = options.$paragraphsCKEditor;
+      this.widgetManager = options.widgetManager;
+      this.$widgetWrapper = $(this.el).closest('.cke_widget_wrapper');
     },
 
     template: function(markup) {
@@ -26,7 +27,21 @@
 
     render: function() {
       $(this.el).html(this.template(this.model.get('markup')));
+
+      var that = this;
+      $(this.el).find('.paragraphs-ckeditor-command--edit').click(function() {
+        that.widgetManager.edit(that.model);
+      });
+
+      $(this.el).find('.paragraphs-ckeditor-command--remove').click(function() {
+        that.widgetManager.destroy(that.model);
+      });
+
       return this;
+    },
+
+    close: function() {
+      this.$widgetWrapper.remove();
     },
 
   });

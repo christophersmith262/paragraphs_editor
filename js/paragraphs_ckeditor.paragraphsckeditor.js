@@ -5,63 +5,48 @@
 
 (function ($, window, Drupal, drupalSettings) {
 
+  /**
+   * jQuery utility plugin.
+   */
   $.fn.paragraphsCKEditor = function(action, options) {
 
-    // Provides the singleton data instance that stores persistent state for
-    // this plugin.
-    var paragraphsCKEditor = $(this).data('paragraphsCKEditor');
-    if (!paragraphsCKEditor) {
-      var $emitter = $(this).find('.paragraphs-ckeditor__command-emitter');
-      var command_queue = new Backbone.Collection({
-        model: Drupal.paragraphs_ckeditor.CommandModel
-      });
+    var rtn = this;
 
-      paragraphsCKEditor = {
-        commandQueue: command_queue,
-        commandQueueProcessor: new Drupal.paragraphs_ckeditor.CommandQueueProcessor($emitter, command_queue),
-        paragraphPreviews: new Backbone.Collection({
-          model: Drupal.paragraphs_ckeditor.ParagraphPreviewModel,
-        }),
-      };
+    this.each(function() {
 
-      paragraphsCKEditor.paragraphPreviews.add({
-        id: "test",
-        markup: "test!!!",
-      });
+      // Provides the singleton data instance that stores persistent state for
+      // this plugin.
+      var paragraphsCKEditor = $(this).data('paragraphsCKEditor');
+      if (!paragraphsCKEditor) {
+        var widget_build_id = $(this).attr('data-paragraphs-ckeditor-build-id');
+        var field_id = $(this).attr('data-paragraphs-ckeditor-field-id');
+        var prototypes = Drupal.paragraphs_ckeditor;
 
-      $(this).data('paragraphsCKEditor', paragraphsCKEditor);
-    }
+        var commandController = new prototypes.ParagraphCommandController($(this), widget_build_id, field_id);
+        var previewFetcher = new prototypes.ParagraphPreviewFetcher(commandController);
+        var widgetManager = new prototypes.ParagraphWidgetManager(commandController, previewFetcher);
 
-    if (action == 'insert-paragraph') {
-      paragraphsCKEditor.commandQueue.add({
-        id: "insert-paragraph",
-      });
-    }
-    else if (action == 'get-paragraph') {
-      return paragraphsCKEditor.paragraphPreviews.get(options.uuid);
-    }
-    else if (action == 'edit-paragraph') {
-      paragraphsCKEditor.commandQueue.add({
-        id: "edit-paragraph",
-        data: options.uuid
-      });
-    }
-    else if (action == 'remove-paragraph') {
-      paragraphsCKEditor.paragraphPreviews.remove(options.uuid);
-    }
-    else if (action == 'process-command-response') {
-      var command = paragraphsCKEditor.commandQueue.get(options.id);
+        paragraphsCKEditor = {
+          "commandController": commandController,
+          "previewFetcher": previewFetcher,
+          "widgetManager": widgetManager,
+        };
 
-      if (command) {
-        command.set({response: response.data});
+        $(this).data('paragraphsCKEditor', paragraphsCKEditor);
       }
 
-      if (response.preview) {
-        paragraphsCKEditor.paragraphPreviews.add(response.preview);
+      if (action == 'widget-manager') {
+        rtn = paragraphsCKEditor.widgetManager;
       }
-    }
 
-    return this;
+      else if (action == 'process-command-response') {
+        if (options.preview) {
+          paragraphsCKEditor.previewFetcher.update(options.preview);
+        }
+      }
+    });
+
+    return rtn;
   };
 
 })(jQuery, window, Drupal, drupalSettings);

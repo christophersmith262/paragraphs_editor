@@ -45,7 +45,18 @@
    *   A string representing a DOM fragment.
    */
   Drupal.theme.paragraphsCKEditorPreview = function(markup) {
-    return '<div style="background:red">' + markup + '</div>';
+    return '<div class="paragraphs-ckeditor-preview">'
+      + markup
+      + '<ul class="paragraphs-ckeditor-preview-toolbar">'
+      +   '<li class="paragraphs-ckeditor-preview-toolbar__item">'
+      +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--edit">edit</a>'
+      +   '</li>'
+      +   '<li class="paragraphs-ckeditor-preview-toolbar__item">'
+      +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--remove">remove</a>'
+      +   '</li>'
+      + '</ul>'
+      + '</ul>'
+    + '</div>';
   }
 
   /**
