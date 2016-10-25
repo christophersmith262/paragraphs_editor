@@ -1,6 +1,20 @@
-paragraphs_ckeditor.edit_paragraph_form:
-  path: '/paragraphs-ckeditor/edit-paragraph/{paragraph}'
+paragraphs_ckeditor.command.insert:
+  path: '/ajax/paragraphs-ckeditor/insert/{widget_build_id}/{field_config_id}'
   defaults:
-    _entity_form: 'paragraph.edit'
+    _controller: '\Drupal\paragraphs_ckeditor\Controller\ParagraphCommandController::insert'
+  requirements:
+    _permission: 'administer site configuration'
+
+paragraphs_ckeditor.command.edit:
+  path: '/ajax/paragraphs-ckeditor/edit/{widget_build_id}/{field_config_id}/{paragraph_uuid}'
+  defaults:
+    _controller: '\Drupal\paragraphs_ckeditor\Controller\ParagraphCommandController::edit'
+  requirements:
+    _permission: 'administer site configuration'
+
+paragraphs_ckeditor.command.preview:
+  path: '/ajax/paragraphs-ckeditor/edit/{widget_build_id}/{field_config_id}/{paragraph_uuid}'
+  defaults:
+    _controller: '\Drupal\paragraphs_ckeditor\Controller\ParagraphCommandController::preview'
   requirements:
     _permission: 'administer site configuration'
