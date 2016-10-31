@@ -1,6 +1,6 @@
 /**
  * @file
- * A Backbone model for representing paragraphs_ckeditor commands.
+ * A Backbone model for representing paragraphs_ckeditor paragraph widgets.
  */
 
 (function (Backbone, Drupal) {
@@ -8,7 +8,7 @@
   'use strict';
 
   /**
-   * Backbone  Model for representing paragraphs_ckeditor commands.
+   * Backbone  Model for representing paragraphs_ckeditor paragraph widgets.
    *
    * @constructor
    *

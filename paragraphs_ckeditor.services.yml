@@ -1,7 +1,30 @@
 services:
 
-  paragraphs_ckeditor.editor_state_cache:
-    class: Drupal\paragraphs_ckeditor\CKEditorState\ParagraphsCKEditorStateCache
-    arguments:
-      - '@keyvalue.expirable'
-      - 24000
+  paragraphs_ckeditor.command.context_converter:
+    class: Drupal\paragraphs_ckeditor\ParamConverter\CommandContextConverter
+    arguments: ['@paragraphs_ckeditor.command.context_factory']
+    tags:
+      - { name: paramconverter }
+
+  paragraphs_ckeditor.command.context_factory:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\CommandContextFactory
+    arguments: ['@entity_type.manager', '@paragraphs_ckeditor.edit_buffer.cache']
+
+  paragraphs_ckeditor.command.response_handler:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\ResponseHandler
+    arguments: ['@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_ckeditor.edit_buffer.item_duplicator']
+
+  paragraphs_ckeditor.edit_buffer.cache:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\EditBuffer\BufferCache
+    arguments: ['@keyvalue.expirable', 24000]
+
+  paragraphs_ckeditor.edit_buffer.item_duplicator:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\EditBuffer\ItemDuplicator
+
+  paragraphs_ckeditor.delivery_provider.manager:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\DeliveryProvider\DeliveryProviderManager
+    arguments: [delivery_provider, '@container.namespaces', '@cache.discovery', '@module_handler']
+
+  paragraphs_ckeditor.bundle_selector.manager:
+    class: Drupal\paragraphs_ckeditor\ParagraphCommand\BundleSelector\BundleSelectorManager
+    arguments: [bundle_selector, '@container.namespaces', '@cache.discovery', '@module_handler']

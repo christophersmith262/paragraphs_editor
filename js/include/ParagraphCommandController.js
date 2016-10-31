@@ -8,7 +8,7 @@
   'use strict';
 
   /**
-   * Sends paragraph action commands.
+   * Sends paragraph commands.
    */
   Drupal.paragraphs_ckeditor.ParagraphCommandController = function($element, widget_build_id, field_id) {
 
@@ -25,14 +25,23 @@
       field: field_id,
     };
 
+    /**
+     * Executes an "insert" command.
+     */
     this.insert = function() {
       execute(_.extend({command: "insert"}, defaults));
     };
 
+    /**
+     * Executes an "edit" command.
+     */
     this.edit = function(uuid) {
       execute(_.extend({command: "edit", paragraph: uuid}, defaults));
     };
 
+    /**
+     * Executes an "preview" command.
+     */
     this.preview = function(uuid) {
       execute(_.extend({command: "preview", paragraph: uuid}, defaults));
     };

@@ -35,14 +35,11 @@ use Drupal\Core\Ajax\HtmlCommand;
  */
 class CkeditorParagraphsWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
 
-  protected $editorCache;
-
   /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, ParagraphsCKEditorStateCacheInterface $editor_cache) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-    $this->editorCache = $editor_cache;
   }
 
   /**
@@ -54,8 +51,7 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       $plugin_definition,
       $configuration['field_definition'],
       $configuration['settings'],
-      $configuration['third_party_settings'],
-      $container->get('paragraphs_ckeditor.editor_state_cache')
+      $configuration['third_party_settings']
     );
   }
 
@@ -67,7 +63,6 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
   }
 
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
-
     $elements = parent::formMultipleElements($items, $form, $form_state, $get_delta);
 
     // Load the widget state so we can set the widget build id, which associates
@@ -107,7 +102,7 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
         $editor_state->storeParagraph($item->entity);
       }
 
-      $this->editorCache->setCache($widget_build_id, $editor_state);
+      //$this->editorCache->setCache($widget_build_id, $editor_state);
     }
 
     $elements['paragraphs_ckeditor'] = array(

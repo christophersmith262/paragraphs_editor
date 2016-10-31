@@ -28,14 +28,10 @@
    *   The response from the Ajax request.
    * @param {string} response.id
    *   The model id for the command that was used.
-   * @param {string} response.selector
-   *   The id of the paragraphs ckeditor element associated with the command
-   *   queue.
-   * @param {number} [status]
-   *   The XMLHttpRequest status.
    */
   Drupal.AjaxCommands.prototype.paragraphs_ckeditor_data = function(ajax, response, status){
-    $('#' + response.selector).paragraphsCKEditor('process-command-response', response);
+    $('.paragraphs-ckeditor[data-paragraphs-ckeditor-build-id="' + response.widget + '"')
+      .paragraphsCKEditor('process-command-response', response);
   }
 
   /**

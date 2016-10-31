@@ -31,7 +31,11 @@
     }
 
     this.update = function(model) {
-      paragraphPreviewCache.add(model, {merge: true});
+      return paragraphPreviewCache.add(model, {merge: true});
+    }
+
+    this.on = function(evt, callback, context) {
+      paragraphPreviewCache.on(evt, callback, context);
     }
   };
 
