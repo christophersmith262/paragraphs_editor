@@ -85,7 +85,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * name will be created and an edit form for that paragraph item will be
    * delivered to the client.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The name of a paragraph bundle to be inserted or NULL to display the
@@ -111,7 +111,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * This loads the correct paragraph and any existing edits, then delivers an
    * edit form for the paragarph based on its current state.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $string $paragraph_uuid
    *   The UUID of the paragraph to generate an edit form for.
@@ -130,7 +130,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * Renders a paragraph item and delivers markup back to the editor so it can
    * be displayed in CKEditor.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $string $paragraph_uuid
    *   The UUID of the paragraph to deliver rendered markup for.
@@ -150,9 +150,9 @@ class EditorCommandController implements ContainerInjectionInterface {
    * for cloning existing paragraph entities. Additionally we handle situations
    * where paragraph items might be copied from another editor instance.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $target_context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $target_context
    *   The context for the editor instance that will receive the copy.
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $source_context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $source_context
    *   The context for the editor instance that will provide the copy.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph entity to be copied.
@@ -177,7 +177,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * bundle they want to use, then an edit form for the newly created paragraph
    * item. This method allows a user to opt out of the process at any time.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
@@ -197,7 +197,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * This method will also filter out "invalid" context objects before the
    * actual controller method that executes the request is called.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -236,7 +236,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * A user has access to insert a given bundle if the bundle is allowed by the
    * field config.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The name of the bundle being inserted.
@@ -264,7 +264,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * located within the editor context and the user has access to the editor
    * context.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph to check access for.
@@ -292,9 +292,9 @@ class EditorCommandController implements ContainerInjectionInterface {
    * permissions defined in the generic access method for both the target and
    * source editors, and must have access to the paragraph being requested.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $target_context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $target_context
    *   The context for the editor instance that will receive the copy.
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $source_context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $source_context
    *   The context for the editor instance that will provide the copy.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph to be duplicated.
@@ -312,7 +312,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * This should never be called inside an access check. Only call this after
    * context validation has completed successfully.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The bundle name for the paragraph to be created.
@@ -333,7 +333,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * is set before using it. This will create the paragraph item in the buffer
    * it does not already exist.
    *
-   * @param \Drupal\paragraphs_extra\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The bundle name for the paragraph to be created.

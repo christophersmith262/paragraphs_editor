@@ -3,6 +3,10 @@
 namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\delivery_provider;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\paragraphs_ckeditor\Ajax\DeliverParagraphPreviewCommand;
+use Drupal\paragraphs_ckeditor\Ajax\DeliverCopiedParagraphCommand;
+use Drupal\paragraphs_ckeditor\Ajax\OpenModalCommand;
+use Drupal\paragraphs_ckeditor\Ajax\CloseModalCommand;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryProviderInterface;
@@ -23,10 +27,12 @@ class ModalDelivery implements DeliveryProviderInterface {
   }
 
   public function render(AjaxResponse $response, CommandContextInterface $context, EditBufferItemInterface $item) {
-    $response->addCommand(new DeliverParagraphPreviewCommand($context->getBuildId(), $entity, $insert));
+    $insert = ($context->getAdditionalContext('command') == 'insert');
+    $response->addCommand(new DeliverParagraphPreviewCommand($context->getBuildId(), $item->getEntity(), $insert));
   }
 
   public function duplicate(AjaxResponse $response, CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
+    $response->addCommand(new DeliverCopiedParagraphCommand($context->getBuildId(), $item->getEntity(), $ckeditor_widget_id));
   }
 
   public function close(AjaxResponse $response, CommandContextInterface $context) {

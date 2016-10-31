@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_extra\EditorCommand;
+namespace Drupal\paragraphs_ckeditor\EditorCommand;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface;

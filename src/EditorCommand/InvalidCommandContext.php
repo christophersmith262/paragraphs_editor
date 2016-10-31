@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_extra\EditorCommand;
+namespace Drupal\paragraphs_ckeditor\EditorCommand;
 
 class InvalidCommandContext extends CommandContext {
 
