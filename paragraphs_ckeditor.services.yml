@@ -15,11 +15,11 @@ services:
     arguments: ['@paragraphs_ckeditor.bundle_selector.manager', '@entity_type.manager', '@module_handler', '@entity.manager']
 
   paragraphs_ckeditor.edit_buffer.cache:
-    class: Drupal\paragraphs_ckeditor\EditorCommand\EditBuffer\BufferCache
+    class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCache
     arguments: ['@keyvalue.expirable', 24000]
 
   paragraphs_ckeditor.edit_buffer.item_duplicator:
-    class: Drupal\paragraphs_ckeditor\EditorCommand\EditBuffer\ItemDuplicator
+    class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicator
 
   paragraphs_ckeditor.delivery_provider.manager:
     class: Drupal\paragraphs_ckeditor\EditorCommand\DeliveryProvider\DeliveryProviderManager

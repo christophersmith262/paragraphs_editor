@@ -27,7 +27,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
       $field_config = $this->fieldConfigStorage->load($field_config_id);
       $delivery_provider = $this->getDeliveryPlugin($field_config);
-      $edit_buffer = $this->editBufferCache->get($widget_build_id);
+      $edit_buffer = $this->bufferCache->get($widget_build_id);
 
       if ($entity_id) {
         $entity = $entity_storage->load($entity_id);
