@@ -8,7 +8,7 @@ services:
 
   paragraphs_ckeditor.command.context_factory:
     class: Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactory
-    arguments: ['@entity_type.manager', '@paragraphs_ckeditor.edit_buffer.cache']
+    arguments: ['@entity_type.manager', '@paragraphs_ckeditor.edit_buffer.cache', '@paragraphs_ckeditor.delivery_provider.manager']
 
   paragraphs_ckeditor.command.response_handler:
     class: Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandler

@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class CKEditorParagraphsWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
+class CKEditorParagraphWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
 
   protected $contextFactory;
   protected $bundleSelectorManager;
@@ -238,7 +238,7 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
   }
 
   protected function getContext(EntityInterface $entity, $widget_build_id) {
-    return $this->contextFactory->create($entity->getEntityType(), $entity->id, $this->fieldDefinition->id, $widget_build_id);
+    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id);
   }
 
   protected function toMarkup(FieldItemListInterface $items, $context_string) {

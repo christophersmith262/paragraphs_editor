@@ -2,7 +2,7 @@
 
 namespace Drupal\paragraphs_ckeditor\EditorCommand;
 
-interface ComandContextInterface {
+interface CommandContextInterface {
   public function getEntity();
   public function getFieldConfig();
   public function getWidgetId();

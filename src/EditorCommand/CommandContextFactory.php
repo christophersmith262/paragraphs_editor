@@ -2,7 +2,9 @@
 
 namespace Drupal\paragraphs_ckeditor\EditorCommand;
 
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface;
 
 class CommandContextFactory implements CommandContextFactoryInterface {
@@ -10,11 +12,13 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   protected $entityTypeManager;
   protected $bufferCache;
   protected $fieldConfigStorage;
+  protected $deliveryProviderManager;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, PluginManagerinterface $delivery_provider_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->bufferCache = $buffer_cache;
     $this->fieldConfigStorage = $entity_type_manager->getStorage('field_config');
+    $this->deliveryProviderManager = $delivery_provider_manager;
   }
 
   public function create($entity_type, $entity_id, $field_config_id, $widget_build_id) {
@@ -44,6 +48,6 @@ class CommandContextFactory implements CommandContextFactoryInterface {
 
   protected function getDeliveryPlugin(FieldConfigInterface $field_config) {
     $plugin_name = $field_config->getSetting('delivery_provider');
-    return $this->bundleSelectorManager->createInstance($plugin_name);
+    return $this->deliveryProviderManager->createInstance($plugin_name);
   }
 }
