@@ -2,7 +2,6 @@
 
 namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor;
 
-use Drupal\Component\Plugin\Factory\ContainerFactory;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
@@ -14,7 +13,7 @@ class ParagraphsCKEditorPluginManager extends DefaultPluginManager {
     parent::__construct("Plugin/ParagraphsCKEditor/$type", $namespaces, $module_handler, $plugin_interface, $annotation);
     $this->alterInfo("paragraphs_ckeditor_{$type}_info");
     $this->setCacheBackend($cache_backend, "paragraphs_ckeditor_{$type}_info_plugins");
-    $this->factory = new ContainerFactory($this->getDiscovery());
+    $this->factory = new PluginFactory($this->getDiscovery());
   }
 
   protected function getPluginTypeInfo($type) {

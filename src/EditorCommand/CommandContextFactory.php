@@ -24,15 +24,17 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     // bubbling the exception so that the controller access handler can deal
     // with it instead of the core exception handling.
     try {
+      $context_keys = array($entity_type, $field_config_id, $widget_build_id);
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
       $field_config = $this->fieldConfigStorage->load($field_config_id);
       $delivery_provider = $this->getDeliveryPlugin($field_config);
-      $edit_buffer = $this->bufferCache->get($widget_build_id);
 
       if ($entity_id) {
-        $entity = $entity_storage->load($entity_id);
+        $entity = $entity_storage->load($entity_id, $context_keys);
+        $context_keys[] = $entity_id;
       }
 
+      $edit_buffer = $this->bufferCache->get($widget_build_id, implode(':', $context_keys));
     }
     catch (\Exception $e) {
       return new InvalidCommandContext();

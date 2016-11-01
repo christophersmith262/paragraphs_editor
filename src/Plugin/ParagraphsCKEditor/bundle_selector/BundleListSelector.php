@@ -3,10 +3,11 @@
 namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\bundle_selector;
 
 use Drupal\Core\Entity\EntityListBuilder;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\paragraphs_ckeditor\ParagraphCommand\BundleSelector\BundleSelectorInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_ckeditor\ParagraphCommand\BundleSelector\BundleSelectorInterface;
 
 /**
  * Provides a simple listing of bundles to choose from.
@@ -17,16 +18,32 @@ use Drupal\Core\Entity\EntityInterface;
  *   description = @Translation("Provides a basic list of bundles."),
  * )
  */
-class BundleSelectionList extends EntityListBuilder implements BundleSelectorInterface {
+class BundleSelectionList extends EntityListBuilder implements BundleSelectorInterface, ContainerFactoryPluginInterface {
 
-  protected $routeParams;
+  protected $pluginId;
+  protected $pluginDefinition;
+  protected $context;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(CommandContextInterface $context, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct($plugin_id, $plugin_definition, CommandContextInterface $context, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type_manager->getDefinition('paragraphs_type'), $entity_type_manager->getStorage('paragraphs_type'));
-    $this->routeParams = $route_params;
+    $this->pluginId = $plugin_id;
+    $this->pluginDefinition = $plugin_definition;
+    $this->context = $context;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createInstance(ContainerInterface $container, $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $plugin_id,
+      $plugin_definition,
+      $configuration['context'],
+      $container->get('entity_type.manager')
+    );
   }
 
   /**
@@ -58,7 +75,9 @@ class BundleSelectionList extends EntityListBuilder implements BundleSelectorInt
     $form['actions']['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel'),
+      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel', array(
+        'context' => $this->context->getContextString(),
+      )),
       '#attributes' => array(
         'class' => array(
           'button',
@@ -95,8 +114,9 @@ class BundleSelectionList extends EntityListBuilder implements BundleSelectorInt
       '#type' => 'link',
       '#title' => t('Add'),
       '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.insert', array(
+        'context' => $this->context->getContextString(),
         'bundle_name' => $entity->id,
-      ) + $this->routeParams),
+      )),
       '#attributes' => array(
         'class' => array(
           'button',

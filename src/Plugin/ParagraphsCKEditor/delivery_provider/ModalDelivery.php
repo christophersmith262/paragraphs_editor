@@ -10,6 +10,7 @@ use Drupal\paragraphs_ckeditor\Ajax\CloseModalCommand;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryProviderInterface;
+use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginBase;
 
 /**
  * Delivers paragraphs ckeditor forms in a modal dialog.
@@ -20,22 +21,22 @@ use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryProviderInterfa
  *   description = @Translation("Shows forms in a modal dialog.")
  * )
  */
-class ModalDelivery implements DeliveryProviderInterface {
+class ModalDelivery extends PluginBase implements DeliveryProviderInterface {
 
-  public function navigate(AjaxResponse $response, CommandContextInterface $context, $title, $contents) {
+  public function navigate(AjaxResponse $response, $title, $contents) {
     $response->addCommand(new OpenModalCommand($title, $contents));
   }
 
-  public function render(AjaxResponse $response, CommandContextInterface $context, EditBufferItemInterface $item) {
-    $insert = ($context->getAdditionalContext('command') == 'insert');
-    $response->addCommand(new DeliverParagraphPreviewCommand($context->getBuildId(), $item->getEntity(), $insert));
+  public function render(AjaxResponse $response, EditBufferItemInterface $item) {
+    $insert = ($this->context->getAdditionalContext('command') == 'insert');
+    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getBuildId(), $item->getEntity(), $insert));
   }
 
-  public function duplicate(AjaxResponse $response, CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
-    $response->addCommand(new DeliverCopiedParagraphCommand($context->getBuildId(), $item->getEntity(), $ckeditor_widget_id));
+  public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $ckeditor_widget_id) {
+    $response->addCommand(new DeliverCopiedParagraphCommand($this->context->getBuildId(), $item->getEntity(), $ckeditor_widget_id));
   }
 
-  public function close(AjaxResponse $response, CommandContextInterface $context) {
+  public function close(AjaxResponse $response) {
     $response->addCommand(new CloseModalCommand());
   }
 

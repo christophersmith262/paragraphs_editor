@@ -47,6 +47,10 @@ class CommandContext implements CommandContextInterface {
     return $this->editBuffer;
   }
 
+  public function getContextString() {
+    return $this->editBuffer->getContextString();
+  }
+
   public function getDelivery() {
     return $this->deliveryProvider;
   }

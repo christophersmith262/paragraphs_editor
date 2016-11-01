@@ -13,4 +13,5 @@ interface ComandContextInterface {
   public function setTemporary($name, $value);
   public function getTemporary($name);
   public function isValid();
+  public function getContextString();
 }

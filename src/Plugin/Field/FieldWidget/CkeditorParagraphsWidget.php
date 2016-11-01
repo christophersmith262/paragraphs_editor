@@ -2,21 +2,19 @@
 
 namespace Drupal\paragraphs_ckeditor\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\Crypt;
+use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Field\WidgetBase;
-use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
-use Drupal\Component\Utility\Crypt;
-use Drupal\paragraphs_ckeditor\CKEditorState\ParagraphsCKEditorState;
-use Drupal\paragraphs_ckeditor\CKEditorState\ParagraphsCKEditorStateCacheInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
+use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
-
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\OpenModalDialogCommand;
-use Drupal\Core\Ajax\HtmlCommand;
 
 /**
  * Plugin implementation of the 'entity_reference paragraphs' widget.
@@ -33,13 +31,20 @@ use Drupal\Core\Ajax\HtmlCommand;
  *   }
  * )
  */
-class CkeditorParagraphsWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
+class CKEditorParagraphsWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
+
+  protected $contextFactory;
+  protected $bundleSelectorManager;
+  protected $deliveryProviderManager;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, CommandContextFactoryInterface $context_factory, PluginManagerInterface $bundle_selector_manager, PluginManagerInterface $delivery_provider_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
+    $this->contextFactory = $context_factory;
+    $this->bundleSelectorManager = $bundle_selector_manager;
+    $this->deliveryProviderManager = $delivery_provider_manager;
   }
 
   /**
@@ -51,7 +56,10 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       $plugin_definition,
       $configuration['field_definition'],
       $configuration['settings'],
-      $configuration['third_party_settings']
+      $configuration['third_party_settings'],
+      $container->get('paragraphs_ckeditor.command.context_factory'),
+      $container->get('paragraphs_ckeditor.bundle_selector.manager'),
+      $container->get('paragraphs_ckeditor.delivery_provider.manager')
     );
   }
 
@@ -87,37 +95,19 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       $widget_build_id = $widget_state['paragraphs_ckeditor']['widget_build_id'];
     }
 
-    // If the form_state is about to be cached, we also want to rebuild the
-    // editor state cache. This isn't strictly required for the editor to
-    // continue working properly, but it keeps the cache from bloating with
-    // unused paragraph entities. Note that on the first rendering of the form,
-    // the state won't be cached. Since everything in the $items list will have
-    // already been saved to the database, the ckeditor ajax endpoints only need
-    // a uuid to reference existing items, thus the cache will only be created
-    // if their are edits.
-    if ($form_state->isCached()) {
-      $editor_state = new ParagraphsCKEditorState($this->getAllowedTypes());
-
-      foreach ($items as $delta => $item) {
-        $editor_state->storeParagraph($item->entity);
-      }
-
-      //$this->editorCache->setCache($widget_build_id, $editor_state);
-    }
-
+    $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
     $elements['paragraphs_ckeditor'] = array(
       '#type' => 'text_format',
-      '#format' => 'paragraphs_ckeditor',
+      '#format' => $this->getSetting('filter_format'),
+      '#default_value' => $this->toMarkup($items, $context_string),
       '#attributes' => array(
         'class' => array(
           'paragraphs-ckeditor'
         ),
-        'data-paragraphs-ckeditor-build-id' => $widget_build_id,
-        'data-paragraphs-ckeditor-field-id' => $this->fieldDefinition->uuid(),
+        'data-paragraphs-ckeditor-context' => $context_string,
       ),
       '#attached' => array(
         'library' => array(
-          'core/drupal.dialog.ajax',
           'paragraphs_ckeditor/widget',
         )
       ),
@@ -134,5 +124,114 @@ class CkeditorParagraphsWidget extends InlineParagraphsWidget implements Contain
     $element = parent::form($items, $form, $form_state, $get_delta);
 
     return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = array();
+
+    $elements['title'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Paragraph Title'),
+      '#description' => $this->t('Label to appear as title on the button as "Add new [title]", this label is translatable'),
+      '#default_value' => $this->getSetting('title'),
+      '#required' => TRUE,
+    );
+
+    $elements['title_plural'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Plural Paragraph Title'),
+      '#description' => $this->t('Title in its plural form.'),
+      '#default_value' => $this->getSetting('title_plural'),
+      '#required' => TRUE,
+    );
+
+    $options = array();
+    foreach ($this->bundleSelectorManager->getDefinitions() as $plugin) {
+      $options[$plugin->id] = $plugin->label;
+    }
+
+    $elements['bundle_selector'] = array(
+      '#type' => 'select',
+      '#title' => $this->t('Bundle Selection Handler'),
+      '#description' => $this->t('The bundle selector form plugin that will be used to allow users to insert paragraph items.'),
+      '#options' => $options,
+      '#default_value' => $this->getSetting('bundle_selector') ?: 'list',
+      '#required' => TRUE,
+    );
+
+    $options = array();
+    foreach ($this->deliveryProviderManager->getDefinitions() as $plugin) {
+      $options[$plugin->id] = $plugin->label;
+    }
+
+    $elements['delivery_provider'] = array(
+      '#type' => 'select',
+      '#title' => $this->t('Delivery Handler'),
+      '#description' => $this->t('The delivery plugin that controls the user experience for how forms are delivered.'),
+      '#options' => $options,
+      '#default_value' => $this->getSetting('delivery_provider') ?: 'modal',
+      '#required' => TRUE,
+    );
+
+    $element['filter_format'] = array(
+      '#type' => 'select',
+      '#title' => 'Filter Format',
+      '#description' => $this->t('The filter format to use for the CKEditor instance.'),
+      '#options' => filter_formats(),
+      '#default_value' => $this->getSetting('filter_format') ?: 'paragraphs_ckeditor',
+    );
+
+    $elements['text_bundle'] = array(
+      '#type' => 'select',
+      '#title' => $this->t('Text Bundle'),
+      '#description' => $this->t('The bundle to treat as plaintext input.'),
+      '#options' => $this->getAllowedBundles(),
+      '#default_value' => $this->getSetting('text_bundle') ?: 'modal',
+      '#required' => TRUE,
+    );
+
+    return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $bundle_selector = $this->bundleSelectorManager->getDefinition($this->getSetting('bundle_selector'));
+    $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('deliveryProvider'));
+    $summary = array();
+    $summary[] = $this->t('Title: @title', array('@title' => $this->getSetting('title')));
+    $summary[] = $this->t('Plural title: @title_plural', array('@title_plural' => $this->getSetting('title_plural')));
+    $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector));
+    $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider));
+    $summary[] = $this->t('Filter Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
+    $summary[] = $this->t('Text Bundle: @filter_format', array('@text_bundle' => $this->getSetting('text_bundle')));
+    return $summary;
+  }
+
+  protected function getContext(EntityInterface $entity, $widget_build_id) {
+    return $this->contextFactory->create($entity->getEntityType(), $entity->id, $this->fieldDefinition->id, $widget_build_id);
+  }
+
+  protected function toMarkup(FieldItemListInterface $items, $context_string) {
+    $markup = '';
+    foreach ($items as $item) {
+      if ($item->entity->bundle() == $this->getSetting('text_bundle')) {
+        $markup .= $this->createEmbedCode($item->entity, $context_string);
+      }
+      else {
+      }
+    }
+    return $markup;
+  }
+
+  protected function createEmbedCode(ContentEntityInterface $entity, $context_string) {
+    return '<paragraphs-ckeditor-paragraph ' .
+      'data-paragraph-uuid="' . $entity->uuid() . '" ' .
+      'data-context-hint="' . $context_string . '">' .
+      '</paragraphs-ckeditor-paragraph>';
   }
 }

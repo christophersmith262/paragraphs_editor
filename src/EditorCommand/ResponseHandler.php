@@ -46,25 +46,25 @@ class ResponseHandler implements ResponseHandlerInterface {
 
   protected function navigate(CommandContextInterface $context, $title, $contents) {
     $response = new AjaxResponse();
-    $context->getDelivery()->navigate($response, $context, $title, $contents);
+    $context->getDelivery()->navigate($response, $title, $contents);
     return $response;
   }
 
   protected function render(CommandContextInterface $context, EditBufferItemInterface $item) {
     $response = new AjaxResponse();
-    $context->getDelivery()->render($response, $context, $item);
+    $context->getDelivery()->render($response, $item);
     return $response;
   }
 
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckditor_widget_id) {
     $response = new AjaxResponse();
-    $context->getDelivery()->duplicate($response, $context, $item, $ckeditor_widget_id);
+    $context->getDelivery()->duplicate($response, $item, $ckeditor_widget_id);
     return $response;
   }
 
   protected function close(CommandContextInterface $context) {
     $response = new AjaxResponse();
-    $context->getDelivery()->close($response, $context);
+    $context->getDelivery()->close($response);
     return $response;
   }
 
@@ -75,6 +75,6 @@ class ResponseHandler implements ResponseHandlerInterface {
   }
 
   protected function getParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item) {
-    return new ParagraphEntityForm($context->getDelivery(), $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager);
+    return new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager);
   }
 }

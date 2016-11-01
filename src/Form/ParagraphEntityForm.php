@@ -4,24 +4,27 @@ namespace Drupal\paragraphs_ckeditor\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-
-use Drupal\paragraphs_ckeditor\Ajax\DeliverParagraphPreviewCommand;
-use Drupal\paragraphs_ckeditor\Ajax\CloseModalCommand;
+use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
 
 use Drupal\paragraphs\ParagraphInterface;
 
 class ParagraphEntityForm extends ContentEntityForm {
 
+  protected $context;
+  protected $bufferItem;
+
   /**
    * {@inheritdoc}
    */
-  public function __construct(ParagraphAjaxCommandFactory $command_factory, EditBufferItem $item,
+  public function __construct(CommandContextInterface $context, EditBufferItemInterface $item,
     ModuleHandlerInterface $module_handler, EntityTypeManagerInterface $entity_type_manager, EntityManagerInterface $entity_manager) {
 
     // The ContentEntityForm class actually has a whole bunch of hidden
@@ -36,11 +39,11 @@ class ParagraphEntityForm extends ContentEntityForm {
     // Inject dependencies for parent classes.
     $this->setEntityTypeManager($entity_type_manager);
     $this->setModuleHandler($module_handler);
-    $this->setEntity($buffer_writer->original());
+    $this->setEntity($item->getEntity());
 
     // Set dependencies for this class.
-    $this->commandFactory = $command_factory;
-    $this->bufferWriter = $buffer_writer;
+    $this->context = $context;
+    $this->bufferItem = $item;
   }
 
   /**
@@ -48,11 +51,12 @@ class ParagraphEntityForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     // Save the changes to the editor buffer.
-    $this->bufferWriter->save($entity);
+    $this->bufferItem->overwrite($this->entity);
+    $this->bufferItem->save();
 
     // Make properties available to the static ajax handler.
-    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'entity'], $this->entity);
-    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'command_factory'], $this->commandFactory);
+    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'item'], $this->bufferItem);
+    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'context'], $this->context);
   }
 
   /**
@@ -68,7 +72,9 @@ class ParagraphEntityForm extends ContentEntityForm {
     $actions['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel'),
+      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel', array(
+        'context' => $this->context->getContextString(),
+      )),
       '#weight' => 10,
       '#attributes' => array(
         'class' => array(
@@ -85,14 +91,14 @@ class ParagraphEntityForm extends ContentEntityForm {
 
   static public function ajaxSubmit(array $form, FormStateInterface $form_state) {
     // Retrieve class mambers needed to build a response.
-    $entity = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'entity']);
-    $command_factory = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'command_factory']);
+    $item = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'item']);
+    $delivery = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'context'])->getDelivery();
 
     // Create a response that includes the rendered paragraph preview and
     // signal that the ajax workflow is completed.
     $response = new AjaxResponse();
-    $response->addCommand($command_factory->paragraphPreviewCommand($entity, TRUE));
-    $response->addCommand($command_factory->closeFormCommand());
+    $delivery->render($response, $item);
+    $delivery->close($response);
 
     return $response;
   }
