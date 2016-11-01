@@ -38,7 +38,7 @@ class ParagraphsInsert extends CKEditorPluginBase {
     return array(
       'ParagraphsInsert' => array(
         'label' => t('Insert Component'),
-        'image' => drupal_get_path('module', 'paragraphs_ckeditor') . '/js/plugins/paragraphsinsert/icons/component.png',
+        'image' => drupal_get_path('module', 'paragraphs_ckeditor') . '/js/plugins/paragraphsinsert/icons/paragraphsinsert.png',
       ),
     );
   }

@@ -22,11 +22,11 @@ services:
     class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicator
 
   paragraphs_ckeditor.delivery_provider.manager:
-    class: Drupal\paragraphs_ckeditor\EditorCommand\DeliveryProvider\DeliveryProviderManager
+    class: Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginManager
     arguments: [delivery_provider, '@container.namespaces', '@cache.discovery', '@module_handler']
 
   paragraphs_ckeditor.bundle_selector.manager:
-    class: Drupal\paragraphs_ckeditor\EditorCommand\BundleSelector\BundleSelectorManager
+    class: Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginManager
     arguments: [bundle_selector, '@container.namespaces', '@cache.discovery', '@module_handler']
 
 parameters:

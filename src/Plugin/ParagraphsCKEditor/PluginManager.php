@@ -6,7 +6,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 
-class ParagraphsCKEditorPluginManager extends DefaultPluginManager {
+class PluginManager extends DefaultPluginManager {
 
   public function __construct($type, \Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     list ($plugin_interface, $annotation) = $this->getPluginTypeInfo($type);
@@ -20,12 +20,12 @@ class ParagraphsCKEditorPluginManager extends DefaultPluginManager {
     switch ($type) {
       case 'delivery_provider':
         return array(
-          'Drupal\paragraphs_ckeditor\Plugin\DeliveryProviderInterface',
+          'Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryProviderInterface',
           'Drupal\paragraphs_ckeditor\Annotation\ParagraphsCKEditorDeliveryProvider'
         );
       case 'bundle_selector':
         return array(
-          'Drupal\paragraphs_ckeditor\Plugin\BundleSelectorInterface',
+          'Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\BundleSelectorInterface',
           'Drupal\paragraphs_ckeditor\Annotation\ParagraphsCKEditorBundleSelector'
         );
       default:

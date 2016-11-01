@@ -2,6 +2,8 @@
 
 namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor;
 
+use Drupal\Component\Plugin\Factory\DefaultFactory;
+
 class PluginFactory extends DefaultFactory {
 
   /**

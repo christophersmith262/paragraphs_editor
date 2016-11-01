@@ -14,7 +14,7 @@ use Drupal\paragraphs_ckeditor\ParagraphCommand\BundleSelector\BundleSelectorInt
  *
  * @ParagraphsCKEditorBundleSelector(
  *   id = "list",
- *   title = @Translation("List Bundle Selector"),
+ *   title = @Translation("List"),
  *   description = @Translation("Provides a basic list of bundles."),
  * )
  */

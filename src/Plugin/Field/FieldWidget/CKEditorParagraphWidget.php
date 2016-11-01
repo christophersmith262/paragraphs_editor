@@ -63,6 +63,21 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
     );
   }
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return array(
+      'title' => t('Paragraph'),
+      'title_plural' => t('Paragraphs'),
+      'bundle_selector' => 'list',
+      'delivery_provider' => 'modal',
+      'filter_format' => 'paragraphs_ckeditor',
+      'text_bundle' => 'text',
+    );
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -150,7 +165,7 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
 
     $options = array();
     foreach ($this->bundleSelectorManager->getDefinitions() as $plugin) {
-      $options[$plugin->id] = $plugin->label;
+      $options[$plugin['id']] = $plugin['title'];
     }
 
     $elements['bundle_selector'] = array(
@@ -158,13 +173,13 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       '#title' => $this->t('Bundle Selection Handler'),
       '#description' => $this->t('The bundle selector form plugin that will be used to allow users to insert paragraph items.'),
       '#options' => $options,
-      '#default_value' => $this->getSetting('bundle_selector') ?: 'list',
+      '#default_value' => $this->getSetting('bundle_selector'),
       '#required' => TRUE,
     );
 
     $options = array();
     foreach ($this->deliveryProviderManager->getDefinitions() as $plugin) {
-      $options[$plugin->id] = $plugin->label;
+      $options[$plugin['id']] = $plugin['title'];
     }
 
     $elements['delivery_provider'] = array(
@@ -172,24 +187,34 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
       '#title' => $this->t('Delivery Handler'),
       '#description' => $this->t('The delivery plugin that controls the user experience for how forms are delivered.'),
       '#options' => $options,
-      '#default_value' => $this->getSetting('delivery_provider') ?: 'modal',
+      '#default_value' => $this->getSetting('delivery_provider'),
       '#required' => TRUE,
     );
+
+    $options = array();
+    foreach (filter_formats() as $filter_format) {
+      $options[$filter_format->id()] = $filter_format->label();
+    }
 
     $element['filter_format'] = array(
       '#type' => 'select',
       '#title' => 'Filter Format',
       '#description' => $this->t('The filter format to use for the CKEditor instance.'),
-      '#options' => filter_formats(),
-      '#default_value' => $this->getSetting('filter_format') ?: 'paragraphs_ckeditor',
+      '#options' => $options,
+      '#default_value' => $this->getSetting('filter_format'),
     );
+
+    $options = array();
+    foreach ($this->getAllowedTypes() as $name => $type) {
+      $options[$name] = $type['label'];
+    }
 
     $elements['text_bundle'] = array(
       '#type' => 'select',
       '#title' => $this->t('Text Bundle'),
       '#description' => $this->t('The bundle to treat as plaintext input.'),
-      '#options' => $this->getAllowedBundles(),
-      '#default_value' => $this->getSetting('text_bundle') ?: 'modal',
+      '#options' => $options,
+      '#default_value' => $this->getSetting('text_bundle'),
       '#required' => TRUE,
     );
 
@@ -201,14 +226,14 @@ class CKEditorParagraphsWidget extends InlineParagraphsWidget implements Contain
    */
   public function settingsSummary() {
     $bundle_selector = $this->bundleSelectorManager->getDefinition($this->getSetting('bundle_selector'));
-    $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('deliveryProvider'));
+    $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('delivery_provider'));
     $summary = array();
     $summary[] = $this->t('Title: @title', array('@title' => $this->getSetting('title')));
     $summary[] = $this->t('Plural title: @title_plural', array('@title_plural' => $this->getSetting('title_plural')));
-    $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector));
-    $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider));
+    $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector['title']));
+    $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider['title']));
     $summary[] = $this->t('Filter Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
-    $summary[] = $this->t('Text Bundle: @filter_format', array('@text_bundle' => $this->getSetting('text_bundle')));
+    $summary[] = $this->t('Text Bundle: @text_bundle', array('@text_bundle' => $this->getSetting('text_bundle')));
     return $summary;
   }
 
