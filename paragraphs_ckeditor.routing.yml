@@ -2,45 +2,61 @@ paragraphs_ckeditor.command.insert:
   path: '/ajax/paragraphs-ckeditor/insert/{context}/{bundle_name}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::insert'
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessInsert'
     bundle_name: false
   options:
     parameters:
-      context: paragraphs_ckeditor_command_context
+      context:
+        type: paragraphs_ckeditor_command_context
+        command: insert
+  requirements: 
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessInsert'
 
 paragraphs_ckeditor.command.edit:
   path: '/ajax/paragraphs-ckeditor/edit/{context}/{paragraph_uuid}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::edit'
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
   options:
     parameters:
-      context: paragraphs_ckeditor_command_context
+      context:
+        type: paragraphs_ckeditor_command_context
+        command: edit
+  requirements: 
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
 
 paragraphs_ckeditor.command.render:
   path: '/ajax/paragraphs-ckeditor/render/{context}/{paragraph_uuid}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::render'
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
   options:
     parameters:
       context: paragraphs_ckeditor_command_context
+      command: render
+  requirements: 
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
 
 paragraphs_ckeditor.command.duplicate:
   path: '/ajax/paragraphs-ckeditor/render/{target_context}/{source_context}/{paragraph_uuid}/{widget_id}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::duplicate'
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessDuplicate'
   options:
     parameters:
-      source_context: paragraphs_ckeditor_command_context
-      target_context: paragraphs_ckeditor_command_context
+      source_context:
+        type: paragraphs_ckeditor_command_context
+        command: duplicate
+      target_context:
+        type: paragraphs_ckeditor_command_context
+        command: duplicate
+  requirements: 
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessDuplicate'
 
 paragraphs_ckeditor.command.cancel:
   path: '/ajax/paragraphs-ckeditor/cancel/{context}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::cancel'
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::access'
   options:
     parameters:
-      context: paragraphs_ckeditor_command_context
+      context:
+        type: paragraphs_ckeditor_command_context
+        command: cancel
+  requirements: 
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessCancel'

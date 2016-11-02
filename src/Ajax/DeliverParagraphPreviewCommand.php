@@ -9,10 +9,10 @@ class DeliverParagraphPreviewCommand implements CommandInterface {
 
   protected $paragraph;
   protected $insert;
-  protected $widgetBuildId;
+  protected $contextString;
 
-  public function __construct($widget_build_id, ParagraphInterface $paragraph, $insert = FALSE) {
-    $this->widgetBuildId = $widget_build_id;
+  public function __construct($context_string, ParagraphInterface $paragraph, $insert = FALSE) {
+    $this->contextString = $context_string;
     $this->paragraph = $paragraph;
     $this->insert = $insert;
   }
@@ -24,7 +24,7 @@ class DeliverParagraphPreviewCommand implements CommandInterface {
     $markup = \Drupal::service('renderer')->render($view);
     return array(
       'command' => 'paragraphs_ckeditor_data',
-      'widget' => $this->widgetBuildId,
+      'context' => $this->contextString,
       'preview' => array(
         'id' => $this->paragraph->uuid(),
         'isNew' => $this->paragraph->isNew(),

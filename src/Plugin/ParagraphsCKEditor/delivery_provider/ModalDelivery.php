@@ -24,20 +24,25 @@ use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginBase;
 class ModalDelivery extends PluginBase implements DeliveryProviderInterface {
 
   public function navigate(AjaxResponse $response, $title, $contents) {
-    $response->addCommand(new OpenModalCommand($title, $contents));
+    $response->setAttachments(array(
+      'library' => array(
+        'core/drupal.dialog.ajax',
+      ),
+    ));
+    $response->addCommand(new OpenModalCommand($title, $contents, $this->context->getContextString()));
   }
 
   public function render(AjaxResponse $response, EditBufferItemInterface $item) {
     $insert = ($this->context->getAdditionalContext('command') == 'insert');
-    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getBuildId(), $item->getEntity(), $insert));
+    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getContextString(), $item->getEntity(), $insert));
   }
 
   public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $ckeditor_widget_id) {
-    $response->addCommand(new DeliverCopiedParagraphCommand($this->context->getBuildId(), $item->getEntity(), $ckeditor_widget_id));
+    $response->addCommand(new DeliverCopiedParagraphCommand($this->context->getContextString(), $item->getEntity(), $ckeditor_widget_id));
   }
 
   public function close(AjaxResponse $response) {
-    $response->addCommand(new CloseModalCommand());
+    $response->addCommand(new CloseModalCommand($this->context->getContextString()));
   }
 
 }

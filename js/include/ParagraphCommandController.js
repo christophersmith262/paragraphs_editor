@@ -10,7 +10,13 @@
   /**
    * Sends paragraph commands.
    */
-  Drupal.paragraphs_ckeditor.ParagraphCommandController = function($element, widget_build_id, field_id) {
+  Drupal.paragraphs_ckeditor.ParagraphCommandController = function($element, context_string, settings) {
+
+    var params = [];
+    for (var key in settings) {
+      params.push('settings[' + key + ']=' + settings[key]);
+    }
+    params = '?' + params.join('&');
 
     var ajax = Drupal.ajax({
       base: $element.attr('id'),
@@ -21,8 +27,7 @@
     });
     
     var defaults = {
-      widget: widget_build_id,
-      field: field_id,
+      context: context_string,
     };
 
     /**
@@ -58,17 +63,23 @@
       }
       var path = '/ajax/paragraphs-ckeditor/' + command.command;
 
-      if (command.widget) {
-        path += '/' + command.widget;
+      if (command.context) {
+        path += '/' + command.context;
       }
 
-      if (command.field) {
-        path += '/' + command.field;
+      if (command.context2) {
+        path += '/' + command.context2;
       }
 
       if (command.paragraph) {
         path += '/' + command.paragraph;
       }
+
+      if (command.widget) {
+        path += '/' + command.widget;
+      }
+
+      path += params;
 
       ajax.options.url = path;
       ajax.execute();

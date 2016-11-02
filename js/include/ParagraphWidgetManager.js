@@ -10,7 +10,7 @@
   /**
    * Tracks instances of Paragraphs CKEditor widgets.
    */
-  Drupal.paragraphs_ckeditor.ParagraphWidgetManager = function(paragraphCommandController, paragraphPreviewFetcher) {
+  Drupal.paragraphs_ckeditor.ParagraphWidgetManager = function(paragraphCommandController, paragraphPreviewFetcher, settings) {
 
     var paragraphPreviewWidgets = new Backbone.Collection([], {
       model: Drupal.paragraphs_ckeditor.ParagraphPreviewWidgetModel,
@@ -125,6 +125,14 @@
 
       // Update the widget embed code data-paragraph-uuid with the new id.
       $(editor.document.$).find().attr('data-paragraph-uuid', updated.get('id'));
+    }
+
+    this.getSettings = function() {
+      return settings;
+    }
+
+    this.getSetting = function(key) {
+      return settings[key];
     }
 
   };

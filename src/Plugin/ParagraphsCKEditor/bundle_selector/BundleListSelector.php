@@ -6,19 +6,21 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_ckeditor\ParagraphCommand\BundleSelector\BundleSelectorInterface;
+use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\BundleSelectorInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a simple listing of bundles to choose from.
  *
  * @ParagraphsCKEditorBundleSelector(
  *   id = "list",
- *   title = @Translation("List"),
+ *   title = @Translation("List Bundle Selector"),
  *   description = @Translation("Provides a basic list of bundles."),
  * )
  */
-class BundleSelectionList extends EntityListBuilder implements BundleSelectorInterface, ContainerFactoryPluginInterface {
+class BundleListSelector extends EntityListBuilder implements BundleSelectorInterface, ContainerFactoryPluginInterface {
 
   protected $pluginId;
   protected $pluginDefinition;
@@ -37,7 +39,7 @@ class BundleSelectionList extends EntityListBuilder implements BundleSelectorInt
   /**
    * {@inheritdoc}
    */
-  public function createInstance(ContainerInterface $container, $configuration, $plugin_id, $plugin_definition) {
+  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -75,9 +77,7 @@ class BundleSelectionList extends EntityListBuilder implements BundleSelectorInt
     $form['actions']['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel', array(
-        'context' => $this->context->getContextString(),
-      )),
+      '#url' => $this->context->createCommandUrl('cancel'),
       '#attributes' => array(
         'class' => array(
           'button',
@@ -113,8 +113,7 @@ class BundleSelectionList extends EntityListBuilder implements BundleSelectorInt
     $build['add'] = array(
       '#type' => 'link',
       '#title' => t('Add'),
-      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.insert', array(
-        'context' => $this->context->getContextString(),
+      '#url' => $this->context->createCommandUrl('insert', array(
         'bundle_name' => $entity->id,
       )),
       '#attributes' => array(

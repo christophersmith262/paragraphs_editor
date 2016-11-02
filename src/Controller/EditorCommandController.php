@@ -60,7 +60,8 @@ class EditorCommandController implements ContainerInjectionInterface {
    *   paragraphs.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ResponseHandlerInterface $response_handler, EditBufferItemDuplicatorInterface $duplicator) {
-    $this->storage = $this->entityTypeManager->getStorage('paragraph');
+    $this->entityTypeManager = $entity_type_manager;
+    $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->responseHandler = $response_handler;
     $this->duplicator = $duplicator;
   }
@@ -71,7 +72,7 @@ class EditorCommandController implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('paragraphs_ckeditor.paragraph_command.response_handler'),
+      $container->get('paragraphs_ckeditor.command.response_handler'),
       $container->get('paragraphs_ckeditor.edit_buffer.item_duplicator')
     );
   }
@@ -211,8 +212,8 @@ class EditorCommandController implements ContainerInjectionInterface {
       $access = AccessResult::forbidden();
     }
     else {
-      $entity_type = $field_config->getEntityTypeId();
-      $entity_bundle = $field_config->bundle();
+      $entity_type = $field_config->getTargetEntityTypeId();
+      $entity_bundle = $field_config->getTargetBundle();
       $entity = $context->getEntity();
 
       // If the operation pertains to an existing entity, the user must have
@@ -223,7 +224,7 @@ class EditorCommandController implements ContainerInjectionInterface {
       }
       else {
         $access = $this->entityTypeManager->getAccessControlHandler($entity_type)
-          ->createAccess($entity_bundle);
+          ->createAccess($entity_bundle, NULL, array(), TRUE);
       }
     }
 
@@ -275,7 +276,7 @@ class EditorCommandController implements ContainerInjectionInterface {
   public function accessParagraph(CommandContextInterface $context, $paragraph_uuid) {
     // If the paragraph item cannot be located we treat it as an access denied,
     // otherwise we just ensure that the user has access to the context.
-    $paragraph = $this->getBufferItem($paragraph_uuid);
+    $paragraph = $this->getBufferItem($context, $paragraph_uuid);
     if (!$paragraph) {
       $access = AccessResult::forbidden();
     }
@@ -306,6 +307,10 @@ class EditorCommandController implements ContainerInjectionInterface {
     return $this->access($target_context)->andIf($this->accessParagraph($source_context, $paragraph_uuid));
   }
 
+  public function accessCancel() {
+    return AccessResult::allowed();
+  }
+
   /**
    * Creates a buffer item within a context.
    *
@@ -323,7 +328,7 @@ class EditorCommandController implements ContainerInjectionInterface {
   protected function createBufferItem(CommandContextInterface $context, $bundle_name) {
     // We don't have to verify that getBuffer doesn't return NULL here since
     // this should never be called until after context validation is complete.
-    return $context->getBuffer()->createItem($this->createParagraph($bundle_name));
+    return $context->getEditBuffer()->createItem($this->createParagraph($bundle_name));
   }
 
   /**
@@ -344,7 +349,7 @@ class EditorCommandController implements ContainerInjectionInterface {
   protected function getBufferItem(CommandContextInterface $context, $paragraph_uuid) {
     // Since this could be called before the context is validated, we need to
     // account for the buffer being invalid.
-    $buffer = $context->getBuffer();
+    $buffer = $context->getEditBuffer();
     if ($buffer) {
       $item = $buffer->getItem($paragraph_uuid);
 

@@ -78,6 +78,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     );
   }
 
+
   /**
    * {@inheritdoc}
    */
@@ -86,14 +87,14 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
   }
 
   public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
-    $elements = parent::formMultipleElements($items, $form, $form_state, $get_delta);
+    //$elements = parent::formMultipleElements($items, $form, $form_state, $get_delta);
 
     // Load the widget state so we can set the widget build id, which associates
     // the widget instance with a collection of paragraph entities that are
     // referenced by the widget.
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
-    $widget_state = static::getWidgetState($parents, $field_name, $form_state);
+    $field_state = static::getWidgetState($parents, $field_name, $form_state);
 
     // Get the build id for this widget. For a new form this means generating a
     // new randomized build id. To do this we use the same method that is used
@@ -101,16 +102,16 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     // can simply read the existing build id from the widget state that is
     // derived from the form state. If we're creating a new build id, we'll also
     // want to store it in the widget state so we can refer back to it later.
-    if (empty($widget_state['paragraphs_ckeditor']['widget_build_id'])) {
+    if (empty($field_state['paragraphs_ckeditor']['context_string'])) {
       $widget_build_id = Crypt::randomBytesBase64();
-      $widget_state['paragraphs_ckeditor']['widget_build_id'] = $widget_build_id;
-      static::setWidgetState($parents, $field_name, $form_state, $widget_state);
+      $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
+      $field_state['paragraphs_ckeditor']['context_string'] = $context_string;
+      static::setWidgetState($parents, $field_name, $form_state, $field_state);
     }
     else {
-      $widget_build_id = $widget_state['paragraphs_ckeditor']['widget_build_id'];
+      $context_string = $widget_state['paragraphs_ckeditor']['context_string'];
     }
 
-    $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
     $elements['paragraphs_ckeditor'] = array(
       '#type' => 'text_format',
       '#format' => $this->getSetting('filter_format'),
@@ -124,7 +125,12 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       '#attached' => array(
         'library' => array(
           'paragraphs_ckeditor/widget',
-        )
+        ),
+        'drupalSettings' => array(
+          'paragraphs_ckeditor' => array(
+            $context_string => $this->getSettings(),
+          ),
+        ),
       ),
     );
 
@@ -238,7 +244,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
   }
 
   protected function getContext(EntityInterface $entity, $widget_build_id) {
-    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id);
+    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id, $this->getSettings());
   }
 
   protected function toMarkup(FieldItemListInterface $items, $context_string) {

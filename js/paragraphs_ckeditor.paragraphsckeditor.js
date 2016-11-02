@@ -22,18 +22,19 @@
       // this plugin.
       var paragraphsCKEditor = $(this).data('paragraphsCKEditor');
       if (!paragraphsCKEditor) {
-        var widget_build_id = $(this).attr('data-paragraphs-ckeditor-build-id');
-        var field_id = $(this).attr('data-paragraphs-ckeditor-field-id');
+        var context_string = $(this).attr('data-paragraphs-ckeditor-context');
+        var editorSettings = drupalSettings['paragraphs_ckeditor'];
 
         // It only makes sense to build a proper widget manager if the
         // element actually has the required data properties. Otherwise this
         // plugin is probably being applied to an element that doesn't support
         // it.
-        if (widget_build_id && field_id) {
+        if (context_string && editorSettings[context_string]) {
+          var settings = editorSettings[context_string];
           var prototypes = Drupal.paragraphs_ckeditor;
-          var commandController = new prototypes.ParagraphCommandController($(this), widget_build_id, field_id);
+          var commandController = new prototypes.ParagraphCommandController($(this), context_string, settings);
           var previewFetcher = new prototypes.ParagraphPreviewFetcher(commandController);
-          var widgetManager = new prototypes.ParagraphWidgetManager(commandController, previewFetcher);
+          var widgetManager = new prototypes.ParagraphWidgetManager(commandController, previewFetcher, settings);
 
           paragraphsCKEditor = {
             "commandController": commandController,

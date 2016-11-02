@@ -19,6 +19,6 @@ class PluginFactory extends DefaultFactory {
     }
 
     // Otherwise, create the plugin directly.
-    return new $plugin_class($plugin_id, $plugin_definition, $configuration, $configuration['context']);
+    return new $plugin_class($plugin_id, $plugin_definition, $configuration['context']);
   }
 }

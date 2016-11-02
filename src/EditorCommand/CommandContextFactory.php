@@ -12,16 +12,19 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   protected $entityTypeManager;
   protected $bufferCache;
   protected $fieldConfigStorage;
-  protected $deliveryProviderManager;
+  protected $pluginManagers;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, PluginManagerinterface $delivery_provider_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, PluginManagerinterface $delivery_provider_manager, PluginManagerInterface $bundle_selector_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->bufferCache = $buffer_cache;
     $this->fieldConfigStorage = $entity_type_manager->getStorage('field_config');
-    $this->deliveryProviderManager = $delivery_provider_manager;
+    $this->pluginManagers = array(
+      'bundle_selector' => $bundle_selector_manager,
+      'delivery_provider' => $delivery_provider_manager,
+    );
   }
 
-  public function create($entity_type, $entity_id, $field_config_id, $widget_build_id) {
+  public function create($entity_type, $entity_id, $field_config_id, $widget_build_id, array $settings) {
     // If any exceptions are thrown while initializing any of the properties, we
     // return an "Invalid Command" context to signal that something is wrong
     // with the command and execution should be aborted. We do this instead of
@@ -31,23 +34,30 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       $context_keys = array($entity_type, $field_config_id, $widget_build_id);
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
       $field_config = $this->fieldConfigStorage->load($field_config_id);
-      $delivery_provider = $this->getDeliveryPlugin($field_config);
 
       if ($entity_id) {
         $entity = $entity_storage->load($entity_id, $context_keys);
         $context_keys[] = $entity_id;
       }
+      else {
+        $entity = NULL;
+      }
 
-      $edit_buffer = $this->bufferCache->get($widget_build_id, implode(':', $context_keys));
+      $edit_buffer = $this->bufferCache->get(implode(':', $context_keys));
+      $context = new CommandContext($entity, $field_config, $edit_buffer, $settings);
+      $this->attachPlugin('delivery_provider', $settings, $context);
+      $this->attachPlugin('bundle_selector', $settings, $context);
     }
     catch (\Exception $e) {
       return new InvalidCommandContext();
     }
-    return new CommandContext($entity, $field_config, $edit_buffer, $delivery_provider);
+    return $context;
   }
 
-  protected function getDeliveryPlugin(FieldConfigInterface $field_config) {
-    $plugin_name = $field_config->getSetting('delivery_provider');
-    return $this->deliveryProviderManager->createInstance($plugin_name);
+  protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
+    $plugin_name = isset($settings[$type]) ? $settings[$type] : '';
+    $context->setPlugin($type, $this->pluginManagers[$type]->createInstance($plugin_name, array(
+      'context' => $context,
+    )));
   }
 }

@@ -81,7 +81,7 @@
 
         // Provide the ui component for the "insert paragraph" command.
         editor.ui.addButton('ParagraphsInsert', {
-          label: 'Embed',
+          label: Drupal.t('Insert ' + widgetManager.getSetting('title')),
           command: 'paragraphsinsert',
         });
 

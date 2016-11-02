@@ -12,4 +12,6 @@ widget:
     js/include/ParagraphWidgetManager.js: {}
   dependencies:
     - core/backbone
+    - core/jquery
+    - core/jquery.form
     - core/drupal.ajax

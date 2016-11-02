@@ -30,7 +30,7 @@
    *   The model id for the command that was used.
    */
   Drupal.AjaxCommands.prototype.paragraphs_ckeditor_data = function(ajax, response, status){
-    $('.paragraphs-ckeditor[data-paragraphs-ckeditor-build-id="' + response.widget + '"')
+    $('.paragraphs-ckeditor[data-paragraphs-ckeditor-context="' + response.context + '"')
       .paragraphsCKEditor('process-command-response', response);
   }
 

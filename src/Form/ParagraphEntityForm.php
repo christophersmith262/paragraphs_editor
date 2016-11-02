@@ -6,8 +6,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\EntityManager;
-use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -72,9 +72,7 @@ class ParagraphEntityForm extends ContentEntityForm {
     $actions['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('paragraphs_ckeditor.command.cancel', array(
-        'context' => $this->context->getContextString(),
-      )),
+      '#url' => $this->context->createCommandUrl('cancel'),
       '#weight' => 10,
       '#attributes' => array(
         'class' => array(
@@ -92,7 +90,7 @@ class ParagraphEntityForm extends ContentEntityForm {
   static public function ajaxSubmit(array $form, FormStateInterface $form_state) {
     // Retrieve class mambers needed to build a response.
     $item = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'item']);
-    $delivery = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'context'])->getDelivery();
+    $delivery = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'context'])->getPlugin('delivery_provider');
 
     // Create a response that includes the rendered paragraph preview and
     // signal that the ajax workflow is completed.

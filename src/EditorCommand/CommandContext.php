@@ -3,24 +3,27 @@
 namespace Drupal\paragraphs_ckeditor\EditorCommand;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface;
 use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryPluginInterface;
 
 class CommandContext implements CommandContextInterface {
 
+  protected $entity;
   protected $fieldDefinition;
   protected $editBuffer;
-  protected $deliveryProvider;
-  protected $entity;
+  protected $settings;
   protected $allowedBundles;
+  protected $plugins = array();
   protected $temporary = array();
+  protected $additionalContext = array();
 
-  public function __construct(EntityInterface $entity, FieldConfigInterface $field_config, EditBufferInterface $edit_buffer, DeliveryProviderInterface $delivery_provider) {
+  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, array $settings = array()) {
     $this->entity = $entity;
     $this->fieldDefinition = $field_config;
     $this->editBuffer = $edit_buffer;
-    $this->deliveryProvider = $delivery_provider;
+    $this->settings = $settings;
   }
 
   public function getEntity() {
@@ -51,16 +54,12 @@ class CommandContext implements CommandContextInterface {
     return $this->editBuffer->getContextString();
   }
 
-  public function getDelivery() {
-    return $this->deliveryProvider;
-  }
-
   public function setTemporary($name, $value) {
     $this->temporary[$name] = $value;
   }
 
   public function getTemporary($name) {
-    return isset($this->temporary[$name]) ?: NULL;
+    return isset($this->temporary[$name]) ? $this->temporary[$name] : NULL;
   }
 
   public function isValid() {
@@ -68,5 +67,40 @@ class CommandContext implements CommandContextInterface {
   }
 
   protected function calculateBundles() {
+  }
+
+  public function setPlugin($type, $plugin_object) {
+    $this->plugins[$type] = $plugin_object;
+  }
+
+  public function getPlugin($type) {
+    return $this->plugins[$type];
+  }
+
+  public function getSetting($name) {
+    return isset($this->settings[$name]) ? $this->settings[$name] : NULL;
+  }
+
+  public function getSettings() {
+    return $this->settings;
+  }
+
+  public function createCommandUrl($command, array $params = array()) {
+    return Url::fromRoute("paragraphs_ckeditor.command.$command", array(
+      'context' => $this->getContextString(),
+    ) + $params,
+    array(
+      'query' => array(
+        'settings' => $this->getSettings(),
+      ),
+    ));
+  }
+
+  public function addAdditionalContext($key, $value) {
+    $this->additionalContext[$key] = $value;
+  }
+
+  public function getAdditionalContext($key) {
+    return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
   }
 }

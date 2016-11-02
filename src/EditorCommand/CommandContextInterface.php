@@ -9,9 +9,10 @@ interface CommandContextInterface {
   public function isValidBundle($bundle_name);
   public function getAllowedBundles();
   public function getEditBuffer();
-  public function getDelivery();
   public function setTemporary($name, $value);
   public function getTemporary($name);
   public function isValid();
   public function getContextString();
+  public function setPlugin($type, $plugin_object);
+  public function getPlugin($type);
 }
