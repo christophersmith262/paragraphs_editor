@@ -4,6 +4,12 @@ namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor;
 
 use Drupal\Component\Plugin\Factory\DefaultFactory;
 
+/**
+ * A generic plugin factory for creating paragraphs ckeditor plugins.
+ *
+ * This is basically copied from the core ContainerFactory implementation, but
+ * also injects command context into the 'create' factory callback.
+ */
 class PluginFactory extends DefaultFactory {
 
   /**

@@ -22,8 +22,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class BundleListSelector extends EntityListBuilder implements BundleSelectorInterface, ContainerFactoryPluginInterface {
 
+  /**
+   * The plugin id for this plugin.
+   *
+   * @var string
+   */
   protected $pluginId;
+
+  /**
+   * The plugin definition for this plugin.
+   *
+   * @var object
+   */
   protected $pluginDefinition;
+
+  /**
+   * The command context the plugin is executing within.
+   *
+   * @var Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface
+   */
   protected $context;
 
   /**
@@ -74,6 +91,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
       $form['options'][$entity->id()] = $row;
     }
 
+    // Add an ajax link for allowing the use to cancel out of this form.
     $form['actions']['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
@@ -110,6 +128,8 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function buildOperations(EntityInterface $entity) {
+    // Create an ajax link that will take the user to an 'insert' endpoint for
+    // the bundle the operation relates to.
     $build['add'] = array(
       '#type' => 'link',
       '#title' => t('Add'),
@@ -130,11 +150,13 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    // This needs to be implemented, but we don't have anything to validate.
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // This needs to be implemented, but we don't have anything to submit.
   }
 }

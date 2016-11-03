@@ -19,6 +19,7 @@
     initialize: function(options) {
       this.widgetManager = options.widgetManager;
       this.$widgetWrapper = $(this.el).closest('.cke_widget_wrapper');
+      this.model.on('change:markup', this.render, this);
     },
 
     template: function(markup) {

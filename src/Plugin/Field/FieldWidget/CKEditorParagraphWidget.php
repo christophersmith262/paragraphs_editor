@@ -8,7 +8,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
+use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -25,6 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @FieldWidget(
  *   id = "entity_reference_paragraphs_ckeditor",
  *   label = @Translation("Paragraphs (CKEditor)"),
+ *   multiple_values = TRUE,
  *   description = @Translation("CKEditor paragraphs form widget."),
  *   field_types = {
  *     "entity_reference_revisions"
@@ -78,28 +81,21 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     );
   }
 
-
   /**
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    return parent::formElement($items, $delta, $element, $form, $form_state);
-  }
-
-  public function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
-    //$elements = parent::formMultipleElements($items, $form, $form_state, $get_delta);
-
-    // Load the widget state so we can set the widget build id, which associates
+    // Load the widget state so we can set the widget context, which associates
     // the widget instance with a collection of paragraph entities that are
     // referenced by the widget.
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
     $field_state = static::getWidgetState($parents, $field_name, $form_state);
 
-    // Get the build id for this widget. For a new form this means generating a
+    // Get the context for this widget. For a new form this means generating a
     // new randomized build id. To do this we use the same method that is used
     // to generate form build ids in core. For a form that is being rebuilt, we
-    // can simply read the existing build id from the widget state that is
+    // can simply read the existing context from the widget state that is
     // derived from the form state. If we're creating a new build id, we'll also
     // want to store it in the widget state so we can refer back to it later.
     if (empty($field_state['paragraphs_ckeditor']['context_string'])) {
@@ -112,7 +108,14 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       $context_string = $widget_state['paragraphs_ckeditor']['context_string'];
     }
 
-    $elements['paragraphs_ckeditor'] = array(
+    // Create the CKEditor form element and decorate it with some attributes
+    // that help us process it on the front end. Since its hard to get back
+    // widget settings just based on a field config id, we add the widget
+    // settings directly to the drupalSettings object. The paragraphs-ckeditor
+    // class will be used to find all instances of the field widget on the front
+    // end, and the data-paragraphs-ckeditor-context will be used to persist the
+    // state of the editor across ajax requests.
+    $element += array(
       '#type' => 'text_format',
       '#format' => $this->getSetting('filter_format'),
       '#default_value' => $this->toMarkup($items, $context_string),
@@ -133,16 +136,6 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
         ),
       ),
     );
-
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function form(FieldItemListInterface $items, array &$form, FormStateInterface $form_state, $get_delta = NULL) {
-    // Create the widget form element.
-    $element = parent::form($items, $form, $form_state, $get_delta);
 
     return $element;
   }
@@ -243,19 +236,30 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     return $summary;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+    // We only every allow this widget to be applied to fields that have
+    // unlimited cardinality. Otherwise we'd have to deal with keeping track of
+    // how many paragraphs are in the CKEditor instance.
+    $cardinality = $field_definition->getFieldStorageDefinition()->getCardinality();
+    return ($cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+  }
+
   protected function getContext(EntityInterface $entity, $widget_build_id) {
     return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id, $this->getSettings());
   }
 
   protected function toMarkup(FieldItemListInterface $items, $context_string) {
     $markup = '';
-    foreach ($items as $item) {
+    /*foreach ($items as $item) {
       if ($item->entity->bundle() == $this->getSetting('text_bundle')) {
         $markup .= $this->createEmbedCode($item->entity, $context_string);
       }
       else {
       }
-    }
+    }*/
     return $markup;
   }
 

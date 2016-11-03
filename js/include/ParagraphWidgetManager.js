@@ -36,6 +36,7 @@
         if (model.get('insert')) {
           var element = new CKEDITOR.dom.element('paragraphs-ckeditor-paragraph');
           element.setAttribute('data-paragraph-uuid', model.get('id'));
+          element.setAttribute('data-context-hint', model.get('context'));
           editor.insertElement(element);
           editor.widgets.initOn(element, 'ParagraphsCKEditorWidget');
           model.set({insert: false});
@@ -59,7 +60,7 @@
         previewId: preview_model.get('id'),
         markup: preview_model.get('markup'),
       }, {merge: true});
-      preview_model.on('change:markup', widget.copyMarkupFromModel, widget_model);
+      preview_model.on('change:markup', widget_model.copyMarkupFromModel, widget_model);
       widget_model.on('change:previewId', this.updatePreviewReference, this);
 
       var view = new Drupal.paragraphs_ckeditor.ParagraphCKEditorPreviewView({
@@ -75,7 +76,9 @@
       if ($().find().length > 1) {
       }
 
-      return view.render();
+      view.render();
+
+      return widget_model;
     };
 
     /**

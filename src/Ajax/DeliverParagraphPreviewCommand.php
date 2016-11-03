@@ -27,6 +27,7 @@ class DeliverParagraphPreviewCommand implements CommandInterface {
       'context' => $this->contextString,
       'preview' => array(
         'id' => $this->paragraph->uuid(),
+        'context' => $this->contextString,
         'isNew' => $this->paragraph->isNew(),
         'insert' => $this->insert,
         'markup' => $markup,
