@@ -11,13 +11,60 @@ use Drupal\Core\Plugin\PluginManagerInterface;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_ckeditor\Form\ParagraphEntityForm;
 
+/**
+ * Response handler for paragraphs ckeditor commands.
+ *
+ * This is the default class responsible for assembling symfony responses to
+ * paragraphs ckeditor commands.
+ *
+ * @see Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface
+ */
 class ResponseHandler implements ResponseHandlerInterface {
 
+  /**
+   * The form builder service for serving up forms.
+   *
+   * @var Drupal\Core\Form\FormBuilderInterface
+   */
   protected $formBuilder;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
+
+  /**
+   * The module handler service.
+   *
+   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   */
   protected $moduleHandler;
+
+  /**
+   * The (deprecated) entity manager service.
+   *
+   * This serves basically the same function as the entity type manager.
+   * The only reason it is included here is because the drupal core content
+   * entity edit form depends on it.
+   *
+   * @var Drupal\Core\Entity\EntityManagerInterface
+   */
   protected $entityManager;
 
+  /**
+   * Creates a ResponseHandler object.
+   *
+   * @param Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder for generating forms.
+   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager service.
+   */
   public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager) {
     $this->formBuilder = $form_builder;
     $this->entityTypeManager = $entity_type_manager;
@@ -25,58 +72,151 @@ class ResponseHandler implements ResponseHandlerInterface {
     $this->entityManager = $entity_manager;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function deliverBundleSelectForm(CommandContextInterface $context) {
-    return $this->navigate($context, t('Add Paragraph'), $this->getBundleSelectForm($context));
+    return $this->navigate($context, $this->getBundleSelectForm($context));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function deliverParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item) {
-    $title = $item->getEntity()->isNew() ? t('Add Paragraph') : t('Edit Paragraph');
-    return $this->navigate($context, $title, $this->getParagraphEditForm($context, $item));
+    return $this->navigate($context, $this->getParagraphEditForm($context, $item));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function deliverRenderedParagraph(CommandContextInterface $context, EditBufferItemInterface $item) {
     return $this->render($context, $item);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function deliverDuplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
     return $this->duplicate($context, $item, $ckeditor_widget_id);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function deliverCloseForm(CommandContextInterface $context) {
     return $this->close($context);
   }
 
-  protected function navigate(CommandContextInterface $context, $title, $contents) {
+  /**
+   * Generates an ajax response for opening a form.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   * @param mixed $contents
+   *   A render array or markup string containing the contents to be delivered.
+   *
+   * @return Drupal\Core\Ajax\AjaxResponse
+   *   An ajax response to deliver.
+   */
+  protected function navigate(CommandContextInterface $context, $contents) {
     $response = new AjaxResponse();
-    $context->getPlugin('delivery_provider')->navigate($response, $title, $contents);
+    $context->getPlugin('delivery_provider')->navigate($response, $this->getDialogTitle($context), $contents);
     return $response;
   }
 
+  /**
+   * Generates an ajax response for delivering a paragraph.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   *   The buffer item to be rendered in the response.
+   *
+   * @return Drupal\Core\Ajax\AjaxResponse
+   *   An ajax response to deliver.
+   */
   protected function render(CommandContextInterface $context, EditBufferItemInterface $item) {
     $response = new AjaxResponse();
     $context->getPlugin('delivery_provider')->render($response, $item);
     return $response;
   }
 
+  /**
+   * Generates an ajax response for delivering a duplicated paragraph.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   *   The buffer item to be duplicated in the response.
+   * @param string $ckeditor_widget_id
+   *   The ckeditor widget id to target for receiving the duplicated item.
+   *
+   * @return Drupal\Core\Ajax\AjaxResponse
+   *   An ajax response to deliver.
+   */
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckditor_widget_id) {
     $response = new AjaxResponse();
     $context->getPlugin('delivery_provider')->duplicate($response, $item, $ckeditor_widget_id);
     return $response;
   }
 
+  /**
+   * Generates an ajax response for closing a form.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   *
+   * @return Drupal\Core\Ajax\AjaxResponse
+   *   An ajax response to deliver.
+   */
   protected function close(CommandContextInterface $context) {
     $response = new AjaxResponse();
     $context->getPlugin('delivery_provider')->close($response);
     return $response;
   }
 
+  /**
+   * Gets a bundle select form object to deliver the user.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   *
+   * @return array
+   *   A render array for the bundle select form.
+   */
   protected function getBundleSelectForm(CommandContextInterface $context) {
     $form = $context->getPlugin('bundle_selector');
     return $this->formBuilder->getForm($form);
   }
 
+  /**
+   * Gets a paragraph edit form object to deliver the user.
+   *
+   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   *   The context the command is executing within.
+   *
+   * @return array
+   *   A render array for the paragraph edit form.
+   */
   protected function getParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item) {
     $form = new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager);
     return $this->formBuilder->getForm($form);
+  }
+
+  /**
+   * Gets the dialog title for paragraph ckeditor command dialogs.
+   *
+   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   *   The context the command is exuting in.
+   *
+   * @return string
+   *   The title to use in the dialog box.
+   */
+  protected function getDialogTitle(CommandContextInterface $context) {
+    if ($context->getAdditionalContext('command') == 'insert') {
+      return t('Insert @title', array('@title' => $context->getSetting('title')));
+    } else {
+      return t('Edit @title', array('@title' => $context->getSetting('title')));
+    }
   }
 }

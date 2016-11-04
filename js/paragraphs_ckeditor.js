@@ -15,7 +15,7 @@
    */
   Drupal.behaviors.paragraphs_ckeditor = {
     attach: function(context) {
-      $('.paragraphs-ckeditor', context).paragraphsCKEditor();
+      $('textarea.paragraphs-ckeditor', context).paragraphsCKEditor();
     }
   };
 

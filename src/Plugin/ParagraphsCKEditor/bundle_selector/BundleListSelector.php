@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ParagraphsCKEditorBundleSelector(
  *   id = "list",
- *   title = @Translation("List Bundle Selector"),
+ *   title = @Translation("List"),
  *   description = @Translation("Provides a basic list of bundles."),
  * )
  */

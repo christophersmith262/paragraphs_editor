@@ -59,4 +59,4 @@ paragraphs_ckeditor.command.cancel:
         type: paragraphs_ckeditor_command_context
         command: cancel
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessCancel'
+    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::access'

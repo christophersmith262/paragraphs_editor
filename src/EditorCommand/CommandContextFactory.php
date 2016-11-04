@@ -7,13 +7,56 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface;
 
+/**
+ * The default command context factory.
+ *
+ * @see Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface
+ */
 class CommandContextFactory implements CommandContextFactoryInterface {
 
+  /**
+   * The entity type manager for looking up entity info.
+   *
+   * @var Drupal\Core\Entity\EntityTypeManagerInterface
+   */
   protected $entityTypeManager;
+
+  /**
+   * The buffer cache for looking up existing edit buffers.
+   *
+   * @var Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface
+   */
   protected $bufferCache;
+
+  /**
+   * The field config storage handler
+   *
+   * @var Drupal\Core\Entity\EntityStorageInterface
+   */
   protected $fieldConfigStorage;
+
+  /**
+   * A map of plugin types to plugin managers.
+   *
+   * @var array
+   */
   protected $pluginManagers;
 
+  /**
+   * Create a command context factory object.
+   *
+   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager to use for looking up the entities and fields.
+   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface $buffer_cache
+   *   The edit buffer cache to use for looking up existing edit buffers that
+   *   have been persisted in the database cache.
+   * @param Drupal\Component\Plugin\PluginManagerInterface $delivery_provider_manager
+   *   The delivery provider plugin manager to use for creating delivery
+   *   provider plugin instances.
+   * @param Drupal\Component\Plugin\PluginManagerInterface $bundle_selector_manager
+   *   The delivery provider plugin manager to use for creating bundle selector
+   *   plugin instances.
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, PluginManagerinterface $delivery_provider_manager, PluginManagerInterface $bundle_selector_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->bufferCache = $buffer_cache;
@@ -24,6 +67,9 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function create($entity_type, $entity_id, $field_config_id, $widget_build_id, array $settings) {
     // If any exceptions are thrown while initializing any of the properties, we
     // return an "Invalid Command" context to signal that something is wrong
@@ -54,6 +100,16 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     return $context;
   }
 
+  /**
+   * Helper function for instantiating plugin instances for a command context.
+   *
+   * @param string $type
+   *   The type of plugin to be attached.
+   * @param array $settings
+   *   The field widget settings specifying which plugin to use.
+   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   *   The context to attach the instantiated plugin to.
+   */
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
     $plugin_name = isset($settings[$type]) ? $settings[$type] : '';
     $context->setPlugin($type, $this->pluginManagers[$type]->createInstance($plugin_name, array(

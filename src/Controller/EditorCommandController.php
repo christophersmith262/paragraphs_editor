@@ -307,10 +307,6 @@ class EditorCommandController implements ContainerInjectionInterface {
     return $this->access($target_context)->andIf($this->accessParagraph($source_context, $paragraph_uuid));
   }
 
-  public function accessCancel() {
-    return AccessResult::allowed();
-  }
-
   /**
    * Creates a buffer item within a context.
    *

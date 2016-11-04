@@ -5,9 +5,9 @@ namespace Drupal\paragraphs_ckeditor\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a CRUD provider annotation object.
+ * Defines a paragraphs ckeditor delivery provider plugin annotation.
  *
- * Plugin Namespace: Plugin\CrudProvider
+ * Plugin Namespace: Plugin\ParagraphsCKEditor\delivery_provider
  *
  * @Annotation
  */

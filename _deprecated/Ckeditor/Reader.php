@@ -8,7 +8,7 @@ class Reader {
 
   public function __construct($contents, $element, $form_state) {
     $contents = preg_replace('/<paragraphs-ckeditor-paragraph/', '<div class="paragraphs-ckeditor-item"', $contents);
-    $contents = preg_replace('/paragraphs-ckeditor-paragraph>/', 'div>"', $contents);
+    $contents = preg_replace('/paragraphs-ckeditor-paragraph>/', 'div>', $contents);
     $this->doc = new \DOMDocument();
     $this->doc->loadHTML($contents);
     $this->xpath = new \DOMXPath($this->doc);

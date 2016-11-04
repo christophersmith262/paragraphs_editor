@@ -73,7 +73,6 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
   public static function defaultSettings() {
     return array(
       'title' => t('Paragraph'),
-      'title_plural' => t('Paragraphs'),
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
       'filter_format' => 'paragraphs_ckeditor',
@@ -149,16 +148,8 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     $elements['title'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Paragraph Title'),
-      '#description' => $this->t('Label to appear as title on the button as "Add new [title]", this label is translatable'),
+      '#description' => $this->t('Label to appear as title on the button "Insert [title]. This label is translatable.'),
       '#default_value' => $this->getSetting('title'),
-      '#required' => TRUE,
-    );
-
-    $elements['title_plural'] = array(
-      '#type' => 'textfield',
-      '#title' => $this->t('Plural Paragraph Title'),
-      '#description' => $this->t('Title in its plural form.'),
-      '#default_value' => $this->getSetting('title_plural'),
       '#required' => TRUE,
     );
 
@@ -228,7 +219,6 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('delivery_provider'));
     $summary = array();
     $summary[] = $this->t('Title: @title', array('@title' => $this->getSetting('title')));
-    $summary[] = $this->t('Plural title: @title_plural', array('@title_plural' => $this->getSetting('title_plural')));
     $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector['title']));
     $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider['title']));
     $summary[] = $this->t('Filter Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
@@ -251,22 +241,16 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id, $this->getSettings());
   }
 
-  protected function toMarkup(FieldItemListInterface $items, $context_string) {
-    $markup = '';
-    /*foreach ($items as $item) {
-      if ($item->entity->bundle() == $this->getSetting('text_bundle')) {
-        $markup .= $this->createEmbedCode($item->entity, $context_string);
-      }
-      else {
-      }
-    }*/
-    return $markup;
-  }
+  protected function getMarkupConverter(CommandContextInterface $command) {
+    $embed_template = array(
+      'tag' => 'paragraphs-ckeditor-paragraph',
+      'close' => TRUE,
+      'attributes' => array(
+        'data-paragraph-uuid' => '[entity:uuid]',
+        'data-context-hint' => '[context:string]',
+      ),
+    );
 
-  protected function createEmbedCode(ContentEntityInterface $entity, $context_string) {
-    return '<paragraphs-ckeditor-paragraph ' .
-      'data-paragraph-uuid="' . $entity->uuid() . '" ' .
-      'data-context-hint="' . $context_string . '">' .
-      '</paragraphs-ckeditor-paragraph>';
+    return new ParagraphDomConverter($context, $embed_template);
   }
 }

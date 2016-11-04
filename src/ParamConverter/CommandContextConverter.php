@@ -22,6 +22,12 @@ class CommandContextConverter implements ParamConverterInterface {
    * @var \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface
    */
   protected $contextFactory;
+
+  /**
+   * The current page request to pull widget field settings from.
+   *
+   * @var Symfony\Component\Routing\Route
+   */
   protected $request;
 
   /**
@@ -63,8 +69,10 @@ class CommandContextConverter implements ParamConverterInterface {
     // If the parameter definition gave any additional context about the command
     // that is being executed, we add that here so that delivery or bundle
     // selector plugins have access to it.
-    if (isset($definition['command'])) {
-      $context->addAdditionalContext('command', $definition['command']);
+    if (is_array($definition)) {
+      foreach ($definition as $key => $value) {
+        $context->addAdditionalContext($key, $value);
+      }
     }
 
     return $context;

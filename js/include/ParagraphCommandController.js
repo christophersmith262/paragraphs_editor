@@ -21,6 +21,7 @@
     var ajax = Drupal.ajax({
       base: $element.attr('id'),
       element: $element.get(0),
+      url: '/ajax',
       progress: {
         message: "",
       }
