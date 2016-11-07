@@ -40,6 +40,27 @@ class EditBuffer implements EditBufferInterface {
     return $item;
   }
 
+  public function getItems($bundle_name = NULL) {
+    if ($bundle_name) {
+      $paragraphs = array();
+      foreach ($this->paragraphs as $paragraph) {
+        if ($paragraph->bundle() == $bundle_name) {
+          $paragraphs[$paragraph->uuid()] = $paragraph;
+        }
+      }
+    }
+    else {
+      $paragraphs = $this->paragraphs;
+    }
+
+    $items = array();
+    foreach ($paragraphs as $paragraph) {
+      $items[$paragraph->uuid()] = new EditBufferItem($paragraph, $this->bufferCache, $this);
+    }
+
+    return $items;
+  }
+
   public function createItem(ParagraphInterface $paragraph) {
     $item = new EditBufferItem($paragraph, $this->bufferCache, $this);
     $this->paragraphs[$paragraph->uuid()] = $paragraph;

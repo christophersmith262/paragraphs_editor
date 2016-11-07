@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\ParagraphCompiler;
+namespace Drupal\paragraphs_ckeditor\EditorMarkup;
 
 use Drupal\Component\Utility\Html;
 
-class Lexer {
+class MarkupLexer implements LexerInterface {
 
   const TOKEN_TEXT = 'text';
   const TOKEN_EMBED = 'embed';
@@ -30,7 +30,8 @@ class Lexer {
     $xpath = new \DOMXPath($document);
 
     $last_token = NULL;
-    foreach ($xpath->query('//body/*') as $node) {
+    $body = $xpath->query('//body')->item(0);
+    foreach ($body->childNodes as $node) {
       foreach ($this->sortBranches($node) as $subtree) {
         $last_token = $this->addToken($tokens, $document, $subtree, $last_token);
       }
@@ -54,7 +55,12 @@ class Lexer {
       }
     }
     else {
-      $text = $document->saveHTML($node);
+      if (strtolower($node->nodeName) == 'body') {
+        $text = $node->textContent;
+      }
+      else {
+        $text = $document->saveHTML($node);
+      }
       if ($last_token && $last_token->type == self::TOKEN_TEXT) {
         $last_token->text .= $text;
       }

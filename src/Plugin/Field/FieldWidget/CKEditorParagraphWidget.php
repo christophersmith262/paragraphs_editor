@@ -19,7 +19,7 @@ use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the 'entity_reference paragraphs' widget.
+ * Plugin implementation of the 'entity_reference_paragraphs_ckeditor' widget.
  *
  * We hide add / remove buttons when translating to avoid accidental loss of
  * data because these actions effect all languages.
@@ -107,6 +107,14 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       $context_string = $widget_state['paragraphs_ckeditor']['context_string'];
     }
 
+    // If there is markup already saved for the field, we use that. Otherwise we
+    // generate markup based on the paragraph items already in the field.
+    $markup = $this->markupStorage->load($this->fieldDefinition, $this->getEntity());
+    if (!$markup) {
+      $decompiler = $this->getParagraphDecompiler();
+      $markup = $decompiler->decompile($items);
+    }
+
     // Create the CKEditor form element and decorate it with some attributes
     // that help us process it on the front end. Since its hard to get back
     // widget settings just based on a field config id, we add the widget
@@ -117,7 +125,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
     $element += array(
       '#type' => 'text_format',
       '#format' => $this->getSetting('filter_format'),
-      '#default_value' => $this->toMarkup($items, $context_string),
+      '#default_value' => $markup,
       '#attributes' => array(
         'class' => array(
           'paragraphs-ckeditor'

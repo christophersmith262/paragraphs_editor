@@ -12,3 +12,24 @@ function paragraphs_ckeditor_help($route_name, RouteMatchInterface $route_match)
   switch ($route_name) {
   }
 }
+
+/**
+ * Implements hook_ENTITY_TYPE_create().
+ */
+function paragraphs_ckeditor_field_config_create(\Drupal\Core\Field\FieldConfigInterface $field_config) {
+  \Drupal::service('paragraphs_ckeditor.dom.markup_storage')->updateSchema($field_config);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function paragraphs_ckeditor_field_config_update(\Drupal\Core\Field\FieldConfigInterface $field_config) {
+  \Drupal::service('paragraphs_ckeditor.dom.markup_storage')->updateSchema($field_config);
+}
+
+/**
+ * Implements hook_field_purge_field().
+ */
+function paragraphs_ckeditor_field_purge_field(\Drupal\field\Entity\FieldConfig $field_config) {
+  \Drupal::service('paragraphs_ckeditor.dom.markup_storage')->uninstallSchema($field_config);
+}

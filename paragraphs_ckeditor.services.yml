@@ -33,5 +33,9 @@ services:
     class: Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginManager
     arguments: [bundle_selector, '@container.namespaces', '@cache.discovery', '@module_handler']
 
+  paragraphs_ckeditor.dom.markup_storage:
+    class: Drupal\paragraphs_ckeditor\ParagraphDom\MarkupStorage
+    arguments: ['@database', '@entity_type.manager', '@entity_field.manager']
+
 parameters:
   paragraphs_ckeditor.edit_buffer.cache.lifetime: 24000
