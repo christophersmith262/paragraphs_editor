@@ -17,15 +17,9 @@ class MarkupLexerTest extends UnitTestCase {
   }
 
   public function testTextNoBufferedEntities() {
-    $this->assertCompiledValues([
-      $this->token([
-        'type' => MarkupLexer::TOKEN_TEXT,
-      ])
-    ], [], [
-    ]);
   }
 
-  protected function assertCompiledValues(array $input_tokens, array $input_entities, array $expected_entities) {
+  protected function assertCompiledValues(array $input_tokens, array $input_buffered_entities, array $input_saved_entities, array $expected_entities) {
     // Create a mock edit buffer for the compiler to read from.
     $edit_buffer = $this->getMockBuilder('\Drupal\paragraphs_ckeditor\EditBuffer\EditBuffer')
       ->setMethods(['getItem'])
@@ -46,14 +40,13 @@ class MarkupLexerTest extends UnitTestCase {
       ->method('tokenize')
       ->willReturn($lexer_input);
 
-    $storage = $this->getMockBuilder('\Drupal\Core\Entity\Sql\SqlContentEntityStorage')
+    $text_allocator = $this->getMockBuilder('\Drupal\paragraphs_ckeditor\EditorMarkup\TextEntityAllocator')
       ->getMock();
-    $lexer->expects($this->any())
-      ->method('create')
-      ->will($this->returnCallback(array($this, 'createTextBundle
+    $text_alloctor->expects($this->any())
+      ->method('allocate');
 
     // Create a compiler object to test.
-    $compiler = new MarkupCompiler($storage, $lexer, $edit_buffer, array(
+    $compiler = new MarkupCompiler($lexer, $text_allocator, $edit_buffer, array(
       'tag' => 'paragraphs-ckeditor-paragraph',
       'close' => TRUE,
       'attributes' => array(

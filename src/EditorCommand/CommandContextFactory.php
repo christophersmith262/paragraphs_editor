@@ -100,6 +100,14 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     return $context;
   }
 
+  public function free(CommandContextInterface $context) {
+    $this->bufferCache->delete($context->getContextString());
+  }
+
+  public function getPluginManager($type) {
+    return isset($this->pluginManagers[$type]) ? $this->pluginManagers[$type] : NULL;
+  }
+
   /**
    * Helper function for instantiating plugin instances for a command context.
    *
@@ -112,8 +120,9 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    */
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
     $plugin_name = isset($settings[$type]) ? $settings[$type] : '';
-    $context->setPlugin($type, $this->pluginManagers[$type]->createInstance($plugin_name, array(
+    $plugin = $this->getPluginManager($type)->createInstance($plugin_name, array(
       'context' => $context,
-    )));
+    ));
+    $context->setPlugin($type, $plugin);
   }
 }

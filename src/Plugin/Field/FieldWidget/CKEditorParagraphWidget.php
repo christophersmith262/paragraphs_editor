@@ -2,8 +2,9 @@
 
 namespace Drupal\paragraphs_ckeditor\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Component\Utility\Crypt;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -17,6 +18,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
 use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\paragraphs_ckeditor\EditorMarkup\FieldValueConverter;
 
 /**
  * Plugin implementation of the 'entity_reference_paragraphs_ckeditor' widget.
@@ -35,19 +37,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class CKEditorParagraphWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
+  use ParagraphsCKEditorFieldPluginTrait;
 
   protected $contextFactory;
+  protected $fieldValueManager;
+  protected $textBundleManager;
   protected $bundleSelectorManager;
   protected $deliveryProviderManager;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, CommandContextFactoryInterface $context_factory, PluginManagerInterface $bundle_selector_manager, PluginManagerInterface $delivery_provider_manager) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, CommandContextFactoryInterface $context_factory, FieldValueManager $field_value_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
     $this->contextFactory = $context_factory;
-    $this->bundleSelectorManager = $bundle_selector_manager;
-    $this->deliveryProviderManager = $delivery_provider_manager;
+    $this->fieldValueManager = $field_value_manager;
+    $this->textBundleManager = $field_value_manager->getTextBundleManager();
+    $this->bundleSelectorManager = $context_factory->getPluginManager('bundle_selector');
+    $this->deliveryProviderManager = $context_factory->getPluginManager('delivery_provider');
   }
 
   /**
@@ -61,11 +68,9 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       $configuration['settings'],
       $configuration['third_party_settings'],
       $container->get('paragraphs_ckeditor.command.context_factory'),
-      $container->get('paragraphs_ckeditor.bundle_selector.manager'),
-      $container->get('paragraphs_ckeditor.delivery_provider.manager')
+      $container->get('paragraphs_ckeditor.field_value.manager')
     );
   }
-
 
   /**
    * {@inheritdoc}
@@ -76,7 +81,6 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
       'filter_format' => 'paragraphs_ckeditor',
-      'text_bundle' => 'text',
     );
   }
 
@@ -84,48 +88,16 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    // Load the widget state so we can set the widget context, which associates
-    // the widget instance with a collection of paragraph entities that are
-    // referenced by the widget.
-    $field_name = $this->fieldDefinition->getName();
-    $parents = $form['#parents'];
-    $field_state = static::getWidgetState($parents, $field_name, $form_state);
-
-    // Get the context for this widget. For a new form this means generating a
-    // new randomized build id. To do this we use the same method that is used
-    // to generate form build ids in core. For a form that is being rebuilt, we
-    // can simply read the existing context from the widget state that is
-    // derived from the form state. If we're creating a new build id, we'll also
-    // want to store it in the widget state so we can refer back to it later.
-    if (empty($field_state['paragraphs_ckeditor']['context_string'])) {
-      $widget_build_id = Crypt::randomBytesBase64();
-      $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
-      $field_state['paragraphs_ckeditor']['context_string'] = $context_string;
-      static::setWidgetState($parents, $field_name, $form_state, $field_state);
-    }
-    else {
-      $context_string = $widget_state['paragraphs_ckeditor']['context_string'];
-    }
-
-    // If there is markup already saved for the field, we use that. Otherwise we
-    // generate markup based on the paragraph items already in the field.
-    $markup = $this->markupStorage->load($this->fieldDefinition, $this->getEntity());
-    if (!$markup) {
-      $decompiler = $this->getParagraphDecompiler();
-      $markup = $decompiler->decompile($items);
-    }
-
-    // Create the CKEditor form element and decorate it with some attributes
-    // that help us process it on the front end. Since its hard to get back
-    // widget settings just based on a field config id, we add the widget
-    // settings directly to the drupalSettings object. The paragraphs-ckeditor
-    // class will be used to find all instances of the field widget on the front
-    // end, and the data-paragraphs-ckeditor-context will be used to persist the
-    // state of the editor across ajax requests.
+    $text_bundle = $this->getSetting('text_bundle');
+    $text_field = $this->getSetting('text_field');
+    $filter_format = $this->getSetting('filter_format');
+    $widget_build_id = Crypt::randomBytesBase64();
+    $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
+    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
     $element += array(
       '#type' => 'text_format',
-      '#format' => $this->getSetting('filter_format'),
-      '#default_value' => $markup,
+      '#format' => $field_value_wrapper->getFormat(),
+      '#default_value' => $field_value_wrapper->getMarkup(),
       '#attributes' => array(
         'class' => array(
           'paragraphs-ckeditor'
@@ -136,7 +108,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
         'library' => array(
           'paragraphs_ckeditor/widget',
         ),
-        'drupalSettings' => array(
+      'drupalSettings' => array(
           'paragraphs_ckeditor' => array(
             $context_string => $this->getSettings(),
           ),
@@ -144,7 +116,13 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       ),
     );
 
-    return $element;
+    return array(
+      'markup' => $element,
+      'build_id' => array(
+        '#type' => 'hidden',
+        '#default_value' => $widget_build_id,
+      ),
+    );
   }
 
   /**
@@ -194,25 +172,12 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
       $options[$filter_format->id()] = $filter_format->label();
     }
 
-    $element['filter_format'] = array(
+    $elements['filter_format'] = array(
       '#type' => 'select',
-      '#title' => 'Filter Format',
-      '#description' => $this->t('The filter format to use for the CKEditor instance.'),
+      '#title' => 'Default Filter Format',
+      '#description' => $this->t('The default filter format to use for the CKEditor instance.'),
       '#options' => $options,
       '#default_value' => $this->getSetting('filter_format'),
-    );
-
-    $options = array();
-    foreach ($this->getAllowedTypes() as $name => $type) {
-      $options[$name] = $type['label'];
-    }
-
-    $elements['text_bundle'] = array(
-      '#type' => 'select',
-      '#title' => $this->t('Text Bundle'),
-      '#description' => $this->t('The bundle to treat as plaintext input.'),
-      '#options' => $options,
-      '#default_value' => $this->getSetting('text_bundle'),
       '#required' => TRUE,
     );
 
@@ -223,42 +188,57 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
    * {@inheritdoc}
    */
   public function settingsSummary() {
+    $text_bundle = $this->getSetting('text_bundle');
     $bundle_selector = $this->bundleSelectorManager->getDefinition($this->getSetting('bundle_selector'));
     $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('delivery_provider'));
     $summary = array();
     $summary[] = $this->t('Title: @title', array('@title' => $this->getSetting('title')));
     $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector['title']));
     $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider['title']));
-    $summary[] = $this->t('Filter Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
-    $summary[] = $this->t('Text Bundle: @text_bundle', array('@text_bundle' => $this->getSetting('text_bundle')));
+    $summary[] = $this->t('Default Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
     return $summary;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    // We only every allow this widget to be applied to fields that have
-    // unlimited cardinality. Otherwise we'd have to deal with keeping track of
-    // how many paragraphs are in the CKEditor instance.
-    $cardinality = $field_definition->getFieldStorageDefinition()->getCardinality();
-    return ($cardinality == FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
+  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+    $this->pushItemState($items, $form, $form_state);
+    return parent::extractFormValues($items, $form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    list($items, $context) = $this->popItemState($form, $form_state);
+    $edit_buffer = $context->getEditBuffer();
+    $markup = $values['markup'];
+    $format = $values['format'];
+    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
+    $entities = $this->fieldValueManager->update($field_value_wrapper, $edit_buffer, $markup, $format)->toArray();
+    $this->contextFactory->free($context);
+    return $values;
+  }
+
+  protected function pushItemState(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+    $field_name = $this->fieldDefinition->getName();
+    $path = array_merge($form['#parents'], [$field_name]);
+    $values = NestedArray::getValue($form_state->getValues(), $path);
+    $item_state = [$items, $this->getContext($items->getEntity(), $values['build_id'])];
+    $form_state->setTemporaryValue(array_merge(['paragraphs_ckeditor'], $path), $item_state);
+    return $path;
+  }
+
+  protected function popItemState(array $form, FormStateInterface $form_state) {
+    $field_name = $this->fieldDefinition->getName();
+    $path = array_merge(['paragraphs_ckeditor'], $form['#parents'], [$field_name]);
+    $value = $form_state->getTemporaryValue($path);
+    $form_state->setTemporaryValue($path, NULL);
+    return $value;
   }
 
   protected function getContext(EntityInterface $entity, $widget_build_id) {
     return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id, $this->getSettings());
-  }
-
-  protected function getMarkupConverter(CommandContextInterface $command) {
-    $embed_template = array(
-      'tag' => 'paragraphs-ckeditor-paragraph',
-      'close' => TRUE,
-      'attributes' => array(
-        'data-paragraph-uuid' => '[entity:uuid]',
-        'data-context-hint' => '[context:string]',
-      ),
-    );
-
-    return new ParagraphDomConverter($context, $embed_template);
   }
 }

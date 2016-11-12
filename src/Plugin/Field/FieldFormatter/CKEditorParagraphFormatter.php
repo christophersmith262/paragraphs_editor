@@ -17,4 +17,23 @@ use Drupal\Core\Field\FieldItemListInterface;
  * )
  */
 class CKEditorParagraphFormatter extends FormatterBase {
+  use ParagraphsCKEditorFieldPluginTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function viewElements(FieldItemListInterface $items, $langcode) {
+    $elements = array();
+
+    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
+    $elements[$delta] = array(
+      '#type' => 'processed_text',
+      '#text' => $field_value_wrapper->getMarkup(),
+      '#format' => $field_value_wrapper->getFormat(),
+      '#langcode' => $langcode,
+    );
+
+    return $elements;
+  }
+
 }

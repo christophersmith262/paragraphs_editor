@@ -9,8 +9,8 @@ paragraphs_ckeditor.command.insert:
         type: paragraphs_ckeditor_command_context
         command: insert
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessInsert'
-
+    _paragraphs_ckeditor_access_context: '{context}'
+    _entity_create_access: 'paragraph:{bundle_name}'
 paragraphs_ckeditor.command.edit:
   path: '/ajax/paragraphs-ckeditor/edit/{context}/{paragraph_uuid}'
   defaults:
@@ -21,8 +21,8 @@ paragraphs_ckeditor.command.edit:
         type: paragraphs_ckeditor_command_context
         command: edit
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
-
+    _paragraphs_ckeditor_access_context: '{context}'
+    _paragraphs_ckeditor_access_paragraph: '{context}:{paragraph_uuid}'
 paragraphs_ckeditor.command.render:
   path: '/ajax/paragraphs-ckeditor/render/{context}/{paragraph_uuid}'
   defaults:
@@ -32,8 +32,8 @@ paragraphs_ckeditor.command.render:
       context: paragraphs_ckeditor_command_context
       command: render
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessParagraph'
-
+    _paragraphs_ckeditor_access_context: '{context}'
+    _paragraphs_ckeditor_access_paragraph: '{context}:{paragraph_uuid}'
 paragraphs_ckeditor.command.duplicate:
   path: '/ajax/paragraphs-ckeditor/render/{target_context}/{source_context}/{paragraph_uuid}/{widget_id}'
   defaults:
@@ -47,8 +47,9 @@ paragraphs_ckeditor.command.duplicate:
         type: paragraphs_ckeditor_command_context
         command: duplicate
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::accessDuplicate'
-
+    _paragraphs_ckeditor_access_context: '{target_context}'
+    _paragraphs_ckeditor_access_context: '{source_context}'
+    _paragraphs_ckeditor_access_paragraph: '{source_context}:{paragraph_uuid}'
 paragraphs_ckeditor.command.cancel:
   path: '/ajax/paragraphs-ckeditor/cancel/{context}'
   defaults:
@@ -59,4 +60,4 @@ paragraphs_ckeditor.command.cancel:
         type: paragraphs_ckeditor_command_context
         command: cancel
   requirements: 
-    _custom_access: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::access'
+    _paragraphs_ckeditor_access_context: '{context}'

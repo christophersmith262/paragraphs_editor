@@ -34,6 +34,10 @@
       CKEDITOR.dtd.body['paragraphs-ckeditor-paragraph'] = 1;
     },
     init: function (editor) {
+      if (!Drupal.behaviors.paragraphs_ckeditor) {
+        return;
+      }
+
       var widgetManager = $(editor.element.$).paragraphsCKEditor('widget-manager');
 
       // If no widget manager could be found for this instance then this isn't a

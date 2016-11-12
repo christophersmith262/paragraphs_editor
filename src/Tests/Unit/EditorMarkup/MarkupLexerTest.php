@@ -22,7 +22,7 @@ class MarkupLexerTest extends UnitTestCase {
    * {@inheritdoc}
    */
   public function setUp() {
-    $this->lexer = new MarkupLexer('test', array(
+    $this->lexer = new MarkupLexer(array(
       'tag' => 'paragraphs-ckeditor-paragraph',
       'close' => TRUE,
       'attributes' => array(
@@ -219,7 +219,7 @@ class MarkupLexerTest extends UnitTestCase {
     $result = $this->lexer->tokenize($input_markup);
 
     // Standardize the expected and actual values to make them easier to compare
-    // and debug when errors occur.
+    // and debug html tags when errors occur.
     foreach ($expected_tokens as &$token) {
       if ($token->type == MarkupLexer::TOKEN_TEXT) {
         $token->text = base64_encode(preg_replace('/[\r\n]/', '', $token->text));
