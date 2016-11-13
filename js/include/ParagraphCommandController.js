@@ -46,10 +46,10 @@
     };
 
     /**
-     * Executes an "preview" command.
+     * Executes an "render" command.
      */
-    this.preview = function(uuid) {
-      execute(_.extend({command: "preview", paragraph: uuid}, defaults));
+    this.render = function(uuid) {
+      execute(_.extend({command: "render", paragraph: uuid}, defaults));
     };
 
     /**

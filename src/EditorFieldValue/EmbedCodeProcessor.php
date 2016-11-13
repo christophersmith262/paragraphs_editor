@@ -1,6 +1,17 @@
 <?php
 
+namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+
+use Drupal\Component\Utility\Html;
+
 class EmbedCodeProcessor implements EmbedCodeProcessorInterface {
+
+  protected $embedTemplate;
+
+  public function __construct(array $embed_template) {
+    $this->embedTemplate = $embed_template;
+    $this->marker = Html::cleanCssIdentifier("paragraphs-ckeditor-embed");
+  }
 
   public function process($markup, EmbedCodeVisitorInterface $visitor) {
     // Preprocess the markup to ensure valid html for embed codes.
@@ -11,7 +22,7 @@ class EmbedCodeProcessor implements EmbedCodeProcessorInterface {
     $document = Html::load($markup);
     $xpath = new \DOMXPath($document);
 
-    $embed_nodes = $xpath->query('div[contains(concat(" ", normalize-space(@class), " "), " ' . $this->marker . ' ")]');
+    $embed_nodes = $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " ' . $this->marker . ' ")]');
     foreach ($embed_nodes as $node) {
       $attributes = array();
       foreach ($this->embedTemplate['attributes'] as $key => $attribute_name) {

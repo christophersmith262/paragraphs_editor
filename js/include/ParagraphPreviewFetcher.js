@@ -16,16 +16,11 @@
       model: Drupal.paragraphs_ckeditor.ParagraphPreviewModel,
     });
 
-    paragraphPreviewCache.add({
-      id: "test",
-      markup: "test!!!",
-    });
-
     this.get = function(uuid) {
       var preview = paragraphPreviewCache.get(uuid);
       if (!preview) {
         preview = paragraphPreviewCache.add({id: uuid}, {merge: true});
-        paragraphCommandController.preview(uuid);
+        paragraphCommandController.render(uuid);
       }
       return preview;
     }

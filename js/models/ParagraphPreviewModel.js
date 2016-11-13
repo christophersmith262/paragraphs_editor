@@ -31,14 +31,14 @@
        *
        * @type {string}
        */
-      "insert": true,
+      "insert": false,
 
       /**
        * Whether or not the preview is for a new (unsaved) entity.
        *
        * @type {string}
        */
-      "isNew": true,
+      "isNew": false,
 
       /**
        * The preview markup.

@@ -1,5 +1,14 @@
 <?php
 
+namespace Drupal\paragraphs_ckeditor\Plugin\Filter;
+
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\filter\FilterProcessResult;
+use Drupal\filter\Plugin\FilterBase;
+use Drupal\paragraphs_ckeditor\EditorFieldValue\EmbedCodeProcessorInterface;
+use Drupal\paragraphs_ckeditor\EditorFieldValue\EmbedCodeVisitorInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A filter to transform paragraph embed codes into rendered entities.
@@ -16,13 +25,15 @@ class ParagraphsCKEditorFilter extends FilterBase implements EmbedCodeVisitorInt
   protected $storage;
   protected $viewBuilder;
   protected $embedCodeProcessor;
-  protected $embedTemplate;
+  protected $renderer;
+  protected $tokenName;
 
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManager $entity_type_manager, EmbedCodeProcessorInterface $embed_code_prcoessor) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EmbedCodeProcessorInterface $embed_code_processor, $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->storage = $entity_type_manager->getStorage('paragraph');
-    $this->viewBuilder = $entity_type_manager->getViewBuilder();
+    $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');
     $this->embedCodeProcessor = $embed_code_processor;
+    $this->renderer = $renderer;
     $this->tokenName = 'paragraphs-ckeditor-paragraph-embed-token';
   }
 
@@ -35,14 +46,15 @@ class ParagraphsCKEditorFilter extends FilterBase implements EmbedCodeVisitorInt
       $plugin_id,
       $plugin_definition,
       $container->get('entity.manager'),
-      $container->get('')
+      $container->get('paragraphs_ckeditor.field_value.embed_code_processor'),
+      $container->get('renderer')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preprocess($text, $langcode) {
+  public function prepare($text, $langcode) {
     return $this->embedCodeProcessor->process($text, $this);
   }
 
@@ -50,7 +62,9 @@ class ParagraphsCKEditorFilter extends FilterBase implements EmbedCodeVisitorInt
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
-    return preg_replace_callback('/\[' . $this->tokenName . ':([^\])]\]', [$this, 'replaceEmbedCode'], $text);
+    $text = preg_replace_callback('/\[' . $this->tokenName . ':([^\]]+)\]/', [$this, 'replaceEmbedCode'], $text);
+    $result = new FilterProcessResult($text);
+    return $result;
   }
 
   /**
@@ -63,9 +77,12 @@ class ParagraphsCKEditorFilter extends FilterBase implements EmbedCodeVisitorInt
 
   public function replaceEmbedCode(array $matches) {
     $paragraph_uuid = $matches[1];
-    $entity = $this->storage->load($paragraph_uuid);
+    $entity = $this->storage->loadByProperties(array(
+      'uuid' => $paragraph_uuid,
+    ));
     if ($entity) {
-      return $this->viewBuilder->view($entity);
+      $build = $this->viewBuilder->view(reset($entity));
+      return $this->renderer->render($build);
     }
     else {
       return '';

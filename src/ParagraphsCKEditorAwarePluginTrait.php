@@ -1,6 +1,11 @@
 <?php
 
-trait ParagraphsCKEditorFieldPluginTrait {
+namespace Drupal\paragraphs_ckeditor;
+
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+
+trait ParagraphsCKEditorAwarePluginTrait {
 
   protected function mergeDefaults() {
     $this->settings += $this->fieldDefinition->getThirdPartySettings('paragraphs_ckeditor');
@@ -26,7 +31,7 @@ trait ParagraphsCKEditorFieldPluginTrait {
     // Make sure the bundle for storing text is valid.
     $text_bundle = $field_definition->getThirdPartySetting('paragraphs_ckeditor', 'text_bundle');
     $text_field = $field_definition->getThirdPartySetting('paragraphs_ckeditor', 'text_field');
-    $text_bundle_manager = \Drupal::service('paragraphs_ckeditor.markup.text_manager');
+    $text_bundle_manager = \Drupal::service('paragraphs_ckeditor.field_value.text_bundle_manager');
     if (!$text_bundle_manager->validateTextBundle($text_bundle, $text_field)) {
       return FALSE;
     }

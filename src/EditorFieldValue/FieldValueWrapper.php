@@ -1,41 +1,49 @@
 <?php
 
-class FieldValueWrapper {
+namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+
+use Drupal\paragraphs\ParagraphInterface;
+
+class FieldValueWrapper implements FieldValueWrapperInterface {
 
   protected $textEntity;
   protected $entities;
   protected $settings;
 
-  public function __construct(ParagraphEntity $text_entity, array $entities, array $settings) {
+  public function __construct(ParagraphInterface $text_entity, array $entities, array $settings) {
     $this->textEntity = $text_entity;
-    $this->entities = $entities;
     $this->settings = $settings;
+    $this->setEntities($entities);
   }
 
   public function getMarkup() {
-    return $this->getTextEntity() ? $this->textEntity->{$settings['text_field']}->value : NULL;
+    return $this->textEntity->{$this->settings['text_field']}->value;
   }
 
   public function getFormat() {
-    return $this->getTextEntity() ? $this->textEntity->{$settings['text_field']}->format : NULL;
+    return $this->textEntity->{$this->settings['text_field']}->format;
   }
 
   public function getEntities() {
     return $this->entities;
   }
 
-  public function setMarkup($markup, $format = NULL) {
-    $this->textEntity->{$settings['text_field']}->value = $markup;
-    if ($format) {
-      $this->textEntity->{$settings['text_field']}->format = $format;
-    }
+  public function setMarkup($markup) {
+    $this->textEntity->{$this->settings['text_field']}->value = $markup;
+  }
+
+  public function setFormat($format) {
+    $this->textEntity->{$this->settings['text_field']}->format = $format;
   }
 
   public function setEntities(array $entities) {
-    $this->entities = $entities;
+    $this->entities = array();
+    foreach ($entities as $entity) {
+      $this->entities[] = $entity;
+    }
   }
 
   public function toArray() {
-    $entities = array_merge([$this->textEntity], $this->entities);
+    return array_merge([$this->textEntity], $this->entities);
   }
 }

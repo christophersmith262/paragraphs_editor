@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorMarkup;
+namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;

@@ -26,7 +26,7 @@ services:
     arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager']
   paragraphs_ckeditor.edit_buffer.cache:
     class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCache
-    arguments: ['@keyvalue.expirable', '%paragraphs_ckeditor.edit_buffer.cache.lifetime', '@current_user']
+    arguments: ['@keyvalue.expirable', '%paragraphs_ckeditor.edit_buffer.cache.lifetime%', '@current_user']
   paragraphs_ckeditor.edit_buffer.item_duplicator:
     class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicator
   paragraphs_ckeditor.edit_buffer.item_factory:
@@ -43,13 +43,14 @@ services:
     arguments: ['@entity_field.manager', '@entity_type.manager']
   paragraphs_ckeditor.field_value.embed_code_processor:
     class: Drupal\paragraphs_ckeditor\EditorFieldValue\EmbedCodeProcessor
+    arguments: ['%paragraphs_ckeditor.field_value.embed_template%']
   paragraphs_ckeditor.field_value.manager:
-    class: Drupal\paragraphs_ckeditor\EditorFieldValue\FieldValueConverter
-    arguments: ['@paragraphs_ckeditor.markup.text_manager', '@paragraphs_ckeditor.markup.storage']
+    class: Drupal\paragraphs_ckeditor\EditorFieldValue\FieldValueManager
+    arguments: ['@entity_type.manager', '@paragraphs_ckeditor.field_value.embed_code_processor']
 
 parameters:
   paragraphs_ckeditor.edit_buffer.cache.lifetime: 24000
-  paragraphs_ckeditor.markup.embed_template:
+  paragraphs_ckeditor.field_value.embed_template:
     tag: paragraphs-ckeditor-paragraph
     close: TRUE
     attributes:

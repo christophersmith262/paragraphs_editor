@@ -29,8 +29,9 @@ paragraphs_ckeditor.command.render:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::render'
   options:
     parameters:
-      context: paragraphs_ckeditor_command_context
-      command: render
+      context:
+        type: paragraphs_ckeditor_command_context
+        command: render
   requirements: 
     _paragraphs_ckeditor_access_context: '{context}'
     _paragraphs_ckeditor_access_paragraph: '{context}:{paragraph_uuid}'

@@ -1,5 +1,9 @@
 <?php
 
+namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+
+use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface;
+
 class EmbedCodeAccountant implements EmbedCodeVisitorInterface {
 
   protected $entities = array();

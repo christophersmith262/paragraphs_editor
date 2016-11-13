@@ -23,7 +23,7 @@ function paragraphs_ckeditor_form_field_config_edit_form_alter(&$form, $form_sta
         '#title' => t('Paragraphs CKEditor'),
       );
 
-      $options = \Drupal::service('paragraphs_ckeditor.markup.text_manager')->getTextBundles();
+      $options = \Drupal::service('paragraphs_ckeditor.field_value.text_bundle_manager')->getTextBundles();
       if ($options) {
         $form['third_party_settings']['paragraphs_ckeditor'] += array(
           '#type' => 'fieldset',
@@ -69,7 +69,7 @@ function paragraphs_ckeditor_field_config_edit_form_validate(&$element, $form_st
   $text_bundle = $form_state->getValue($element['#parents']);
   $target_bundles = $form_state->getValue(['settings', 'handler_settings', 'target_bundles']);
   if (!$target_bundles || !empty($target_bundles[$text_bundle])) {
-    $text_field = \Drupal::service('paragraphs_ckeditor.markup.text_manager')->getBundleTextField($text_bundle);
+    $text_field = \Drupal::service('paragraphs_ckeditor.field_value.text_bundle_manager')->getBundleTextField($text_bundle);
     if ($text_field) {
       $parents = array_slice($element['#parents'], 0, -1);
       $parents[] = 'text_field';
