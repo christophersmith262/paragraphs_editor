@@ -29,6 +29,9 @@
       return paragraphPreviewCache.add(model, {merge: true});
     }
 
+    this.destroy = function(model) {
+    }
+
     this.on = function(evt, callback, context) {
       paragraphPreviewCache.on(evt, callback, context);
     }

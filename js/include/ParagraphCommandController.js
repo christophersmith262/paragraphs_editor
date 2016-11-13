@@ -53,6 +53,18 @@
     };
 
     /**
+     * Executes an "duplicate" command.
+     */
+    this.duplicate = function(uuid, source_context, widget_id) {
+      execute(_.extend({
+        command: "render",
+        paragraph: uuid,
+        context2: source_context,
+        widget: widget_id
+      }, defaults));
+    };
+
+    /**
      * Internal callback for triggering the command to be sent.
      *
      * @param {Drupal.paragraphs_ckeditor.CommandModel} model

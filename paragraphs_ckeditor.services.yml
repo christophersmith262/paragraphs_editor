@@ -27,11 +27,9 @@ services:
   paragraphs_ckeditor.edit_buffer.cache:
     class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCache
     arguments: ['@keyvalue.expirable', '%paragraphs_ckeditor.edit_buffer.cache.lifetime%', '@current_user']
-  paragraphs_ckeditor.edit_buffer.item_duplicator:
-    class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicator
   paragraphs_ckeditor.edit_buffer.item_factory:
     class: Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemFactory
-    arguments: ['@entity_type.manager', '@paragraphs_ckeditor.edit_buffer.item_duplicator']
+    arguments: ['@entity_type.manager']
   paragraphs_ckeditor.delivery_provider.manager:
     class: Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\PluginManager
     arguments: [delivery_provider, '@container.namespaces', '@cache.discovery', '@module_handler']

@@ -20,7 +20,6 @@
     paragraphPreviewWidgets.on('remove', this.destroy, this);
 
     var views = {};
-    var refs = {};
     var editor = null;
 
     /**
@@ -54,10 +53,12 @@
     this.ingest = function(widget) {
       var $widget = $(widget.element.$);
       var preview_model = paragraphPreviewFetcher.get($widget.attr('data-paragraph-uuid'));
+      var preview_id = preview_model.get('id');
+      var widget_id = widget.id;
 
       var widget_model = this.update({
-        id: widget.id,
-        previewId: preview_model.get('id'),
+        id: widget_id,
+        previewId: preview_id,
         markup: preview_model.get('markup'),
       }, {merge: true});
       preview_model.on('change:markup', widget_model.copyMarkupFromModel, widget_model);
@@ -69,13 +70,24 @@
         "el": $widget.get(0),
       });
 
-      views[widget_model.get('id')] = view;
-
       // If there is more than one reference to this paragraph in the document
-      // we have to request a clone from the server.
-      if ($().find().length > 1) {
+      // we have to request a duplicate from the server. We also take this
+      // opportunity to clean up dangling views.
+      if (views[preview_id]) {
+        for (var i in views[preview_id]) {
+          if (editor.document.$.contains(views[preview_id][i].el)) {
+            this.duplicate(widget_model);
+          }
+          else {
+            this.destroy(views[preview_id][i].model);
+          }
+        }
+      }
+      else {
+        views[preview_id] = {};
       }
 
+      views[preview_id][widget_id] = view;
       view.render();
 
       return widget_model;
@@ -99,21 +111,47 @@
       paragraphCommandController.edit(model.get('previewId'));
     };
 
+    this.duplicate = function(model) {
+      var preview_model = paragraphPreviewFetcher.get(model.get('previewId'));
+      paragraphCommandController.duplicate(preview_model.get('id'), preview_model.get('context'), model.get('id'));
+    }
+
     /**
      * Destroys the model and view associated with a CKEditor widget.
      */
-    this.destroy = function(model) {
-      if (!model) {
+    this.destroy = function(widget_model) {
+      if (!widget_model) {
         return;
       }
 
-      var model_id = model.get('id');
-      if (views[model_id]) {
-        views[model_id].close();
-        delete views[model_id];
+      var preview_id = widget_model.get('previewId');
+      var widget_id = widget_model.get('id');
+      if (views[preview_id]) {
+        // Delete the view for the model being destroyed.
+        if (views[preview_id][widget_id]) {
+          views[preview_id][widget_id].close();
+          delete views[preview_id][widget_id];
+        }
+
+        // Perform garbage collection on dangling views that are no longer in
+        // the DOM.
+        for (var i in views[preview_id]) {
+          if (!editor.document.$.contains(views[preview_id][i].el)) {
+            views[preview_id][i].close();
+            delete views[preview_id][i];
+          }
+        }
+
+        // If there are no widgets currently referencing this paragraph preview,
+        // free it from browser side storage. We can always repopulate it with
+        // an ajax call.
+        if (views[preview_id].length == 0) {
+          //paragraphPreviewFetcher.free(preview_id);
+          delete views[preview_id];
+        }
       }
 
-      paragraphPreviewWidgets.remove(model_id, {silent: true});
+      paragraphPreviewWidgets.remove(widget_id, {silent: true});
     };
 
     this.updatePreviewReference = function(model) {

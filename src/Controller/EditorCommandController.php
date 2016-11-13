@@ -34,9 +34,6 @@ class EditorCommandController implements ContainerInjectionInterface {
    *   The Drupal entity type manager.
    * @param \Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface $response_handler
    *   The handler obejct that will serve the command responses.
-   * @param \Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicatorInterface $duplicator
-   *   The entity duplication handler that will be responsible for cloning
-   *   paragraphs.
    */
   public function __construct(EditBufferItemFactoryInterface $item_factory, ResponseHandlerInterface $response_handler) {
     $this->itemFactory = $item_factory;
@@ -142,8 +139,8 @@ class EditorCommandController implements ContainerInjectionInterface {
    */
   public function duplicate(CommandContextInterface $target_context, CommandContextInterface $source_context, $paragraph_uuid, $ckeditor_widget_id) {
     $item = $this->itemFactory->getBufferItem($source_context, $paragraph_uuid);
-    $item = $this->duplicator->duplicate($target_context, $item);
-    return $this->responseHandler->deliverDuplicate($target_context, $item, $ckeditor_widget_id);
+    $item = $this->itemFactory->duplicateBufferItem($target_context, $item);
+    return $this->responseHandler->deliverRenderedParagraph($target_context, $item);
   }
 
   /**

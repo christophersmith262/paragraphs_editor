@@ -15,16 +15,8 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    */
   protected $storage;
 
-  /**
-   * The handler used to clone paragraph items.
-   *
-   * @var \Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicatorInterface
-   */
-  protected $duplicator;
-
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferItemDuplicatorInterface $duplicator) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->storage = $entity_type_manager->getStorage('paragraph');
-    $this->duplicator = $duplicator;
   }
 
   /**
@@ -89,6 +81,10 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
       $item = NULL;
     }
     return $item;
+  }
+
+  public function duplicateBufferItem(CommandContextInterface $context, EditBufferItemInterface $item) {
+    return $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
   }
 
   /**
