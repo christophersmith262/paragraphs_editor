@@ -140,7 +140,8 @@ class EditorCommandController implements ContainerInjectionInterface {
   public function duplicate(CommandContextInterface $target_context, CommandContextInterface $source_context, $paragraph_uuid, $ckeditor_widget_id) {
     $item = $this->itemFactory->getBufferItem($source_context, $paragraph_uuid);
     $item = $this->itemFactory->duplicateBufferItem($target_context, $item);
-    return $this->responseHandler->deliverRenderedParagraph($target_context, $item);
+    $item->save();
+    return $this->responseHandler->deliverDuplicate($target_context, $item, $ckeditor_widget_id);
   }
 
   /**

@@ -70,4 +70,8 @@ class EditBuffer implements EditBufferInterface {
   public function setCache(EditBufferCacheInterface $buffer_cache) {
     $this->bufferCache = $buffer_cache;
   }
+
+  public function save() {
+    $this->bufferCache->save($this);
+  }
 }

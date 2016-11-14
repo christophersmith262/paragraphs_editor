@@ -59,7 +59,8 @@
         // Hide contents of the paragraphs-ckeditor-paragraph tag in source view
         // mode.
         editor.on('toDataFormat', function(e) {
-          var node = e.data.dataValue;
+          widgetManager.enableSourceView();
+          /*var node = e.data.dataValue;
           var i;
           var filter = new CKEDITOR.htmlParser.filter({
             elements: {
@@ -70,8 +71,8 @@
                 }
               }
             }
-          });
-          node.filterChildren(filter);
+          });*/
+          //node.filterChildren(filter);
         }, null, null, 14);
 
         // Provide a command for creating an "insert paragraph" dialog.

@@ -20,6 +20,7 @@
       this.widgetManager = options.widgetManager;
       this.$widgetWrapper = $(this.el).closest('.cke_widget_wrapper');
       this.model.on('change:markup', this.render, this);
+      this.model.on('change:previewId', this.render, this);
     },
 
     template: function(markup) {
@@ -27,7 +28,9 @@
     },
 
     render: function() {
-      $(this.el).html(this.template(this.model.get('markup')));
+      $(this.el).html(this.template(this.model.get('markup')))
+        .attr('data-paragraph-uuid', this.model.get('previewId'))
+        .attr('data-context-hint', this.model.get('context'));
 
       var that = this;
       $(this.el).find('.paragraphs-ckeditor-command--edit').click(function() {
@@ -40,6 +43,14 @@
 
       return this;
     },
+
+    renderSource() {
+      $(this.el).html('')
+        .attr('data-paragraph-uuid', this.model.get('previewId'))
+        .attr('data-context-hint', this.model.get('context'));
+
+      return this;
+    }
 
     close: function() {
       this.$widgetWrapper.remove();

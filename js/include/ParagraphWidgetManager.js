@@ -61,7 +61,8 @@
         previewId: preview_id,
         markup: preview_model.get('markup'),
       }, {merge: true});
-      preview_model.on('change:markup', widget_model.copyMarkupFromModel, widget_model);
+      preview_model.on('change:markup', widget_model.onPreviewUpdate, widget_model);
+      preview_model.on('change:context', widget_model.onPreviewUpdate, widget_model);
       widget_model.on('change:previewId', this.updatePreviewReference, this);
 
       var view = new Drupal.paragraphs_ckeditor.ParagraphCKEditorPreviewView({
@@ -155,17 +156,29 @@
     };
 
     this.updatePreviewReference = function(model) {
+      var previous_preview_id = model.previous('previewId');
+      var updated_preview_id = model.get('previewId');
+      var widget_id = model.get('id');
+
       // Remove the widget model as a listener from the old paragraph preview.
-      var previous = this.paragraphPreviewFetcher.get(model.previous('previewId'));
-      previous.off('change:markup', model.copyMarkupFromModel, model);
+      var previous = paragraphPreviewFetcher.get(previous_preview_id);
+      previous.off('change:markup', model.onPreviewUpdate, model);
+      previous.off('change:context', model.onPreviewUpdate, model);
 
       // Add the widget modal as a listener to the new paragraph preview.
-      var updated = this.paragraphPreviewFetcher.get(model.get('previewId'));
+      var updated = paragraphPreviewFetcher.get(model.get('previewId'));
       model.set({markup: updated.get('markup')});
-      updated.on('change:markup', model.copyMarkupFromModel, model);
+      updated.on('change:markup', model.onPreviewUpdate, model);
+      updated.on('change:context', model.onPreviewUpdate, model);
 
-      // Update the widget embed code data-paragraph-uuid with the new id.
-      $(editor.document.$).find().attr('data-paragraph-uuid', updated.get('id'));
+      // Update the view table to move the view mapping from the old preview id
+      // to the new one.
+      var view = views[previous_preview_id][widget_id];
+      if (!views[updated_preview_id]) {
+        views[updated_preview_id] = {};
+      }
+      views[updated_preview_id][widget_id] = view;
+      delete views[previous_preview_id][widget_id];
     }
 
     this.getSettings = function() {

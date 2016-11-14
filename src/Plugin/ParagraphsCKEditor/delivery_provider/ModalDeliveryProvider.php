@@ -4,7 +4,7 @@ namespace Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\delivery_provider
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\paragraphs_ckeditor\Ajax\DeliverParagraphPreviewCommand;
-use Drupal\paragraphs_ckeditor\Ajax\DeliverCopiedParagraphCommand;
+use Drupal\paragraphs_ckeditor\Ajax\UpdateParagraphWidgetReferenceCommand ;
 use Drupal\paragraphs_ckeditor\Ajax\OpenModalCommand;
 use Drupal\paragraphs_ckeditor\Ajax\CloseModalCommand;
 use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
@@ -47,7 +47,8 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
    * {@inheritdoc}
    */
   public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $ckeditor_widget_id) {
-    $response->addCommand(new DeliverCopiedParagraphCommand($this->context->getContextString(), $item->getEntity(), $ckeditor_widget_id));
+    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getContextString(), $item->getEntity()));
+    $response->addCommand(new UpdateParagraphWidgetReferenceCommand($this->context->getContextString(), $item->getEntity(), $ckeditor_widget_id));
   }
 
   /**

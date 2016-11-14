@@ -154,7 +154,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @return Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
-  protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckditor_widget_id) {
+  protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
     $response = new AjaxResponse();
     $context->getPlugin('delivery_provider')->duplicate($response, $item, $ckeditor_widget_id);
     return $response;

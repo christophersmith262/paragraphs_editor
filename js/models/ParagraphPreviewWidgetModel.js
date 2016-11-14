@@ -29,11 +29,17 @@
        * @type {string}
        */
       "markup": "",
+
       "previewId": 0,
+
+      "context": "",
     },
 
-    copyMarkupFromModel: function(model) {
-      this.set({markup: model.get('markup')});
+    onPreviewUpdate: function(preview_model) {
+      this.set({
+        markup: preview_model.get('markup'),
+        context: preview_model.get('context')
+      });
     },
 
   });
