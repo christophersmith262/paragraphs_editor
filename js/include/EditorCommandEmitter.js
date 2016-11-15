@@ -3,14 +3,14 @@
  * Provides the logic for executing commands from the queue.
  */
 
-(function ($, Backbone, Drupal) {
+(function ($, Drupal) {
 
   'use strict';
 
   /**
    * Sends paragraph commands.
    */
-  Drupal.paragraphs_ckeditor.ParagraphCommandController = function($element, context_string, settings) {
+  Drupal.paragraphs_ckeditor.EditorCommandEmitter = function($element, contextString, settings) {
 
     var params = [];
     for (var key in settings) {
@@ -28,7 +28,7 @@
     });
     
     var defaults = {
-      context: context_string,
+      context: contextString,
     };
 
     /**
@@ -99,4 +99,4 @@
     };
   };
 
-})(jQuery, Backbone, Drupal);
+})(jQuery, Drupal);

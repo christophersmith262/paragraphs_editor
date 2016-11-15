@@ -14,13 +14,13 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.paragraphs_ckeditor.ParagraphCKEditorPreviewView = Backbone.View.extend({
+  Drupal.paragraphs_ckeditor.WidgetView = Backbone.View.extend({
 
     initialize: function(options) {
       this.widgetManager = options.widgetManager;
       this.$widgetWrapper = $(this.el).closest('.cke_widget_wrapper');
       this.model.on('change:markup', this.render, this);
-      this.model.on('change:previewId', this.render, this);
+      this.model.on('change:itemId', this.render, this);
     },
 
     template: function(markup) {
@@ -29,7 +29,7 @@
 
     render: function() {
       $(this.el).html(this.template(this.model.get('markup')))
-        .attr('data-paragraph-uuid', this.model.get('previewId'))
+        .attr('data-paragraph-uuid', this.model.get('itemId'))
         .attr('data-context-hint', this.model.get('context'));
 
       var that = this;
@@ -43,14 +43,6 @@
 
       return this;
     },
-
-    renderSource() {
-      $(this.el).html('')
-        .attr('data-paragraph-uuid', this.model.get('previewId'))
-        .attr('data-context-hint', this.model.get('context'));
-
-      return this;
-    }
 
     close: function() {
       this.$widgetWrapper.remove();

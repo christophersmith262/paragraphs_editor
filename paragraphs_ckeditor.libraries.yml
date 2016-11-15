@@ -3,13 +3,14 @@ widget:
   js:
     js/paragraphs_ckeditor.js: {}
     js/paragraphs_ckeditor.paragraphsckeditor.js: {}
-    js/models/ParagraphPreviewModel.js: {}
-    js/models/ParagraphPreviewWidgetModel.js: {}
-    js/views/ParagraphCKEditorPreviewView.js: {}
+    js/models/BufferItemModel.js: {}
+    js/models/WidgetModel.js: {}
+    js/views/WidgetView.js: {}
     js/include/CKEditorCommandFilter.js: {}
-    js/include/ParagraphCommandController.js: {}
-    js/include/ParagraphPreviewFetcher.js: {}
-    js/include/ParagraphWidgetManager.js: {}
+    js/include/EditBuffer.js: {}
+    js/include/EditorCommandEmitter.js: {}
+    js/include/WidgetManager.js: {}
+    js/include/WidgetTable.js: {}
   dependencies:
     - core/backbone
     - core/jquery

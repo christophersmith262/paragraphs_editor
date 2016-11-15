@@ -1,6 +1,6 @@
 /**
  * @file
- * A Backbone model for representing paragraphs_ckeditor paragraph previews.
+ * A Backbone model for representing paragraphs_ckeditor edit buffer items.
  */
 
 (function (Backbone, Drupal) {
@@ -10,7 +10,7 @@
   /**
    * Backbone  Model for representing paragraphs_ckeditor commands.
    *
-   * The id for this model is the uuid of a paragraph entity that the preview
+   * The id for this model is the uuid of a paragraph entity that the item
    * corresponds to.
    *
    * @constructor
@@ -27,21 +27,21 @@
     defaults: /** @lends Drupal.paragraphs_ckeditor.CommandModel# */{
 
       /**
-       * Whether or not the preview is ready to be inserted.
+       * Whether or not the item is ready to be inserted.
        *
        * @type {string}
        */
       "insert": false,
 
       /**
-       * Whether or not the preview is for a new (unsaved) entity.
+       * Whether or not the item is for a new (unsaved) entity.
        *
        * @type {string}
        */
       "isNew": false,
 
       /**
-       * The preview markup.
+       * The item markup.
        *
        * @type {string}
        */

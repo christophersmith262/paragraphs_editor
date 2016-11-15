@@ -60,7 +60,7 @@
         // mode.
         editor.on('toDataFormat', function(e) {
           widgetManager.enableSourceView();
-          /*var node = e.data.dataValue;
+          var node = e.data.dataValue;
           var i;
           var filter = new CKEDITOR.htmlParser.filter({
             elements: {
@@ -71,8 +71,8 @@
                 }
               }
             }
-          });*/
-          //node.filterChildren(filter);
+          });
+          node.filterChildren(filter);
         }, null, null, 14);
 
         // Provide a command for creating an "insert paragraph" dialog.
@@ -99,13 +99,12 @@
             return element.name == 'paragraphs-ckeditor-paragraph';
           },
           init: function() {
-            var model = widgetManager.ingest(this);
+            var widgetModel = widgetManager.ingest(this);
 
-            // Add a garbage collection handler so that the view is destroyed
-            // when the widget is destroyed.
-            // 
+            // Add a garbage collection handler so that the model / view are
+            // destroyed when the widget is destroyed.
             this.on('destroy', function(evt) {
-              widgetManager.destroy(model);
+              widgetManager.destroy(widgetModel);
             });
           }
         });

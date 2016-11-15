@@ -22,7 +22,7 @@ class UpdateParagraphWidgetReferenceCommand implements CommandInterface {
       'context' => $this->contextString,
       'widget' => array(
         'id' => $this->widgetId,
-        'previewId' => $this->paragraphUuid,
+        'itemId' => $this->paragraphUuid,
       ),
     );
   }

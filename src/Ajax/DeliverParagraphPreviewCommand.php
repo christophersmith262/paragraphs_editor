@@ -25,7 +25,7 @@ class DeliverParagraphPreviewCommand implements CommandInterface {
     return array(
       'command' => 'paragraphs_ckeditor_data',
       'context' => $this->contextString,
-      'preview' => array(
+      'editBufferItem' => array(
         'id' => $this->paragraph->uuid(),
         'context' => $this->contextString,
         'isNew' => $this->paragraph->isNew(),

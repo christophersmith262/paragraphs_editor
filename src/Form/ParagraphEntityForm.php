@@ -129,8 +129,8 @@ class ParagraphEntityForm extends ContentEntityForm {
     $item = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'item']);
     $delivery = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'context'])->getPlugin('delivery_provider');
 
-    // Create a response that includes the rendered paragraph preview and
-    // signal that the ajax workflow is completed.
+    // Create a response that includes the rendered paragraph and signal that
+    // the ajax workflow is completed.
     $response = new AjaxResponse();
     $delivery->render($response, $item);
     $delivery->close($response);

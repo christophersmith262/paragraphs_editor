@@ -30,15 +30,15 @@
        */
       "markup": "",
 
-      "previewId": 0,
+      "itemId": 0,
 
       "context": "",
     },
 
-    onPreviewUpdate: function(preview_model) {
+    onItemUpdate: function(bufferItemModel) {
       this.set({
-        markup: preview_model.get('markup'),
-        context: preview_model.get('context')
+        markup: bufferItemModel.get('markup'),
+        context: bufferItemModel.get('context')
       });
     },
 

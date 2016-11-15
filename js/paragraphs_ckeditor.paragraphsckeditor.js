@@ -3,7 +3,7 @@
  * Provides Drupal API integrations for paragraphs_ckeditor.
  */
 
-(function ($, window, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings) {
 
   /**
    * jQuery plugin for interacting with paragraphs enabled editor instances.
@@ -32,13 +32,13 @@
         if (context_string && editorSettings[context_string]) {
           var settings = editorSettings[context_string];
           var prototypes = Drupal.paragraphs_ckeditor;
-          var commandController = new prototypes.ParagraphCommandController($(this), context_string, settings);
-          var previewFetcher = new prototypes.ParagraphPreviewFetcher(commandController);
-          var widgetManager = new prototypes.ParagraphWidgetManager(commandController, previewFetcher, settings);
+          var commandEmitter = new prototypes.EditorCommandEmitter($(this), context_string, settings);
+          var editBuffer = new prototypes.EditBuffer(commandEmitter);
+          var widgetManager = new prototypes.WidgetManager(commandEmitter, editBuffer, settings);
 
           paragraphsCKEditor = {
-            "commandController": commandController,
-            "previewFetcher": previewFetcher,
+            "commandEmitter": commandEmitter,
+            "editBuffer": editBuffer,
             "widgetManager": widgetManager,
           };
         }
@@ -60,8 +60,8 @@
 
       // Process the 'process-command-response' command.
       else if (action == 'process-command-response') {
-        if (options.preview) {
-          paragraphsCKEditor.previewFetcher.update(options.preview);
+        if (options.editBufferItem) {
+          paragraphsCKEditor.editBuffer.update(options.editBufferItem);
         }
         if (options.widget) {
           paragraphsCKEditor.widgetManager.update(options.widget);
@@ -72,4 +72,4 @@
     return rtn;
   };
 
-})(jQuery, window, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings);

@@ -61,17 +61,17 @@
       }
 
       var child;
-      var in_range = false;
+      var inRange = false;
       for (child = common.firstChild; child; child = child.nextSibling) {
         // We aren't in range until we reach the start node (since the start
         // node may have siblings to the left.)
         if (child === start) {
-          in_range = true;
+          inRange = true;
         }
 
         // If we are within the search reach and find something that matched
         // the selector, we're done.
-        if (in_range && $(child).find(selector).length) {
+        if (inRange && $(child).find(selector).length) {
           return true;
         }
 

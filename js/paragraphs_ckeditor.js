@@ -35,19 +35,19 @@
   }
 
   /**
-   * Theme function for generating paragraphs ckeditor previews.
+   * Theme function for generating paragraphs ckeditor widgets.
    *
    * @return {string}
    *   A string representing a DOM fragment.
    */
   Drupal.theme.paragraphsCKEditorPreview = function(markup) {
-    return '<div class="paragraphs-ckeditor-preview">'
+    return '<div class="paragraphs-ckeditor-widget">'
       + markup
-      + '<ul class="paragraphs-ckeditor-preview-toolbar">'
-      +   '<li class="paragraphs-ckeditor-preview-toolbar__item">'
+      + '<ul class="paragraphs-ckeditor-widget-toolbar">'
+      +   '<li class="paragraphs-ckeditor-widget-toolbar__item">'
       +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--edit">edit</a>'
       +   '</li>'
-      +   '<li class="paragraphs-ckeditor-preview-toolbar__item">'
+      +   '<li class="paragraphs-ckeditor-widget-toolbar__item">'
       +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--remove">remove</a>'
       +   '</li>'
       + '</ul>'
