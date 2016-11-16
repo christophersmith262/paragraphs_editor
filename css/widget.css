@@ -1,0 +1,41 @@
+/* line 1, ../sass/components/_widget-container.scss */
+.paragraphs-ckeditor-widget {
+  border: 1px dashed #ccc;
+  padding: .25rem;
+}
+
+/* line 7, ../sass/components/_widget-container.scss */
+.cke_widget_selected .paragraphs-ckeditor-widget {
+  border: 1px dashed #007db8;
+}
+
+/* line 1, ../sass/components/_widget-toolbar.scss */
+.paragraphs-ckeditor-widget-toolbar {
+  background: #f6f6f6;
+  border-radius: 5px;
+  display: inline-block;
+  margin-bottom: 0;
+  padding: .5rem;
+}
+/* line 8, ../sass/components/_widget-toolbar.scss */
+.paragraphs-ckeditor-widget-toolbar__item {
+  display: inline-block;
+  list-style: none;
+  margin: 0 .5rem;
+}
+
+/* line 1, ../sass/components/_command-button.scss */
+.paragraphs-ckeditor-command {
+  color: #0073bb;
+  text-transform: Capitalize;
+}
+/* line 5, ../sass/components/_command-button.scss */
+.paragraphs-ckeditor-command--remove {
+  color: #990000;
+  display: none;
+}
+
+/* line 13, ../sass/components/_command-button.scss */
+.cke_widget_selected .paragraphs-ckeditor-command--remove {
+  display: initial;
+}

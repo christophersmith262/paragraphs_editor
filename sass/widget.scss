@@ -1,0 +1,9 @@
+$inactive-hash-color: #ccc;
+$active-hash-color: #007db8;
+$command-color: #0073bb;
+$remove-color: #990000;
+$toolbar-color: #f6f6f6;
+
+@import 'components/widget-container';
+@import 'components/widget-toolbar';
+@import 'components/command-button';

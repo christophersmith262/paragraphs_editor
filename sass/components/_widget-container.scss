@@ -1,0 +1,10 @@
+.paragraphs-ckeditor-widget {
+  border: 1px dashed $inactive-hash-color;
+  padding: .25rem;
+}
+
+.cke_widget_selected {
+  .paragraphs-ckeditor-widget {
+    border: 1px dashed $active-hash-color;
+  }
+}

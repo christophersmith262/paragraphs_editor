@@ -4,6 +4,7 @@ namespace Drupal\paragraphs_ckeditor\Plugin\CKEditorPlugin;
 
 use Drupal\ckeditor\CKEditorPluginBase;
 use Drupal\editor\Entity\Editor;
+use Drupal\ckeditor\CKEditorPluginCssInterface;
 
 /**
  * Defines the "paragraphsinsert" plugin.
@@ -14,7 +15,13 @@ use Drupal\editor\Entity\Editor;
  *   module = "paragraphs_ckeditor"
  * )
  */
-class ParagraphsInsert extends CKEditorPluginBase {
+class ParagraphsInsert extends CKEditorPluginBase implements CKEditorPluginCssInterface {
+
+  public function getCssFiles(Editor $editor) {
+    return array(
+      drupal_get_path('module', 'paragraphs_ckeditor') . '/css/widget.css',
+    );
+  }
 
   /**
    * {@inheritdoc}
