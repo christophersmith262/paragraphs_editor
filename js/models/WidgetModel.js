@@ -14,7 +14,7 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.paragraphs_ckeditor.ParagraphPreviewWidgetModel = Backbone.Model.extend({
+  Drupal.paragraphs_ckeditor.WidgetModel = Backbone.Model.extend({
 
     /**
      * @type {object}
@@ -28,7 +28,7 @@
        *
        * @type {string}
        */
-      "markup": "",
+      "markup": "...",
 
       "itemId": 0,
 

@@ -16,11 +16,11 @@
       model: Drupal.paragraphs_ckeditor.BufferItemModel,
     });
 
-    this.getItem = function(paragraph_uuid) {
-      var itemModel = editBufferCache.get(paragraph_uuid);
+    this.getItem = function(paragraphUuid) {
+      var itemModel = editBufferCache.get(paragraphUuid);
       if (!itemModel) {
-        itemModel = editBufferCache.add({id: paragraph_uuid}, {merge: true});
-        commandEmitter.render(paragraph_uuid);
+        itemModel = editBufferCache.add({id: paragraphUuid}, {merge: true});
+        commandEmitter.render(paragraphUuid);
       }
       return itemModel;
     }
@@ -29,8 +29,8 @@
       return editBufferCache.add(itemModel, {merge: true});
     }
 
-    this.destroy = function(paragraph_uuid) {
-      editBufferCache.remove(paragraph_uuid);
+    this.destroy = function(paragraphUuid) {
+      editBufferCache.remove(paragraphUuid);
     }
 
     this.on = function(evt, callback, context) {

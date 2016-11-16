@@ -20,15 +20,15 @@
      */
     this.initialize = function(editor_instance) {
       editor = editor_instance;
-      widgets = new Drupal.paragraphs_ckeditor.WidgetTable(editor.document.$);
+      widgets = new Drupal.paragraphs_ckeditor.WidgetTable(editBuffer, editor);
 
       function handleBufferItemUpdate(bufferItemModel) {
         // If the new model is ready to be inserted, insert an embed code in
         // CKEditor and mark the model as inserted.
-        if (model.get('insert')) {
+        if (bufferItemModel.get('insert')) {
           var element = new CKEDITOR.dom.element('paragraphs-ckeditor-paragraph');
-          element.setAttribute('data-paragraph-uuid', model.get('id'));
-          element.setAttribute('data-context-hint', model.get('context'));
+          element.setAttribute('data-paragraph-uuid', bufferItemModel.get('id'));
+          element.setAttribute('data-context-hint', bufferItemModel.get('context'));
           editor.insertElement(element);
           editor.widgets.initOn(element, 'ParagraphsCKEditorWidget');
           bufferItemModel.set({insert: false});
@@ -46,6 +46,7 @@
     this.ingest = function(widget) {
       var $widget = $(widget.element.$);
       var bufferItemModel = editBuffer.getItem($widget.attr('data-paragraph-uuid'));
+      var contextString = $widget.attr('data-context-hint');
       var itemId = bufferItemModel.get('id');
       var widgetId = widget.id;
 
@@ -54,8 +55,8 @@
         id: widgetId,
         itemId: itemId,
         markup: bufferItemModel.get('markup'),
-        context: bufferItemModel.get('context'),
-      }
+        context: contextString,
+      });
 
       // Set up the widget model to listen to data change events on the buffer
       // item it references.
@@ -81,11 +82,12 @@
       // need to duplicate it. Only one widget can every reference a given
       // buffer item.
       if (widgets.count(widgetModel) > 1) {
+        widgetModel.set({markup: "..."});
         this.duplicate(widgetModel);
       }
 
       // Render the CKEditor widget view.
-      widgetView.render();
+      widgets.render(widgetModel);
 
       return widgetModel;
     };
@@ -105,7 +107,7 @@
      * Triggers the widget edit flow.
      */
     this.edit = function(widgetModel) {
-      commandEmmitter.edit(widgetModel.get('itemId'));
+      commandEmitter.edit(widgetModel.get('itemId'));
     };
 
     this.duplicate = function(widgetModel) {
@@ -115,8 +117,15 @@
     /**
      * Destroys the model and view associated with a CKEditor widget.
      */
-    this.destroy = function(widgetModel) {
-      widgets.remove(widgetModel);
+    this.destroy = function(widgetModel, offline) {
+      var widgetId = widgetModel.get('id');
+      if (!offline && editor.widgets.instances[widgetId]) {
+        var widget = editor.widgets.instances[widgetId];
+        editor.widgets.del(widget);
+      }
+      else {
+        widgets.remove(widgetModel);
+      }
     };
 
     this.getSettings = function() {
@@ -127,7 +136,7 @@
       return settings[key];
     }
 
-    function updateItemReference = function(widgetModel) {
+    function updateItemReference(widgetModel) {
       var previousItemId = widgetModel.previous('itemId');
       var updatedItemId = widgetModel.get('itemId');
       var widgetId = widgetModel.get('id');
@@ -139,13 +148,16 @@
 
       // Add the widget modal as a listener to the new buffer item.
       var updated = editBuffer.getItem(updatedItemId);
-      widgetModel.set({markup: updated.get('markup')});
-      updated.on('change:markup', model.onItemUpdate, model);
-      updated.on('change:context', model.onItemUpdate, model);
+      updated.on('change:markup', widgetModel.onItemUpdate, widgetModel);
+      updated.on('change:context', widgetModel.onItemUpdate, widgetModel);
 
       // Update the widget table to capture the fact that the widget is now
       // referencing a different buffer item.
       widgets.move(previousItemId, updatedItemId, widgetId);
+
+      // Re-render the widget.
+      widgetModel.set({markup: updated.get('markup')});
+      widgets.render(widgetModel);
     }
   };
 

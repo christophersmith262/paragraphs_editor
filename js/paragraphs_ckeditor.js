@@ -42,17 +42,16 @@
    */
   Drupal.theme.paragraphsCKEditorPreview = function(markup) {
     return '<div class="paragraphs-ckeditor-widget">'
-      + markup
-      + '<ul class="paragraphs-ckeditor-widget-toolbar">'
-      +   '<li class="paragraphs-ckeditor-widget-toolbar__item">'
-      +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--edit">edit</a>'
-      +   '</li>'
-      +   '<li class="paragraphs-ckeditor-widget-toolbar__item">'
-      +     '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--remove">remove</a>'
-      +   '</li>'
-      + '</ul>'
-      + '</ul>'
-    + '</div>';
+      +   markup
+      +   '<ul class="paragraphs-ckeditor-widget-toolbar">'
+      +     '<li class="paragraphs-ckeditor-widget-toolbar__item">'
+      +       '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--edit">edit</a>'
+      +     '</li>'
+      +     '<li class="paragraphs-ckeditor-widget-toolbar__item">'
+      +       '<a href="#" class="paragraphs-ckeditor-command paragraphs-ckeditor-command--remove">remove</a>'
+      +     '</li>'
+      +   '</ul>'
+      + '</div>';
   }
 
   /**

@@ -17,15 +17,6 @@
       params.push('settings[' + key + ']=' + settings[key]);
     }
     params = '?' + params.join('&');
-
-    var ajax = Drupal.ajax({
-      base: $element.attr('id'),
-      element: $element.get(0),
-      url: '/ajax',
-      progress: {
-        message: "",
-      }
-    });
     
     var defaults = {
       context: contextString,
@@ -57,7 +48,7 @@
      */
     this.duplicate = function(uuid, source_context, widget_id) {
       execute(_.extend({
-        command: "render",
+        command: "duplicate",
         paragraph: uuid,
         context2: source_context,
         widget: widget_id
@@ -94,7 +85,28 @@
 
       path += params;
 
-      ajax.options.url = path;
+      var ajax = Drupal.ajax({
+        base: $element.attr('id'),
+        element: $element.get(0),
+        url: path,
+        progress: {
+          message: "",
+        }
+      });
+
+
+      ajax.success = function (response, status) {
+        var rtn = Drupal.Ajax.prototype.success.call(this, response, status);
+        Drupal.ajax.instances.splice(this.instanceIndex, 1);
+        return rtn;
+      }
+
+      ajax.error = function (xmlhttprequest, uri, customMessage) {
+        var rtn = Drupal.Ajax.prototype.error.call(this, xmlhttprequest, uri, customMessage);
+        Drupal.ajax.instances.splice(this.instanceIndex, 1);
+        return rtn;
+      }
+
       ajax.execute();
     };
   };

@@ -7,7 +7,7 @@
 
   'use strict';
 
-  Drupal.paragraphs_ckeditor.WidgetTable = function(editBuffer, rootParent) {
+  Drupal.paragraphs_ckeditor.WidgetTable = function(editBuffer, editor) {
 
     var widgetCollection = new Backbone.Collection([], {
       model: Drupal.paragraphs_ckeditor.WidgetModel,
@@ -15,12 +15,12 @@
 
     var views = {};
 
-    this.count(widgetModel) {
+    this.count = function(widgetModel) {
       var count = 0;
       if (widgetModel) {
         var i = widgetModel.get('itemId');
         for (var j in views[i]) {
-          if (readCell(i, j, widgetModel)) {
+          if (readCell(widgetModel, i, j)) {
             count++;
           }
         }
@@ -28,16 +28,16 @@
       return count;
     }
 
-    this.get(widgetModel) {
+    this.get = function(widgetModel) {
       if (widgetModel) {
         var i = widgetModel.get('itemId');
         var j = widgetModel.get('id');
-        return readCell(i, j, widgetModel);
+        return readCell(widgetModel, i, j);
       }
       return null;
     }
 
-    this.add(widgetModel, widgetView) {
+    this.add = function(widgetModel, widgetView) {
       var i = widgetModel.get('itemId');
       var j = widgetModel.get('id');
       if (!views[i]) {
@@ -47,13 +47,11 @@
       this.update(widgetModel);
     }
 
-    this.update(widgetModel) {
-      if (this.get(widgetModel)) {
-        widgetCollection.add(widgetModel, {merge: true});
-      }
+    this.update = function(widgetModel) {
+      widgetCollection.add(widgetModel, {merge: true});
     }
 
-    this.remove(widgetModel) {
+    this.remove = function(widgetModel) {
       var i = widgetModel.get('itemId');
       var j = widgetModel.get('id');
 
@@ -67,7 +65,14 @@
       cleanRow(i);
     }
 
-    this.move(oldParagraphUuid, newParagraphUuid, widgetId) {
+    this.render = function(widgetModel) {
+      var view = this.get(widgetModel);
+      if (view) {
+        view.render(widgetModel);
+      }
+    }
+
+    this.move = function(oldParagraphUuid, newParagraphUuid, widgetId) {
       var i = oldParagraphUuid;
       var j = widgetId;
       var k = newParagraphUuid;
@@ -87,11 +92,11 @@
       var view = null;
 
       if (views[i] && views[i][j]) {
-        if (rootParent.contains(views[i][j].el)) {
+        if (editor.document.$.contains(views[i][j].el)) {
           view = views[i][j];
         }
         else {
-          this.remove(widgetModel);
+          //this.remove(widgetModel);
         }
       }
       return view;
@@ -99,7 +104,6 @@
 
     function cleanRow(i) {
       if (views[i] && !views[i].length) {
-        editBuffer.destroy(i);
         delete views[i];
       }
     }

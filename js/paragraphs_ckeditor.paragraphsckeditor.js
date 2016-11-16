@@ -61,7 +61,7 @@
       // Process the 'process-command-response' command.
       else if (action == 'process-command-response') {
         if (options.editBufferItem) {
-          paragraphsCKEditor.editBuffer.update(options.editBufferItem);
+          paragraphsCKEditor.editBuffer.setItem(options.editBufferItem);
         }
         if (options.widget) {
           paragraphsCKEditor.widgetManager.update(options.widget);

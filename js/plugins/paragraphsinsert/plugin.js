@@ -59,8 +59,7 @@
         // Hide contents of the paragraphs-ckeditor-paragraph tag in source view
         // mode.
         editor.on('toDataFormat', function(e) {
-          widgetManager.enableSourceView();
-          var node = e.data.dataValue;
+          /*var node = e.data.dataValue;
           var i;
           var filter = new CKEDITOR.htmlParser.filter({
             elements: {
@@ -72,13 +71,13 @@
               }
             }
           });
-          node.filterChildren(filter);
+          node.filterChildren(filter);*/
         }, null, null, 14);
 
         // Provide a command for creating an "insert paragraph" dialog.
         editor.addCommand('paragraphsinsert', {
-          allowedContent: 'paragraphs-ckeditor-paragraph[*]',
-          requiredContent: 'paragraphs-ckeditor-paragraph[*]',
+          allowedContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
+          requiredContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
           exec: function() {
             widgetManager.insert();
           },
@@ -92,11 +91,17 @@
 
         // Define the CKEditor widget that represents a paragraph in the editor.
         editor.widgets.add('ParagraphsCKEditorWidget', {
-          allowedContent: true,
-          requiredContent: 'paragraphs-ckeditor-paragraph[*]',
-          template: '<paragraphs-ckeditor-paragraph></paragraphs-ckeditor-paragraph>',
+          allowedContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
+          requiredContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
           upcast: function (element) {
-            return element.name == 'paragraphs-ckeditor-paragraph';
+            if (element.name == 'paragraphs-ckeditor-paragraph') {
+              return element;
+            }
+            return false;
+          },
+          downcast: function (element) {
+            element.setHtml('');
+            return element;
           },
           init: function() {
             var widgetModel = widgetManager.ingest(this);
@@ -104,7 +109,7 @@
             // Add a garbage collection handler so that the model / view are
             // destroyed when the widget is destroyed.
             this.on('destroy', function(evt) {
-              widgetManager.destroy(widgetModel);
+              widgetManager.destroy(widgetModel, true);
             });
           }
         });

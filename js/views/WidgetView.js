@@ -20,7 +20,6 @@
       this.widgetManager = options.widgetManager;
       this.$widgetWrapper = $(this.el).closest('.cke_widget_wrapper');
       this.model.on('change:markup', this.render, this);
-      this.model.on('change:itemId', this.render, this);
     },
 
     template: function(markup) {
@@ -45,7 +44,6 @@
     },
 
     close: function() {
-      this.$widgetWrapper.remove();
     },
 
   });

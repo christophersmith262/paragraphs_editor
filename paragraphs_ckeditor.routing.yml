@@ -36,7 +36,7 @@ paragraphs_ckeditor.command.render:
     _paragraphs_ckeditor_access_context: '{context}'
     _paragraphs_ckeditor_access_paragraph: '{context}:{paragraph_uuid}'
 paragraphs_ckeditor.command.duplicate:
-  path: '/ajax/paragraphs-ckeditor/render/{target_context}/{source_context}/{paragraph_uuid}/{ckeditor_widget_id}'
+  path: '/ajax/paragraphs-ckeditor/duplicate/{target_context}/{source_context}/{paragraph_uuid}/{ckeditor_widget_id}'
   defaults:
     _controller: '\Drupal\paragraphs_ckeditor\Controller\EditorCommandController::duplicate'
   options:
