@@ -1,0 +1,25 @@
+.paragraphs-ckeditor-toolbox-cards {
+  list-style: none;
+  margin: 0;
+  margin-top: 1rem;
+  padding: 0;
+
+  &__card {
+    background: #f5f5f5;
+    border-right: 5px solid #97a0a5;
+    border-top: 1px solid #ddd;
+    cursor: move;
+    font-size: .9rem;
+    padding: .5rem 1rem;
+
+    &.odd {
+      background: #e4e4e4;
+    }
+
+    &:hover {
+      background: #fffde3;
+      border-left: 5px solid #ccc;
+      border-right: 0;
+    }
+  }
+}

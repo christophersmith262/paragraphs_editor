@@ -44,35 +44,9 @@
       // CKEditor instance we can attach to. In this case, we just don't add any
       // options to the editor.
       if (widgetManager) {
-        var commandFilter = new Drupal.paragraphs_ckeditor.CKEditorCommandFilter(['paragraphs-ckeditor-paragraph']);
 
         // Initialize the widget manager for use with this editor.
         widgetManager.initialize(editor);
-
-        // Don't allow commands that would alter the internal paragraph
-        // structure to be applied to DOM tree branches that contain
-        // paragraphs-ckeditor-paragraph elements.
-        editor.on('beforeCommandExec', function(e) {
-          commandFilter.apply(e, editor.getSelection());
-        });
-
-        // Hide contents of the paragraphs-ckeditor-paragraph tag in source view
-        // mode.
-        editor.on('toDataFormat', function(e) {
-          /*var node = e.data.dataValue;
-          var i;
-          var filter = new CKEDITOR.htmlParser.filter({
-            elements: {
-              "paragraphs-ckeditor-paragraph": function(element) {
-                for (i in element.children) {
-                  var child = element.children[i];
-                  child.remove();
-                }
-              }
-            }
-          });
-          node.filterChildren(filter);*/
-        }, null, null, 14);
 
         // Provide a command for creating an "insert paragraph" dialog.
         editor.addCommand('paragraphsinsert', {

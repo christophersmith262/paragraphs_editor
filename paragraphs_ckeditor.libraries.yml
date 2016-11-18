@@ -6,7 +6,6 @@ widget:
     js/models/BufferItemModel.js: {}
     js/models/WidgetModel.js: {}
     js/views/WidgetView.js: {}
-    js/include/CKEditorCommandFilter.js: {}
     js/include/EditBuffer.js: {}
     js/include/EditorCommandEmitter.js: {}
     js/include/WidgetManager.js: {}
@@ -16,3 +15,12 @@ widget:
     - core/jquery
     - core/jquery.form
     - core/drupal.ajax
+toolbox:
+  version: 1.x
+  js:
+    js/toolbox.js: {}
+  css:
+    component:
+      css/toolbox.css: {}
+  dependencies:
+    - core/jquery

@@ -76,13 +76,34 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['search'] = array(
+      '#title' => 'Search',
+      '#type' => 'entity_autocomplete',
+      '#target_type' => 'paragraphs_type',
+    );
+    $form['search_button'] = array(
+      '#type' => 'submit',
+      '#value' => 'Search',
+      '#submit' => array('::ajaxSearchSubmit'),
+      '#limit_validation_errors' => array(),
+      '#ajax' => array(
+        'callback' => array(get_class($this), 'ajaxSearch'),
+        'wrapper' => 'test-form',
+      ),
+    );
     $form['options'] = array(
+      '#prefix' => '<div id="test-form">',
+      '#suffix' => '</div>',
       '#type' => 'table',
       '#header' => $this->buildHeader(),
-      '#empty' => t('There is no @label yet.', array('@label' => $this->entityType->getLabel())),
+      '#empty' => t('Could not find any matching options.', array('@label' => $this->entityType->getLabel())),
     );
 
-    $this->entities = $this->load();
+    $input = $form_state->getUserInput();
+    $search = isset($input['search']) ? $input['search'] : '';
+    $search = trim(preg_replace('/\(.*\)$/', '', $search));
+    dpm($search);
+    $this->entities = $this->load($search);
     foreach ($this->entities as $entity) {
       $row = $this->buildRow($entity);
       if (isset($row['label'])) {
@@ -105,6 +126,14 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
     );
 
     return $form;
+  }
+
+  public function ajaxSearchSubmit($form, $form_state) {
+    $form_state->setRebuild();
+  }
+
+  public static function ajaxSearch($form, $form_state) {
+    return $form['options'];
   }
 
   /**
@@ -159,4 +188,29 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // This needs to be implemented, but we don't have anything to submit.
   }
+
+public function load($search=NULL) {
+  $entity_ids = $this->getEntityIds($search);
+  $entities = $this->storage->loadMultipleOverrideFree($entity_ids);
+
+  // Sort the entities using the entity class's sort() method.
+  // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
+  uasort($entities, array($this->entityType->getClass(), 'sort'));
+  return $entities;
+}
+
+protected function getEntityIds($search=NULL) {
+  $query = $this->getStorage()->getQuery()
+    ->sort($this->entityType->getKey('id'));
+
+  if ($search) {
+    $query->condition('label', $search, 'CONTAINS');
+  }
+
+  // Only add the pager if a limit is specified.
+  if ($this->limit) {
+    $query->pager($this->limit);
+  }
+  return $query->execute();
+}
 }

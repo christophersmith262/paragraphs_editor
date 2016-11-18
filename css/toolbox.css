@@ -1,0 +1,50 @@
+/* line 1, ../sass/components/toolbox/_cards.scss */
+.paragraphs-ckeditor-toolbox-cards {
+  list-style: none;
+  margin: 0;
+  margin-top: 1rem;
+  padding: 0;
+}
+/* line 7, ../sass/components/toolbox/_cards.scss */
+.paragraphs-ckeditor-toolbox-cards__card {
+  background: #f5f5f5;
+  border-right: 5px solid #97a0a5;
+  border-top: 1px solid #ddd;
+  cursor: move;
+  font-size: .9rem;
+  padding: .5rem 1rem;
+}
+/* line 15, ../sass/components/toolbox/_cards.scss */
+.paragraphs-ckeditor-toolbox-cards__card.odd {
+  background: #e4e4e4;
+}
+/* line 19, ../sass/components/toolbox/_cards.scss */
+.paragraphs-ckeditor-toolbox-cards__card:hover {
+  background: #fffde3;
+  border-left: 5px solid #ccc;
+  border-right: 0;
+}
+
+/* line 1, ../sass/components/toolbox/_header.scss */
+.paragraphs-ckeditor-toolbox-header {
+  margin-left: .75rem;
+}
+
+/* line 1, ../sass/components/toolbox/_search.scss */
+.paragraphs-ckeditor-toolbox-search {
+  margin: .25rem 1rem;
+  padding: .25rem;
+}
+
+/* line 1, ../sass/components/toolbox/_toolbox.scss */
+.cke_contents.paragraphs-ckeditor-toolbox-processed {
+  display: table-cell;
+  width: 100%;
+}
+
+/* line 6, ../sass/components/toolbox/_toolbox.scss */
+.paragraphs-ckeditor-toolbox {
+  background: #fefefe;
+  display: table-cell;
+  vertical-align: top;
+}

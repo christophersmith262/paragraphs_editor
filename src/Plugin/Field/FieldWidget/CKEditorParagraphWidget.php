@@ -94,6 +94,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
         '#type' => 'text_format',
         '#format' => $field_value_wrapper->getFormat(),
         '#default_value' => $field_value_wrapper->getMarkup(),
+        '#rows' => 100,
         '#attributes' => array(
           'class' => array(
             'paragraphs-ckeditor'
@@ -103,6 +104,7 @@ class CKEditorParagraphWidget extends InlineParagraphsWidget implements Containe
         '#attached' => array(
           'library' => array(
             'paragraphs_ckeditor/widget',
+            'paragraphs_ckeditor/toolbox',
           ),
         'drupalSettings' => array(
             'paragraphs_ckeditor' => array(
