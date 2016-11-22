@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class EditorParagraphFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
+class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
   use ParagraphsEditorAwarePluginTrait;
 
   protected $fieldValueManager;

@@ -1,7 +1,7 @@
 langcode: en
 status: true
 dependencies: {  }
-name: 'Paragraphs Editor'
-format: paragraphs_editor
+name: 'Paragraphs CKEditor'
+format: paragraphs_ckeditor
 weight: 0
 filters: {  }

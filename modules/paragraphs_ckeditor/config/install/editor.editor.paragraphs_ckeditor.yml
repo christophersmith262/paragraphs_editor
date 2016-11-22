@@ -2,11 +2,11 @@ langcode: en
 status: true
 dependencies:
   config:
-    - filter.format.paragraphs_editor
+    - filter.format.paragraphs_ckeditor
   module:
     - ckeditor
-format: paragraphs_editor
-editor: editor
+format: paragraphs_ckeditor
+editor: ckeditor
 settings:
   toolbar:
     rows:

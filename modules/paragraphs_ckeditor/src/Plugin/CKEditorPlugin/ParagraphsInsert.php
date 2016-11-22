@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_editor\Plugin\EditorPlugin;
+namespace Drupal\paragraphs_ckeditor\Plugin\CKEditorPlugin;
 
 use Drupal\ckeditor\CKEditorPluginBase;
 use Drupal\editor\Entity\Editor;
@@ -9,17 +9,17 @@ use Drupal\ckeditor\CKEditorPluginCssInterface;
 /**
  * Defines the "paragraphsinsert" plugin.
  *
- * @EditorPlugin(
+ * @CKEditorPlugin(
  *   id = "paragraphsinsert",
  *   label = @Translation("Insert Component"),
- *   module = "paragraphs_editor"
+ *   module = "paragraphs_ckeditor"
  * )
  */
 class ParagraphsInsert extends CKEditorPluginBase implements CKEditorPluginCssInterface {
 
   public function getCssFiles(Editor $editor) {
     return array(
-      drupal_get_path('module', 'paragraphs_editor') . '/css/widget.css',
+      drupal_get_path('module', 'paragraphs_ckeditor') . '/css/widget.css',
     );
   }
 
@@ -27,7 +27,7 @@ class ParagraphsInsert extends CKEditorPluginBase implements CKEditorPluginCssIn
    * {@inheritdoc}
    */
   public function getFile() {
-    return drupal_get_path('module', 'paragraphs_editor') . '/js/plugins/paragraphsinsert/plugin.js';
+    return drupal_get_path('module', 'paragraphs_ckeditor') . '/js/plugins/paragraphsinsert/plugin.js';
   }
 
   /**
@@ -44,8 +44,8 @@ class ParagraphsInsert extends CKEditorPluginBase implements CKEditorPluginCssIn
   public function getButtons() {
     return array(
       'ParagraphsInsert' => array(
-        'label' => t('Insert Component'),
-        'image' => drupal_get_path('module', 'paragraphs_editor') . '/js/plugins/paragraphsinsert/icons/paragraphsinsert.png',
+        'label' => t('Insert Paragraph'),
+        'image' => drupal_get_path('module', 'paragraphs_ckeditor') . '/js/plugins/paragraphsinsert/icons/paragraphsinsert.png',
       ),
     );
   }

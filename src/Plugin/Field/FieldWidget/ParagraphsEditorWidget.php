@@ -15,10 +15,6 @@ use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class NullExtractor {
-  public function extractFormValues(){}
-}
-
 /**
  * Plugin implementation of the 'entity_reference_paragraphs_editor' widget.
  *
@@ -35,7 +31,7 @@ class NullExtractor {
  *   }
  * )
  */
-class EditorParagraphWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
+class ParagraphsEditorWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
   use ParagraphsEditorAwarePluginTrait;
 
   protected $contextFactory;
@@ -77,7 +73,7 @@ class EditorParagraphWidget extends InlineParagraphsWidget implements ContainerF
       'title' => t('Paragraph'),
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
-      'filter_format' => 'paragraphs_editor',
+      'filter_format' => 'paragraphs_ckeditor',
     );
   }
 
@@ -104,7 +100,6 @@ class EditorParagraphWidget extends InlineParagraphsWidget implements ContainerF
         '#attached' => array(
           'library' => array(
             'paragraphs_editor/widget',
-            'paragraphs_editor/toolbox',
           ),
         'drupalSettings' => array(
             'paragraphs_editor' => array(
