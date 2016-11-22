@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Ajax;
+namespace Drupal\paragraphs_editor\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
 use Drupal\paragraphs\ParagraphInterface;
@@ -23,7 +23,7 @@ class DeliverParagraphPreviewCommand implements CommandInterface {
     $view =  $view_builder->view($this->paragraph, 'full');
     $markup = \Drupal::service('renderer')->render($view);
     return array(
-      'command' => 'paragraphs_ckeditor_data',
+      'command' => 'paragraphs_editor_data',
       'context' => $this->contextString,
       'editBufferItem' => array(
         'id' => $this->paragraph->uuid(),

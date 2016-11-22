@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
 /**
  * Provides an interface for a command context factory.
@@ -24,7 +24,7 @@ interface CommandContextFactoryInterface {
    * @param array $settings
    *   The field widget settings for the editor.
    *
-   * @return Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface
+   * @return Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
    *   A command context object representing the context a command was executed
    *   in.
    */

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditBuffer;
+namespace Drupal\paragraphs_editor\EditBuffer;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
@@ -12,7 +12,7 @@ class EditBufferCache implements EditBufferCacheInterface {
   protected $user;
 
   public function __construct(KeyValueExpirableFactoryInterface $keyvalue_factory, $expiry, AccountInterface $user) {
-    $this->storage = $keyvalue_factory->get('paragraphs_ckeditor.edit_buffer');
+    $this->storage = $keyvalue_factory->get('paragraphs_editor.edit_buffer');
     $this->expiry = $expiry;
     $this->user = $user;
   }

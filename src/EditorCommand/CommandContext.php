@@ -1,17 +1,17 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface;
-use Drupal\paragraphs_ckeditor\Plugin\ParagraphsCKEditor\DeliveryPluginInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
+use Drupal\paragraphs_editor\Plugin\ParagraphsEditor\DeliveryPluginInterface;
 
 /**
  * Represents the command execution context.
  *
- * @see Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface
+ * @see Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
  */
 class CommandContext implements CommandContextInterface {
 
@@ -32,7 +32,7 @@ class CommandContext implements CommandContextInterface {
   /**
    * The edit buffer associated with the editor instance.
    *
-   * @var Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface $edit_buffer
+   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferInterface $edit_buffer
    */
   protected $editBuffer;
 
@@ -80,7 +80,7 @@ class CommandContext implements CommandContextInterface {
    *   The entity that the field being edited belongs to.
    * @param Drupal\field\FieldConfigInterface $field_config
    *   The field configuration object for the field being edited.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface $edit_buffer
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferInterface $edit_buffer
    *   The edit buffer associated with the editor instance.
    * @param array $settings
    *   The field widget settings for the editor.
@@ -187,7 +187,7 @@ class CommandContext implements CommandContextInterface {
    * {@inheritdoc}
    */
   public function createCommandUrl($command, array $params = array()) {
-    return Url::fromRoute("paragraphs_ckeditor.command.$command", array(
+    return Url::fromRoute("paragraphs_editor.command.$command", array(
       'context' => $this->getContextString(),
     ) + $params,
     array(

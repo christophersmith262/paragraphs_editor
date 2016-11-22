@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditBuffer;
+namespace Drupal\paragraphs_editor\EditBuffer;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemDuplicatorInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemDuplicatorInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 class EditBufferItemFactory implements EditBufferItemFactoryInterface {
 
@@ -25,12 +25,12 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    * This should never be called inside an access check. Only call this after
    * context validation has completed successfully.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The bundle name for the paragraph to be created.
    *
-   * @return \Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface
+   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
    *   The newly created edit buffer item.
    */
   public function createBufferItem(CommandContextInterface $context, $bundle_name) {
@@ -46,12 +46,12 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    * is set before using it. This will create the paragraph item in the buffer
    * it does not already exist.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The bundle name for the paragraph to be created.
    *
-   * @return \Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface
+   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
    *   The newly created edit buffer item.
    */
   public function getBufferItem(CommandContextInterface $context, $paragraph_uuid) {

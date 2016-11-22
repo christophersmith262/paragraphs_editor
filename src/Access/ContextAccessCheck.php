@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Access;
+namespace Drupal\paragraphs_editor\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -23,7 +23,7 @@ class ContextAccessCheck implements AccessInterface {
    *
    * @var string
    */
-  protected $requirementsKey = '_paragraphs_ckeditor_access_context';
+  protected $requirementsKey = '_paragraphs_editor_access_context';
 
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
@@ -39,7 +39,7 @@ class ContextAccessCheck implements AccessInterface {
    * This method will also filter out "invalid" context objects before the
    * actual controller method that executes the request is called.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    *
    * @return \Drupal\Core\Access\AccessResultInterface

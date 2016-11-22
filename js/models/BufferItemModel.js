@@ -1,6 +1,6 @@
 /**
  * @file
- * A Backbone model for representing paragraphs_ckeditor edit buffer items.
+ * A Backbone model for representing paragraphs_editor edit buffer items.
  */
 
 (function (Backbone, Drupal) {
@@ -8,7 +8,7 @@
   'use strict';
 
   /**
-   * Backbone  Model for representing paragraphs_ckeditor commands.
+   * Backbone  Model for representing paragraphs_editor commands.
    *
    * The id for this model is the uuid of a paragraph entity that the item
    * corresponds to.
@@ -17,14 +17,14 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.paragraphs_ckeditor.ParagraphPreviewModel = Backbone.Model.extend({
+  Drupal.paragraphs_editor.BufferItemModel = Backbone.Model.extend({
 
     /**
      * @type {object}
      *
      * @prop markup
      */
-    defaults: /** @lends Drupal.paragraphs_ckeditor.CommandModel# */{
+    defaults: /** @lends Drupal.paragraphs_editor.CommandModel# */{
 
       /**
        * Whether or not the item is ready to be inserted.

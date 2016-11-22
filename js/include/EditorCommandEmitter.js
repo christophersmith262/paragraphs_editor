@@ -10,7 +10,7 @@
   /**
    * Sends paragraph commands.
    */
-  Drupal.paragraphs_ckeditor.EditorCommandEmitter = function($element, contextString, settings) {
+  Drupal.paragraphs_editor.EditorCommandEmitter = function($element, contextString, settings) {
 
     var params = [];
     for (var key in settings) {
@@ -58,14 +58,14 @@
     /**
      * Internal callback for triggering the command to be sent.
      *
-     * @param {Drupal.paragraphs_ckeditor.CommandModel} model
+     * @param {Drupal.paragraphs_editor.CommandModel} model
      *   The command to be executed.
      */
     function execute(command) {
       if (!command.command) {
         return;
       }
-      var path = '/ajax/paragraphs-ckeditor/' + command.command;
+      var path = '/ajax/paragraphs-editor/' + command.command;
 
       if (command.context) {
         path += '/' + command.context;

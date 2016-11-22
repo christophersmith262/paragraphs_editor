@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
 /**
  * Provides an interface for paragraph command context.
@@ -54,7 +54,7 @@ interface CommandContextInterface {
   /**
    * Gets the edit buffer for the editor instance.
    *
-   * @return Drupal\paragraphs_ckeditor\EditorCommand\EditBufferInterface
+   * @return Drupal\paragraphs_editor\EditorCommand\EditBufferInterface
    *   The edit buffer associated with the editor instance that command pertains
    *   to.
    */

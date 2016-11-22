@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditBuffer;
+namespace Drupal\paragraphs_editor\EditBuffer;
 
 interface EditBufferCacheInterface {
   public function get($context_string);
