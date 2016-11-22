@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+namespace Drupal\paragraphs_editor\EditorFieldValue;
 
 interface FieldValueWrapperInterface {
   public function getMarkup();

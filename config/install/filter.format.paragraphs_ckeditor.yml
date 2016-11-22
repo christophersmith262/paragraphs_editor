@@ -1,7 +1,0 @@
-langcode: en
-status: true
-dependencies: {  }
-name: 'Paragraphs CKEditor'
-format: paragraphs_ckeditor
-weight: 0
-filters: {  }

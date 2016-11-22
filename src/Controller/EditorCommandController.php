@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Controller;
+namespace Drupal\paragraphs_editor\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemFactoryInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -21,7 +21,7 @@ class EditorCommandController implements ContainerInjectionInterface {
   /**
    * The handler used to provide command responses.
    *
-   * @var \Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface
    */
   protected $responseHandler;
 
@@ -32,7 +32,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager $entity_type_manager
    *   The Drupal entity type manager.
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface $response_handler
+   * @param \Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface $response_handler
    *   The handler obejct that will serve the command responses.
    */
   public function __construct(EditBufferItemFactoryInterface $item_factory, ResponseHandlerInterface $response_handler) {
@@ -45,8 +45,8 @@ class EditorCommandController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('paragraphs_ckeditor.edit_buffer.item_factory'),
-      $container->get('paragraphs_ckeditor.command.response_handler')
+      $container->get('paragraphs_editor.edit_buffer.item_factory'),
+      $container->get('paragraphs_editor.command.response_handler')
     );
   }
 
@@ -59,7 +59,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * name will be created and an edit form for that paragraph item will be
    * delivered to the client.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $bundle_name
    *   The name of a paragraph bundle to be inserted or NULL to display the
@@ -85,7 +85,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * This loads the correct paragraph and any existing edits, then delivers an
    * edit form for the paragarph based on its current state.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $string $paragraph_uuid
    *   The UUID of the paragraph to generate an edit form for.
@@ -102,9 +102,9 @@ class EditorCommandController implements ContainerInjectionInterface {
    * Entry point for requests to render a paragraph item.
    *
    * Renders a paragraph item and delivers markup back to the editor so it can
-   * be displayed in CKEditor.
+   * be displayed in Editor.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $string $paragraph_uuid
    *   The UUID of the paragraph to deliver rendered markup for.
@@ -124,24 +124,24 @@ class EditorCommandController implements ContainerInjectionInterface {
    * for cloning existing paragraph entities. Additionally we handle situations
    * where paragraph items might be copied from another editor instance.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $target_context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $target_context
    *   The context for the editor instance that will receive the copy.
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $source_context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $source_context
    *   The context for the editor instance that will provide the copy.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph entity to be copied.
-   * @param string $ckeditor_widget_id
-   *   The CKEditor widget id of the CKEditor widget to be updated with the newl
+   * @param string $editor_widget_id
+   *   The Editor widget id of the Editor widget to be updated with the newl
    *   created paragraph.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   The ajax response for the command.
    */
-  public function duplicate(CommandContextInterface $target_context, CommandContextInterface $source_context, $paragraph_uuid, $ckeditor_widget_id) {
+  public function duplicate(CommandContextInterface $target_context, CommandContextInterface $source_context, $paragraph_uuid, $editor_widget_id) {
     $item = $this->itemFactory->getBufferItem($source_context, $paragraph_uuid);
     $item = $this->itemFactory->duplicateBufferItem($target_context, $item);
     $item->save();
-    return $this->responseHandler->deliverDuplicate($target_context, $item, $ckeditor_widget_id);
+    return $this->responseHandler->deliverDuplicate($target_context, $item, $editor_widget_id);
   }
 
   /**
@@ -152,7 +152,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    * bundle they want to use, then an edit form for the newly created paragraph
    * item. This method allows a user to opt out of the process at any time.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse

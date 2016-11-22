@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Form;
+namespace Drupal\paragraphs_editor\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Entity\ContentEntityForm;
@@ -8,8 +8,8 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 /**
  * The form that is shown for editing paragraph entities in ckeditor.
@@ -23,23 +23,23 @@ class ParagraphEntityForm extends ContentEntityForm {
   /**
    * The context the editor command is being executed in.
    *
-   * @var Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface
+   * @var Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
    */
   protected $context;
 
   /**
    * The buffer item being edited by this form.
    *
-   * @var Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface
+   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
    */
   protected $bufferItem;
 
   /**
    * Creates a ParagraphEntityForm object.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context of the command that is invoking this form.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   An editor item (wrapped paragraph entity) to show the edit form for.
    * @param Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
@@ -79,8 +79,8 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->bufferItem->save();
 
     // Make properties available to the static ajax handler.
-    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'item'], $this->bufferItem);
-    $form_state->setTemporaryValue(['paragraphs_ckeditor', 'context'], $this->context);
+    $form_state->setTemporaryValue(['paragraphs_editor', 'item'], $this->bufferItem);
+    $form_state->setTemporaryValue(['paragraphs_editor', 'context'], $this->context);
   }
 
   /**
@@ -126,8 +126,8 @@ class ParagraphEntityForm extends ContentEntityForm {
    */
   static public function ajaxSubmit(array $form, FormStateInterface $form_state) {
     // Retrieve class mambers needed to build a response.
-    $item = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'item']);
-    $delivery = $form_state->getTemporaryValue(['paragraphs_ckeditor', 'context'])->getPlugin('delivery_provider');
+    $item = $form_state->getTemporaryValue(['paragraphs_editor', 'item']);
+    $delivery = $form_state->getTemporaryValue(['paragraphs_editor', 'context'])->getPlugin('delivery_provider');
 
     // Create a response that includes the rendered paragraph and signal that
     // the ajax workflow is completed.

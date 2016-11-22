@@ -21,24 +21,24 @@
     hidpi: false,
     requires: [ "widget" ],
     beforeInit: function(editor) {
-      // We need to register the paragraphs-ckeditor-paragraph element with the
+      // We need to register the paragraphs-editor-paragraph element with the
       // CKEDITOR DOM model or it will get confused and add wayward <p> tags.
-      // Here we will register the paragraphs-ckeditor-paragraph tag to behave
+      // Here we will register the paragraphs-editor-paragraph tag to behave
       // like a div tag.
-      CKEDITOR.dtd['paragraphs-ckeditor-paragraph'] = CKEDITOR.dtd.div;
+      CKEDITOR.dtd['paragraphs-editor-paragraph'] = CKEDITOR.dtd.div;
       for (var tagName in CKEDITOR.dtd) {
         if (CKEDITOR.dtd[tagName].div) {
-          CKEDITOR.dtd[tagName]['paragraphs-ckeditor-paragraph'] = 1;
+          CKEDITOR.dtd[tagName]['paragraphs-editor-paragraph'] = 1;
         }
       }
-      CKEDITOR.dtd.body['paragraphs-ckeditor-paragraph'] = 1;
+      CKEDITOR.dtd.body['paragraphs-editor-paragraph'] = 1;
     },
     init: function (editor) {
-      if (!Drupal.behaviors.paragraphs_ckeditor) {
+      if (!Drupal.behaviors.paragraphs_editor) {
         return;
       }
 
-      var widgetManager = $(editor.element.$).paragraphsCKEditor('widget-manager');
+      var widgetManager = $(editor.element.$).paragraphsEditor('widget-manager');
 
       // If no widget manager could be found for this instance then this isn't a
       // CKEditor instance we can attach to. In this case, we just don't add any
@@ -46,12 +46,15 @@
       if (widgetManager) {
 
         // Initialize the widget manager for use with this editor.
-        widgetManager.initialize(editor);
+        var adapter = new Drupal.paragraphs_editor.Adapters.CKEditor(editor);
+        widgetManager.initialize(adapter);
+
+        var contentFilter = 'paragraphs-editor-paragraph[data-paragraph-uuid,data-context-hint]';
 
         // Provide a command for creating an "insert paragraph" dialog.
         editor.addCommand('paragraphsinsert', {
-          allowedContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
-          requiredContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
+          allowedContent: contentFilter,
+          requiredContent: contentFilter,
           exec: function() {
             widgetManager.insert();
           },
@@ -64,11 +67,11 @@
         });
 
         // Define the CKEditor widget that represents a paragraph in the editor.
-        editor.widgets.add('ParagraphsCKEditorWidget', {
-          allowedContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
-          requiredContent: 'paragraphs-ckeditor-paragraph[data-paragraph-uuid,data-context-hint]',
+        editor.widgets.add('ParagraphsEditorWidget', {
+          allowedContent: contentFilter,
+          requiredContent: contentFilter,
           upcast: function (element) {
-            if (element.name == 'paragraphs-ckeditor-paragraph') {
+            if (element.name == 'paragraphs-editor-paragraph') {
               return element;
             }
             return false;

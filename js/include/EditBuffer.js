@@ -10,10 +10,10 @@
   /**
    * Handles fetching and caching of rendered paragraphs.
    */
-  Drupal.paragraphs_ckeditor.EditBuffer = function(commandEmitter) {
+  Drupal.paragraphs_editor.EditBuffer = function(commandEmitter) {
 
     var editBufferCache = new Backbone.Collection([], {
-      model: Drupal.paragraphs_ckeditor.BufferItemModel,
+      model: Drupal.paragraphs_editor.BufferItemModel,
     });
 
     this.getItem = function(paragraphUuid) {

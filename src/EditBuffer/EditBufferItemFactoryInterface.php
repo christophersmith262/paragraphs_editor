@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditBuffer;
+namespace Drupal\paragraphs_editor\EditBuffer;
 
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 interface EditBufferItemFactoryInterface {
   public function createBufferItem(CommandContextInterface $context, $bundle_name);

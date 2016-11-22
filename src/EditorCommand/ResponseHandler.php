@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Entity\EntityManagerInterface;
@@ -8,16 +8,16 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\PluginManagerInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_ckeditor\Form\ParagraphEntityForm;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\Form\ParagraphEntityForm;
 
 /**
- * Response handler for paragraphs ckeditor commands.
+ * Response handler for paragraphs editor commands.
  *
  * This is the default class responsible for assembling symfony responses to
- * paragraphs ckeditor commands.
+ * paragraphs editor commands.
  *
- * @see Drupal\paragraphs_ckeditor\EditorCommand\ResponseHandlerInterface
+ * @see Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface
  */
 class ResponseHandler implements ResponseHandlerInterface {
 
@@ -96,8 +96,8 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function deliverDuplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
-    return $this->duplicate($context, $item, $ckeditor_widget_id);
+  public function deliverDuplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
+    return $this->duplicate($context, $item, $editor_widget_id);
   }
 
   /**
@@ -110,7 +110,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for opening a form.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    * @param mixed $contents
    *   A render array or markup string containing the contents to be delivered.
@@ -127,9 +127,9 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for delivering a paragraph.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be rendered in the response.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
@@ -144,26 +144,26 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for delivering a duplicated paragraph.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be duplicated in the response.
-   * @param string $ckeditor_widget_id
-   *   The ckeditor widget id to target for receiving the duplicated item.
+   * @param string $editor_widget_id
+   *   The editor widget id to target for receiving the duplicated item.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
-  protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id) {
+  protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
     $response = new AjaxResponse();
-    $context->getPlugin('delivery_provider')->duplicate($response, $item, $ckeditor_widget_id);
+    $context->getPlugin('delivery_provider')->duplicate($response, $item, $editor_widget_id);
     return $response;
   }
 
   /**
    * Generates an ajax response for closing a form.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
@@ -178,7 +178,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a bundle select form object to deliver the user.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return array
@@ -192,7 +192,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a paragraph edit form object to deliver the user.
    *
-   * @param Drupal\paragraphs_ckeditor\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return array
@@ -204,9 +204,9 @@ class ResponseHandler implements ResponseHandlerInterface {
   }
 
   /**
-   * Gets the dialog title for paragraph ckeditor command dialogs.
+   * Gets the dialog title for paragraph editor command dialogs.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is exuting in.
    *
    * @return string

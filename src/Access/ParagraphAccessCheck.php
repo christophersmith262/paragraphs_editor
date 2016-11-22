@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Access;
+namespace Drupal\paragraphs_editor\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemFactoryInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface;
 use Symfony\Component\Routing\Route;
 
 class ParagraphAccessCheck implements AccessInterface {
@@ -18,7 +18,7 @@ class ParagraphAccessCheck implements AccessInterface {
    *
    * @var string
    */
-  protected $requirementsKey = '_paragraphs_ckeditor_access_paragraph';
+  protected $requirementsKey = '_paragraphs_editor_access_paragraph';
 
   public function __construct(EditBufferItemFactoryInterface $item_factory) {
     $this->itemFactory = $item_factory;
@@ -31,7 +31,7 @@ class ParagraphAccessCheck implements AccessInterface {
    * located within the editor context and the user has access to the editor
    * context.
    *
-   * @param \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph to check access for.

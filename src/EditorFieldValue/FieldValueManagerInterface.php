@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+namespace Drupal\paragraphs_editor\EditorFieldValue;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 interface FieldValueManagerInterface {
   public function wrap(FieldItemListInterface $items, array $settings);

@@ -1,16 +1,16 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\field\FieldConfigInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
 
 /**
  * The default command context factory.
  *
- * @see Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface
+ * @see Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
  */
 class CommandContextFactory implements CommandContextFactoryInterface {
 
@@ -24,7 +24,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * The buffer cache for looking up existing edit buffers.
    *
-   * @var Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface
+   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface
    */
   protected $bufferCache;
 
@@ -47,7 +47,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    *
    * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager to use for looking up the entities and fields.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferCacheInterface $buffer_cache
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface $buffer_cache
    *   The edit buffer cache to use for looking up existing edit buffers that
    *   have been persisted in the database cache.
    * @param Drupal\Component\Plugin\PluginManagerInterface $delivery_provider_manager
@@ -115,7 +115,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    *   The type of plugin to be attached.
    * @param array $settings
    *   The field widget settings specifying which plugin to use.
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context to attach the instantiated plugin to.
    */
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {

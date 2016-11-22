@@ -8,29 +8,25 @@
   'use strict';
 
   /**
-   * Tracks instances of Paragraphs CKEditor widgets.
+   * Tracks instances of Paragraphs Editor widgets.
    */
-  Drupal.paragraphs_ckeditor.WidgetManager = function(commandEmitter, editBuffer, settings) {
+  Drupal.paragraphs_editor.WidgetManager = function(commandEmitter, editBuffer, settings) {
 
-    var editor = null;
+    var adapter = null;
     var widgets = null;
 
     /**
-     * Initialize the widget manager for use with a soecific CKEditor instance.
+     * Initialize the widget manager for use with a soecific Editor instance.
      */
-    this.initialize = function(editor_instance) {
-      editor = editor_instance;
-      widgets = new Drupal.paragraphs_ckeditor.WidgetTable(editBuffer, editor);
+    this.initialize = function(adapterInstance) {
+      adapter = adapterInstance;
+      widgets = new Drupal.paragraphs_editor.WidgetTable(editBuffer, adapter);
 
       function handleBufferItemUpdate(bufferItemModel) {
         // If the new model is ready to be inserted, insert an embed code in
-        // CKEditor and mark the model as inserted.
+        // Editor and mark the model as inserted.
         if (bufferItemModel.get('insert')) {
-          var element = new CKEDITOR.dom.element('paragraphs-ckeditor-paragraph');
-          element.setAttribute('data-paragraph-uuid', bufferItemModel.get('id'));
-          element.setAttribute('data-context-hint', bufferItemModel.get('context'));
-          editor.insertElement(element);
-          editor.widgets.initOn(element, 'ParagraphsCKEditorWidget');
+          adapter.insertBufferItem(bufferItemModel);
           bufferItemModel.set({insert: false});
         }
       };
@@ -44,19 +40,9 @@
      * Makes widget manager aware of a newly inserted CKEDtior widget.
      */
     this.ingest = function(widget) {
-      var $widget = $(widget.element.$);
-      var bufferItemModel = editBuffer.getItem($widget.attr('data-paragraph-uuid'));
-      var contextString = $widget.attr('data-context-hint');
-      var itemId = bufferItemModel.get('id');
-      var widgetId = widget.id;
-
-      // Create a model to represent the widget.
-      var widgetModel = new Drupal.paragraphs_ckeditor.WidgetModel({
-        id: widgetId,
-        itemId: itemId,
-        markup: bufferItemModel.get('markup'),
-        context: contextString,
-      });
+      var $widget = $(adapter.getWidgetEl(widget));
+      var bufferItemModel = adapter.getBufferItem(editBuffer, widget);
+      var widgetModel = adapter.getBufferItem(editBuffer, widget);
 
       // Set up the widget model to listen to data change events on the buffer
       // item it references.
@@ -68,8 +54,8 @@
       // the originally copied paragraph.
       widgetModel.on('change:itemId', updateItemReference, this);
 
-      // Create a widget view to render the widget within CKEditor.
-      var widgetView = new Drupal.paragraphs_ckeditor.WidgetView({
+      // Create a widget view to render the widget within Editor.
+      var widgetView = new Drupal.paragraphs_editor.WidgetView({
         "model": widgetModel,
         "widgetManager": this,
         "el": $widget.get(0),
@@ -86,7 +72,7 @@
         this.duplicate(widgetModel);
       }
 
-      // Render the CKEditor widget view.
+      // Render the Editor widget view.
       widgets.render(widgetModel);
 
       return widgetModel;
@@ -95,8 +81,8 @@
     /**
      * Triggers the widget insertion flow.
      */
-    this.insert = function() {
-      commandEmitter.insert();
+    this.insert = function(bundle_name) {
+      commandEmitter.insert(bundle_name);
     }
 
     this.update = function(widgetModel) {
@@ -115,13 +101,12 @@
     }
 
     /**
-     * Destroys the model and view associated with a CKEditor widget.
+     * Destroys the model and view associated with a Editor widget.
      */
     this.destroy = function(widgetModel, offline) {
       var widgetId = widgetModel.get('id');
-      if (!offline && editor.widgets.instances[widgetId]) {
-        var widget = editor.widgets.instances[widgetId];
-        editor.widgets.del(widget);
+      if (!offline && adapter.widgetExists(this, widgetModel)) {
+        adapter.destroyWidget(this, widgetModel);
       }
       else {
         widgets.remove(widgetModel);

@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorFieldValue;
+namespace Drupal\paragraphs_editor\EditorFieldValue;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 class FieldValueManager implements FieldValueManagerInterface {
 

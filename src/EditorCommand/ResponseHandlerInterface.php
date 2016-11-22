@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\EditorCommand;
+namespace Drupal\paragraphs_editor\EditorCommand;
 
-use Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 /**
  * Delivers ajax responses for editor commands.
@@ -24,14 +24,14 @@ interface ResponseHandlerInterface {
   /**
    * Responds to an insert request by providing a bundle selection form.
    *
-   * When a user clicks the "insert paragraph" CKEditor toolbar button, it
+   * When a user clicks the "insert paragraph" Editor toolbar button, it
    * generates a generic insert request. From that point, the user needs to
    * decide what type of bundle they want to insert. This handler delivers the
    * form where they select the bundle.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be rendered and delivered.
    *
    * @return Symfony\Component\HttpFoundation\Response
@@ -42,9 +42,9 @@ interface ResponseHandlerInterface {
   /**
    * Responds to an edit item request by delivering an edit form.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to show the edit form for.
    *
    * @return Symfony\Component\HttpFoundation\Response
@@ -59,9 +59,9 @@ interface ResponseHandlerInterface {
    * whose state has been stored. At this point the response handler just needs
    * to render and deliver it.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to show the edit form for.
    *
    * @return Symfony\Component\HttpFoundation\Response
@@ -72,12 +72,12 @@ interface ResponseHandlerInterface {
   /**
    * Respond to an item duplication request.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
-   * @param Drupal\paragraphs_ckeditor\EditBuffer\EditBufferItemInterface $item
+   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to duplicate.
    * @param string $ckeditor_widget_id
-   *   The CKEditor widget instance id that the duplicate will be copied to.
+   *   The Editor widget instance id that the duplicate will be copied to.
    *
    * @return Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
@@ -87,7 +87,7 @@ interface ResponseHandlerInterface {
   /**
    * Respond to a close form request.
    *
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextInterface $context
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
    * @return Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.

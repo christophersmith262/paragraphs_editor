@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+name: 'Paragraphs Editor'
+format: paragraphs_editor
+weight: 0
+filters: {  }

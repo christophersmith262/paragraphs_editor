@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Ajax;
+namespace Drupal\paragraphs_editor\Ajax;
 
 use Drupal\Core\Ajax\CommandInterface;
 use Drupal\paragraphs\ParagraphInterface;
@@ -18,7 +18,7 @@ class UpdateParagraphWidgetReferenceCommand implements CommandInterface {
 
   public function render() {
     return array(
-      'command' => 'paragraphs_ckeditor_data',
+      'command' => 'paragraphs_editor_data',
       'context' => $this->contextString,
       'widget' => array(
         'id' => $this->widgetId,

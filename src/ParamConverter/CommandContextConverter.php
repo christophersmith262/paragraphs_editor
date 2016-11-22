@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\ParamConverter;
+namespace Drupal\paragraphs_editor\ParamConverter;
 
 use Drupal\Core\ParamConverter\ParamConverterInterface;
-use Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
@@ -19,7 +19,7 @@ class CommandContextConverter implements ParamConverterInterface {
   /**
    * The context factory for creating command contexts.
    *
-   * @var \Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
    */
   protected $contextFactory;
 
@@ -35,7 +35,7 @@ class CommandContextConverter implements ParamConverterInterface {
    *
    * @param Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The symfony request stack service that is managing page requests.
-   * @param Drupal\paragraphs_ckeditor\EditorCommand\CommandContextFactoryInterface $context_factory
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory to use for creating command contexts.
    */
   public function __construct(RequestStack $request_stack, CommandContextFactoryInterface $context_factory) {
@@ -82,6 +82,6 @@ class CommandContextConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    return (!empty($definition['type']) && $definition['type'] == 'paragraphs_ckeditor_command_context');
+    return (!empty($definition['type']) && $definition['type'] == 'paragraphs_editor_command_context');
   }
 }

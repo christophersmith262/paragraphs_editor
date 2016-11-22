@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_ckeditor\Ajax;
+namespace Drupal\paragraphs_editor\Ajax;
 
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 

@@ -7,10 +7,10 @@
 
   'use strict';
 
-  Drupal.paragraphs_ckeditor.WidgetTable = function(editBuffer, editor) {
+  Drupal.paragraphs_editor.WidgetTable = function(editBuffer, adapter) {
 
     var widgetCollection = new Backbone.Collection([], {
-      model: Drupal.paragraphs_ckeditor.WidgetModel,
+      model: Drupal.paragraphs_editor.WidgetModel,
     });
 
     var views = {};
@@ -92,7 +92,7 @@
       var view = null;
 
       if (views[i] && views[i][j]) {
-        if (editor.document.$.contains(views[i][j].el)) {
+        if (adapter.getRootEl().contains(views[i][j].el)) {
           view = views[i][j];
         }
         else {
