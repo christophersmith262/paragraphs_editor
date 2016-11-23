@@ -93,9 +93,9 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
         '#rows' => 100,
         '#attributes' => array(
           'class' => array(
-            'paragraphs-ckeditor'
+            'paragraphs-editor'
           ),
-          'data-paragraphs-ckeditor-context' => $context_string,
+          'data-paragraphs-editor-context' => $context_string,
         ),
         '#attached' => array(
           'library' => array(

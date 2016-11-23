@@ -59,4 +59,9 @@
    */
   Drupal.paragraphs_editor = {};
 
+  /**
+   * {@namespace}
+   */
+  Drupal.paragraphs_editor.Adapters = {};
+
 })(jQuery, window, Drupal, drupalSettings);

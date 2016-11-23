@@ -6,6 +6,7 @@ widget:
     js/models/BufferItemModel.js: {}
     js/models/WidgetModel.js: {}
     js/views/WidgetView.js: {}
+    js/include/Adapter.js: {}
     js/include/EditBuffer.js: {}
     js/include/EditorCommandEmitter.js: {}
     js/include/WidgetManager.js: {}
