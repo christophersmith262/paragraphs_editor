@@ -13,7 +13,6 @@ class InvalidCommandContext extends CommandContext {
    * Creates a command context without any valid values.
    */
   public function __construct() {
-    parent::__construct(NULL, NULL, NULL, NULL, array());
   }
 
   /**

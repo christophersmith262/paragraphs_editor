@@ -29,4 +29,24 @@ interface CommandContextFactoryInterface {
    *   in.
    */
   public function create($entity_type, $entity_id, $field_config_id, $widget_build_id, array $settings);
+
+  /**
+   * Frees the context from persistent storage.
+   *
+   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   *   The context whose related storage will be freed.
+   */
+  public function free(CommandContextInterface $context);
+
+  /**
+   * Gets the plugin manager for a certain plugin type.
+   *
+   * @param string $type
+   *   The plugin type to get the plugin manager for.
+   *
+   * @return Drupal\Component\Plugin\PluginManagerInterface
+   *   The plugin manager associated with the plugin type or NULL if no such
+   *   manager exists.
+   */
+  public function getPluginManager($type);
 }

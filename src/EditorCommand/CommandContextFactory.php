@@ -4,6 +4,8 @@ namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
 
@@ -29,7 +31,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   protected $bufferCache;
 
   /**
-   * The field config storage handler
+   * The field config storage handler.
    *
    * @var Drupal\Core\Entity\EntityStorageInterface
    */
@@ -41,6 +43,13 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    * @var array
    */
   protected $pluginManagers;
+
+  /**
+   * The entity bundle info service.
+   *
+   * @var Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+   */
+  protected $bundleInfo;
 
   /**
    * Create a command context factory object.
@@ -57,14 +66,12 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    *   The delivery provider plugin manager to use for creating bundle selector
    *   plugin instances.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, PluginManagerinterface $delivery_provider_manager, PluginManagerInterface $bundle_selector_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, EntityTypeBundleInfoInterface $bundle_info, array $plugin_managers) {
     $this->entityTypeManager = $entity_type_manager;
     $this->bufferCache = $buffer_cache;
     $this->fieldConfigStorage = $entity_type_manager->getStorage('field_config');
-    $this->pluginManagers = array(
-      'bundle_selector' => $bundle_selector_manager,
-      'delivery_provider' => $delivery_provider_manager,
-    );
+    $this->pluginManagers = $plugin_managers;
+    $this->bundleInfo = $bundle_info;
   }
 
   /**
@@ -90,7 +97,8 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       }
 
       $edit_buffer = $this->bufferCache->get(implode(':', $context_keys));
-      $context = new CommandContext($entity, $field_config, $edit_buffer, $settings);
+      $bundle_filter = $this->createBundleFilter($field_config);
+      $context = new CommandContext($entity, $field_config, $edit_buffer, $bundle_filter, $settings);
       $this->attachPlugin('delivery_provider', $settings, $context);
       $this->attachPlugin('bundle_selector', $settings, $context);
     }
@@ -100,10 +108,16 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     return $context;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function free(CommandContextInterface $context) {
     $this->bufferCache->delete($context->getContextString());
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getPluginManager($type) {
     return isset($this->pluginManagers[$type]) ? $this->pluginManagers[$type] : NULL;
   }
@@ -124,5 +138,18 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       'context' => $context,
     ));
     $context->setPlugin($type, $plugin);
+  }
+
+  /**
+   * Creates a bundle filter object.
+   *
+   * @param Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to create the filter for.
+   *
+   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
+   *   A filter object for the field definition.
+   */
+  protected function createBundleFilter(FieldDefinitionInterface $field_definition) {
+    return new ParagraphBundleFilter($this->bundleInfo, $field_definition);
   }
 }

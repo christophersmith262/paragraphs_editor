@@ -42,7 +42,7 @@
     this.ingest = function(widget) {
       var $widget = $(adapter.getWidgetEl(widget));
       var bufferItemModel = adapter.getBufferItem(editBuffer, widget);
-      var widgetModel = adapter.getBufferItem(editBuffer, widget);
+      var widgetModel = adapter.getWidget(bufferItemModel, widget);
 
       // Set up the widget model to listen to data change events on the buffer
       // item it references.
@@ -105,8 +105,8 @@
      */
     this.destroy = function(widgetModel, offline) {
       var widgetId = widgetModel.get('id');
-      if (!offline && adapter.widgetExists(this, widgetModel)) {
-        adapter.destroyWidget(this, widgetModel);
+      if (!offline && adapter.widgetExists(widgetModel)) {
+        adapter.destroyWidget(widgetModel);
       }
       else {
         widgets.remove(widgetModel);

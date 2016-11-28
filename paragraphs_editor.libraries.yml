@@ -16,6 +16,10 @@ widget:
     - core/jquery
     - core/jquery.form
     - core/drupal.ajax
+bundleselector:
+  version: 1.x
+  js:
+    js/paragraphs_editor.bundleselector.js: {}
 toolbox:
   version: 1.x
   js:

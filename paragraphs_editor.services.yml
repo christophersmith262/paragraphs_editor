@@ -19,8 +19,8 @@ services:
     arguments: 
       - '@entity_type.manager'
       - '@paragraphs_editor.edit_buffer.cache'
-      - '@paragraphs_editor.delivery_provider.manager'
-      - '@paragraphs_editor.bundle_selector.manager'
+      - '@entity_type.bundle.info'
+      - '%paragraphs_editor.plugin_managers%'
   paragraphs_editor.command.response_handler:
     class: Drupal\paragraphs_editor\EditorCommand\ResponseHandler
     arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager']
@@ -47,6 +47,9 @@ services:
     arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.embed_code_processor']
 
 parameters:
+  paragraphs_editor.plugin_managers:
+    bundle_selector: '@paragraphs_editor.bundle_selector.manager'
+    delivery_provider: '@paragraphs_editor.delivery_provider.manager'
   paragraphs_editor.edit_buffer.cache.lifetime: 24000
   paragraphs_editor.field_value.embed_template:
     tag: paragraphs-editor-paragraph

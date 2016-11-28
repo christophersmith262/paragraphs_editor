@@ -42,14 +42,12 @@ interface CommandContextInterface {
   public function isValidBundle($bundle_name);
 
   /**
-   * Gets a list of supported paragraph bundles for the field being edited.
+   * Gets a filter object for determining allowed paragraph bundles.
    *
-   * If this is empty, we allow all paragraph bundles.
-   *
-   * @return array
-   *   A map where keys are bundle machine names and values are bundle labels.
+   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
+   *   A filter object for getting information about allowed bundles.
    */
-  public function getAllowedBundles();
+  public function getBundleFilter();
 
   /**
    * Gets the edit buffer for the editor instance.

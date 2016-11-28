@@ -95,16 +95,14 @@ class ParagraphEntityForm extends ContentEntityForm {
     );
 
     // Provide a cancel link for users to cancel the edit operation.
+    $url = $this->context->createCommandUrl('cancel');
     $actions['cancel'] = array(
       '#type' => 'button',
       '#value' => $this->t('Cancel'),
       '#weight' => 10,
       '#ajax' => array(
-        'url' => $this->context->createCommandUrl('cancel'),
-        'options' => array(
-          'query' => array(
-          ),
-        ),
+        'url' => $url,
+        'options' => $url->getOptions(),
       ),
     );
 

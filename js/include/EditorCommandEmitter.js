@@ -94,7 +94,6 @@
         }
       });
 
-
       ajax.success = function (response, status) {
         var rtn = Drupal.Ajax.prototype.success.call(this, response, status);
         Drupal.ajax.instances.splice(this.instanceIndex, 1);

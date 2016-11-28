@@ -48,9 +48,9 @@ class CommandContext implements CommandContextInterface {
    *
    * If this is empty, we allow all paragraph items.
    *
-   * @var array
+   * @var Drupal\paragraphs_editor\EditorCommand\BundleFilterInterface
    */
-  protected $allowedBundles;
+  protected $bundleFilter;
 
   /**
    * A mapping of plugin types to plugin instances associated with the command.
@@ -85,10 +85,11 @@ class CommandContext implements CommandContextInterface {
    * @param array $settings
    *   The field widget settings for the editor.
    */
-  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, array $settings = array()) {
+  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, ParagraphBundleFilterInterface $bundle_filter = NULL, array $settings = array()) {
     $this->entity = $entity;
     $this->fieldDefinition = $field_config;
     $this->editBuffer = $edit_buffer;
+    $this->bundleFilter = $bundle_filter;
     $this->settings = $settings;
   }
 
@@ -116,8 +117,8 @@ class CommandContext implements CommandContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAllowedBundles() {
-    return $this->allowedBundles;
+  public function getBundleFilter() {
+    return $this->bundleFilter;
   }
 
   /**
@@ -209,8 +210,5 @@ class CommandContext implements CommandContextInterface {
    */
   public function getAdditionalContext($key) {
     return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
-  }
-
-  protected function calculateBundles() {
   }
 }

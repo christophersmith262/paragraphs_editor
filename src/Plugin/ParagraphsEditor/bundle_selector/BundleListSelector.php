@@ -76,23 +76,47 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['search'] = array(
-      '#title' => 'Search',
-      '#type' => 'entity_autocomplete',
-      '#target_type' => 'paragraphs_type',
+    $form['search_container'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(
+          'paragraphs-editor-bundle-selector-search',
+        ),
+      ),
+      '#attached' => array(
+        'library' => array(
+          'paragraphs_editor/bundleselector'
+        ),
+      ),
     );
-    $form['search_button'] = array(
+    $form['search_container']['search'] = array(
+      '#title' => $this->t('Search'),
+      '#type' => 'textfield',
+      '#attributes' => array(
+        'class' => array(
+          'paragraphs-editor-bundle-selector-search__input',
+        ),
+        'autocomplete' => 'off',
+      ),
+    );
+    $form['search_container']['search_button'] = array(
       '#type' => 'submit',
       '#value' => 'Search',
-      '#submit' => array('::ajaxSearchSubmit'),
+      '#submit' => array(),
       '#limit_validation_errors' => array(),
       '#ajax' => array(
         'callback' => array(get_class($this), 'ajaxSearch'),
-        'wrapper' => 'test-form',
+        'wrapper' => 'paragraphs-editor-bundle-selector-options',
+      ),
+      '#attributes' => array(
+        'class' => array(
+          'paragraphs-editor-bundle-selector-search__submit',
+          'visually-hidden',
+        ),
       ),
     );
     $form['options'] = array(
-      '#prefix' => '<div id="test-form">',
+      '#prefix' => '<div id="paragraphs-editor-bundle-selector-options">',
       '#suffix' => '</div>',
       '#type' => 'table',
       '#header' => $this->buildHeader(),
@@ -111,8 +135,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
       $form['options'][$entity->id()] = $row;
     }
 
-    // Add an ajax link for allowing the use to cancel out of this form.
-    $form['actions']['cancel'] = array(
+    $form['cancel'] = array(
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
       '#url' => $this->context->createCommandUrl('cancel'),
@@ -127,11 +150,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
     return $form;
   }
 
-  public function ajaxSearchSubmit($form, $form_state) {
-    $form_state->setRebuild();
-  }
-
-  public static function ajaxSearch($form, $form_state) {
+  public static function ajaxSearch($form, FormStateInterface $form_state) {
     return $form['options'];
   }
 
@@ -188,28 +207,36 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
     // This needs to be implemented, but we don't have anything to submit.
   }
 
-public function load($search=NULL) {
-  $entity_ids = $this->getEntityIds($search);
-  $entities = $this->storage->loadMultipleOverrideFree($entity_ids);
+  /**
+   * {@inheritdoc}
+   */
+  public function load($search=NULL) {
+    $entity_ids = $this->getEntityIds($search);
+    $entities = $this->storage->loadMultipleOverrideFree($entity_ids);
 
-  // Sort the entities using the entity class's sort() method.
-  // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
-  uasort($entities, array($this->entityType->getClass(), 'sort'));
-  return $entities;
-}
-
-protected function getEntityIds($search=NULL) {
-  $query = $this->getStorage()->getQuery()
-    ->sort($this->entityType->getKey('id'));
-
-  if ($search) {
-    $query->condition('label', $search, 'CONTAINS');
+    // Sort the entities using the entity class's sort() method.
+    // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
+    uasort($entities, array($this->entityType->getClass(), 'sort'));
+    return $entities;
   }
 
-  // Only add the pager if a limit is specified.
-  if ($this->limit) {
-    $query->pager($this->limit);
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntityIds($search=NULL) {
+    $query = $this->getStorage()->getQuery()
+      ->sort($this->entityType->getKey('id'));
+
+    if ($search) {
+      $query->condition('label', $search, 'CONTAINS');
+    }
+
+    $this->context->getBundleFilter()->filterQuery($query);
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
   }
-  return $query->execute();
-}
 }
