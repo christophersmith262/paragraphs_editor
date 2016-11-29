@@ -16,5 +16,4 @@ This module provides a field widget, field formatter, and text filter for paragr
    updating paragraphs_editor.
  * [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor): Provides integration with the core CKEditor
    implementation.
- * [Drupal Project](https://www.drupal.org/sandbox/christophersmith262/2491637): 
-   updating paragraphs_editor.
+ * [Drupal Project](https://www.drupal.org/sandbox/christophersmith262/2491637): The Drupal project page for this module.
