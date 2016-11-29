@@ -25,12 +25,17 @@ class EditorCommandController implements ContainerInjectionInterface {
    */
   protected $responseHandler;
 
+  /**
+   * The factory for creating edit buffer items.
+   *
+   * @var \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface
+   */
   protected $itemFactory;
 
   /**
    * Constructs an editor command controller.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager $entity_type_manager
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory $entity_type_manager
    *   The Drupal entity type manager.
    * @param \Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface $response_handler
    *   The handler obejct that will serve the command responses.
@@ -87,7 +92,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
-   * @param string $string $paragraph_uuid
+   * @param string $paragraph_uuid
    *   The UUID of the paragraph to generate an edit form for.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
@@ -106,7 +111,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
-   * @param string $string $paragraph_uuid
+   * @param string $paragraph_uuid
    *   The UUID of the paragraph to deliver rendered markup for.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse

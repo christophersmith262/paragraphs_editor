@@ -3,20 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Paragraphs Editor API's documentation!
+Welcome to Paragraphs Editor's documentation!
 =================================================
 
-Contents:
+Paragraphs Editor allows paragraph fields to be treated just like formatted
+HTML fields providing all the structure of paragraphs, with all the flexability
+of WYSIWYG.
+
+Contents
+----------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   intro
+   requirements
+   ckeditorinstall
+   editoradapters
+   bundleselectorplugins
+   deliveryplugins
+   Code Documentation <api/index.html#http://>

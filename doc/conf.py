@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Paragraphs Editor API documentation build configuration file, created by
+# Paragraphs Editor documentation build configuration file, created by
 # sphinx-quickstart on Tue Nov 29 10:58:39 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -16,7 +16,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import sys, os
+import sys, os, subprocess
 
 # Check if this build is on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -24,6 +24,8 @@ if not on_rtd:
   import sphinx_rtd_theme
   html_theme = "sphinx_rtd_theme"
   html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+subprocess.call('doxygen', shell=True)
 
 # -- General configuration ------------------------------------------------
 
@@ -53,7 +55,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Paragraphs Editor API'
+project = u'Paragraphs Editor'
 copyright = u'2016, Christopher Smith'
 author = u'Christopher Smith'
 
@@ -138,7 +140,7 @@ todo_include_todos = False
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = u'Paragraphs Editor API v8.x'
+# html_title = u'Paragraphs Editor v8.x'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -264,7 +266,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ParagraphsEditorAPI.tex', u'Paragraphs Editor API Documentation',
+    (master_doc, 'ParagraphsEditorAPI.tex', u'Paragraphs Editor Documentation',
      u'Christopher Smith', 'manual'),
 ]
 
@@ -306,7 +308,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'paragraphseditorapi', u'Paragraphs Editor API Documentation',
+    (master_doc, 'paragraphseditorapi', u'Paragraphs Editor Documentation',
      [author], 1)
 ]
 
@@ -321,7 +323,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ParagraphsEditorAPI', u'Paragraphs Editor API Documentation',
+    (master_doc, 'ParagraphsEditorAPI', u'Paragraphs Editor Documentation',
      author, 'ParagraphsEditorAPI', 'One line description of project.',
      'Miscellaneous'),
 ]
