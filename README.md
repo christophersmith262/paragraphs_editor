@@ -12,9 +12,9 @@ This module provides a field widget, field formatter, and text filter for paragr
 
 ## Resources
 
- * [paragraphs_ckeditor](): Provides integration with the core CKEditor
-   implementation.
- * [drupal project](): Contains documentation for extending and
+ * [Documentation](http://paragraphs-editor.readthedocs.io/en/latest): Contains documentation for extending and
    updating paragraphs_editor.
- * [developer documentation](): Contains documentation for extending and
+ * [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor): Provides integration with the core CKEditor
+   implementation.
+ * [Drupal Project](https://www.drupal.org/sandbox/christophersmith262/2491637): 
    updating paragraphs_editor.
