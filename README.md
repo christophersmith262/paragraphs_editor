@@ -1,6 +1,6 @@
 ## Synopsis
 
-This module provides an ajax / javascript framework for editing paragraph fields with WYSIWYG editors. It also contains the paragraphs_ckeditor submodule, which supports CKEditor integration for paragraph fields.
+This module provides an ajax / javascript framework for editing paragraph fields with WYSIWYG editors. Since this module only provides an API. To use Editor integration on a site, you might want to start with the [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor) project.
 
 ## Motivation
 
@@ -10,6 +10,11 @@ Often times, we use paragraphs to build "body field" content, that is not easily
 
 This module provides a field widget, field formatter, and text filter for paragraph fields that allows authors to work within a free-flowing WYSIWYG, while also allowing them to create paragraphs in-context and on the fly.
 
-## Installation
+## Resources
 
-By default the paragraphs_editor module simply provides an API. If you are looking to integrate with the default Drupal 8 WYSIWYG, enable paragraphs_ckeditor and view the installtion instructions for that module.
+ * [paragraphs_ckeditor](): Provides integration with the core CKEditor
+   implementation.
+ * [drupal project](): Contains documentation for extending and
+   updating paragraphs_editor.
+ * [developer documentation](): Contains documentation for extending and
+   updating paragraphs_editor.
