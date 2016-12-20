@@ -47,6 +47,11 @@
        */
       "markup": "...",
 
+      /**
+       * The item markup.
+       *
+       * @type {string}
+       */
       "context": "",
     },
 

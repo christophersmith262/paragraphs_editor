@@ -2,6 +2,7 @@
 
 namespace Drupal\paragraphs_editor\EditorCommand;
 
+use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
@@ -77,7 +78,13 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function create($entity_type, $entity_id, $field_config_id, $widget_build_id, array $settings) {
+  public function create($entity_type, $entity_id, $field_config_id, array $settings, $widget_build_id = NULL) {
+
+    // If a widget build id isn't specified, we create a new one.
+    if (!$widget_build_id) {
+      $widget_build_id = Crypt::randomBytesBase64();
+    }
+
     // If any exceptions are thrown while initializing any of the properties, we
     // return an "Invalid Command" context to signal that something is wrong
     // with the command and execution should be aborted. We do this instead of
@@ -134,10 +141,12 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    */
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
     $plugin_name = isset($settings[$type]) ? $settings[$type] : '';
-    $plugin = $this->getPluginManager($type)->createInstance($plugin_name, array(
-      'context' => $context,
-    ));
-    $context->setPlugin($type, $plugin);
+    if ($plugin_name) {
+      $plugin = $this->getPluginManager($type)->createInstance($plugin_name, array(
+        'context' => $context,
+      ));
+      $context->setPlugin($type, $plugin);
+    }
   }
 
   /**

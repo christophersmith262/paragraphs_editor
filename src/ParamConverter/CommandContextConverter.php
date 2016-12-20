@@ -64,7 +64,7 @@ class CommandContextConverter implements ParamConverterInterface {
       $settings = array();
     }
 
-    $context = $this->contextFactory->create($entity_type, $entity_id, $field_config_id, $widget_build_id, $settings);
+    $context = $this->contextFactory->create($entity_type, $entity_id, $field_config_id, $settings, $widget_build_id);
 
     // If the parameter definition gave any additional context about the command
     // that is being executed, we add that here so that delivery or bundle

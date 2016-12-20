@@ -9,6 +9,7 @@ class EditBufferItem implements EditBufferItemInterface {
   protected $entity;
   protected $bufferCache;
   protected $buffer;
+  protected $inlineEdits = array();
 
   public function __construct(ParagraphInterface $entity, EditBufferCacheInterface $buffer_cache, EditBufferInterface $buffer) {
     $this->entity = $entity;
@@ -22,6 +23,14 @@ class EditBufferItem implements EditBufferItemInterface {
 
   public function overwrite(ParagraphInterface $entity) {
     $this->entity = $entity;
+  }
+
+  public function setInlineEdits(array $edits) {
+    $this->inlineEdits = $edits;
+  }
+
+  public function getInlineEdits() {
+    return $this->inlineEdits;
   }
 
   public function save() {

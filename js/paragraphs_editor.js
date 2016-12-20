@@ -30,8 +30,16 @@
    *   The model id for the command that was used.
    */
   Drupal.AjaxCommands.prototype.paragraphs_editor_data = function(ajax, response, status){
-    $('.paragraphs-editor[data-paragraphs-editor-context="' + response.context + '"')
-      .paragraphsEditor('process-command-response', response);
+    if (response.widget) {
+      $('.paragraphs-editor[data-paragraphs-editor-context="' + response.context + '"')
+        .paragraphsEditor('update', response.widget);
+    }
+    if (response.editBufferItem) {
+      Drupal.paragraphs_editor.loader.getContextFactory()
+        .create(response.context)
+        .getEditBuffer()
+        .setItem(response.editBufferItem);
+    }
   }
 
   /**
@@ -52,6 +60,22 @@
       +     '</li>'
       +   '</ul>'
       + '</div>';
+  }
+
+  /**
+   * Theme function for generating paragraphs editor widgets.
+   *
+   * @return {string}
+   *   A string representing a DOM fragment.
+   */
+  Drupal.theme.paragraphsEditorWidgetMemento = function(items) {
+    var result = '';
+    for (var i in items) {
+      result += '<paragraphs-editor-nested-editor '
+        + 'data-paragraphs-editor-context="' + items[i].context + '">'
+        + items[i].value + '</paragraphs-editor-nested-editor>';
+    }
+    return result;
   }
 
   /**

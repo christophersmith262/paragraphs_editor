@@ -5,6 +5,9 @@
  * Supports CKEDITOR integration for the paragraphs module.
  */
 
+use Drupal\Core\Render\Element;
+use Drupal\Component\Utility\Html;
+
 /**
  * Implements hook_help().
  */
@@ -66,7 +69,15 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
 }
 
 function paragraphs_editor_field_config_edit_form_validate(&$element, $form_state) {
-  $text_bundle = $form_state->getValue($element['#parents']);
+  $parents = $element['#parents'];
+  array_pop($parents);
+  $settings = $form_state->getValue($parents);
+
+  if (empty($settings['enabled'])) {
+    return;
+  }
+
+  $text_bundle = $settings['text_bundle'];
   $target_bundles = $form_state->getValue(['settings', 'handler_settings', 'target_bundles']);
   if (!$target_bundles || !empty($target_bundles[$text_bundle])) {
     $text_field = \Drupal::service('paragraphs_editor.field_value.text_bundle_manager')->getBundleTextField($text_bundle);
@@ -87,5 +98,16 @@ function paragraphs_editor_field_config_edit_form_builder($entity_type, $entity,
     $entity->unsetThirdPartySetting('paragraphs_editor', 'enabled');
     $entity->unsetThirdPartySetting('paragraphs_editor', 'text_bundle');
     $entity->unsetThirdPartySetting('paragraphs_editor', 'text_field');
+  }
+}
+
+function paragraphs_editor_preprocess_field(&$variables) {
+  if (!empty($variables['element']['#paragraphs_editor_context'])) {
+    $context_string = $variables['element']['#paragraphs_editor_context'];
+    foreach ($variables['items'] as $delta => $item) {
+      $variables['items'][$delta]['attributes']->addClass('paragraphs-editor-nested-editor');
+      $variables['items'][$delta]['attributes']->setAttribute('data-paragraphs-editor-context', $context_string);
+      $variables['items'][$delta]['content'] = '';
+    }
   }
 }

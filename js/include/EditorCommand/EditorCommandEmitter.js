@@ -10,7 +10,7 @@
   /**
    * Sends paragraph commands.
    */
-  Drupal.paragraphs_editor.EditorCommandEmitter = function($element, contextString, settings) {
+  Drupal.paragraphs_editor.EditorCommandEmitter = function(contextString, settings) {
 
     var params = [];
     for (var key in settings) {
@@ -86,8 +86,6 @@
       path += params;
 
       var ajax = Drupal.ajax({
-        base: $element.attr('id'),
-        element: $element.get(0),
         url: path,
         progress: {
           message: "",

@@ -91,6 +91,8 @@ class CommandContext implements CommandContextInterface {
     $this->editBuffer = $edit_buffer;
     $this->bundleFilter = $bundle_filter;
     $this->settings = $settings;
+    $context_parts = explode(':', $edit_buffer->getContextString());
+    $this->buildId = end($context_parts);
   }
 
   /**
@@ -133,6 +135,10 @@ class CommandContext implements CommandContextInterface {
    */
   public function getContextString() {
     return $this->editBuffer->getContextString();
+  }
+
+  public function getBuildId() {
+    return $this->buildId;
   }
 
   /**

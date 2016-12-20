@@ -5,7 +5,7 @@ namespace Drupal\paragraphs_editor\Ajax;
 use Drupal\Core\Ajax\CommandInterface;
 use Drupal\paragraphs\ParagraphInterface;
 
-class UpdateParagraphWidgetReferenceCommand implements CommandInterface {
+class DeliverEditorWidgetCommand implements CommandInterface {
   protected $contextString;
   protected $widgetId;
   protected $paragraphUuid;

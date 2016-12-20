@@ -41,7 +41,7 @@ services:
     arguments: ['@entity_field.manager', '@entity_type.manager']
   paragraphs_editor.field_value.embed_code_processor:
     class: Drupal\paragraphs_editor\EditorFieldValue\EmbedCodeProcessor
-    arguments: ['%paragraphs_editor.field_value.embed_template%']
+    arguments: ['%paragraphs_editor.field_value.elements%']
   paragraphs_editor.field_value.manager:
     class: Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
     arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.embed_code_processor']
@@ -51,9 +51,13 @@ parameters:
     bundle_selector: '@paragraphs_editor.bundle_selector.manager'
     delivery_provider: '@paragraphs_editor.delivery_provider.manager'
   paragraphs_editor.edit_buffer.cache.lifetime: 24000
-  paragraphs_editor.field_value.embed_template:
-    tag: paragraphs-editor-paragraph
-    close: TRUE
-    attributes:
-      uuid: data-paragraph-uuid
-      context: data-context-hint
+  paragraphs_editor.field_value.elements:
+    context_attribute: data-paragraphs-editor-context
+    editor_class: paragraphs-editor
+    embed_template:
+      tag: paragraphs-editor-paragraph
+      attributes:
+        uuid: data-paragraph-uuid
+        context: data-context-hint
+    inline_template:
+      tag: paragraphs-editor-nested-editor

@@ -22,30 +22,7 @@
       // this plugin.
       var paragraphsEditor = $(this).data('paragraphsEditor');
       if (!paragraphsEditor) {
-        var context_string = $(this).attr('data-paragraphs-editor-context');
-        var editorSettings = drupalSettings['paragraphs_editor'];
-
-        // It only makes sense to build a proper widget manager if the
-        // element actually has the required data properties. Otherwise this
-        // plugin is probably being applied to an element that doesn't support
-        // it.
-        if (context_string && editorSettings[context_string]) {
-          var settings = editorSettings[context_string];
-          var prototypes = Drupal.paragraphs_editor;
-          var commandEmitter = new prototypes.EditorCommandEmitter($(this), context_string, settings);
-          var editBuffer = new prototypes.EditBuffer(commandEmitter);
-          var widgetManager = new prototypes.WidgetManager(commandEmitter, editBuffer, settings);
-
-          paragraphsEditor = {
-            "commandEmitter": commandEmitter,
-            "editBuffer": editBuffer,
-            "widgetManager": widgetManager,
-          };
-        }
-        else {
-          paragraphsEditor = {}
-        }
-
+        paragraphsEditor = Drupal.paragraphs_editor.loader.wrapElement($(this));
         $(this).data('paragraphsEditor', paragraphsEditor);
       }
 
@@ -54,19 +31,56 @@
       //
       // Note that the behavior of this command is undefined when the collection
       // of elements matching the selector is greater than one.
-      if (action == 'widget-manager') {
-        rtn = paragraphsEditor.widgetManager;
+      if (action == 'attachable') {
+        rtn = !!paragraphsEditor;
       }
 
-      // Process the 'process-command-response' command.
-      else if (action == 'process-command-response') {
-        if (options.editBufferItem) {
-          paragraphsEditor.editBuffer.setItem(options.editBufferItem);
+      else if (action == 'attached') {
+        if (paragraphsEditor) {
+          rtn = !!paragraphsEditor.widgetManager;
         }
-        if (options.widget) {
-          paragraphsEditor.widgetManager.update(options.widget);
+        else {
+          rtn = false;
         }
       }
+
+      else if (action == 'attach') {
+        rtn = paragraphsEditor ? paragraphsEditor.attach(options) : null;
+      }
+
+      else if (action == 'detach') {
+        rtn = paragraphsEditor.detach();
+      }
+
+      else if (action == 'embed-factory') {
+        rtn = paragraphsEditor ? paragraphsEditor.embedCodeFactory : null;
+      }
+
+      else if (action == 'context') {
+        rtn = paragraphsEditor ? paragraphsEditor.editorContext : null;
+      }
+
+      else if (action == 'update') {
+        if (paragraphsEditor && paragraphsEditor.widgetTable) {
+          paragraphsEditor.widgetTable.update(options);
+        }
+      }
+
+      else if (action == 'insert') {
+      }
+
+      else if (action == 'edit') {
+      }
+
+      else if (action == 'get') {
+      }
+
+      else if (action == 'remove') {
+      }
+
+      else if (action == 'refresh') {
+      }
+
     });
 
     return rtn;

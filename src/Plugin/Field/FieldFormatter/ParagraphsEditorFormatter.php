@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @FieldFormatter(
  *   id = "entity_reference_paragraphs_editor",
- *   label = @Translation("Paragraphs (Editor)"),
+ *   label = @Translation("Rendered Editor Markup"),
  *   field_types = {
  *     "entity_reference_revisions"
  *   }

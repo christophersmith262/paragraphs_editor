@@ -3,8 +3,8 @@
 namespace Drupal\paragraphs_editor\Plugin\ParagraphsEditor\delivery_provider;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\paragraphs_editor\Ajax\DeliverParagraphPreviewCommand;
-use Drupal\paragraphs_editor\Ajax\UpdateParagraphWidgetReferenceCommand ;
+use Drupal\paragraphs_editor\Ajax\DeliverEditBufferItemCommand;
+use Drupal\paragraphs_editor\Ajax\DeliverEditorWidgetCommand ;
 use Drupal\paragraphs_editor\Ajax\OpenModalCommand;
 use Drupal\paragraphs_editor\Ajax\CloseModalCommand;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
@@ -40,15 +40,15 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
    */
   public function render(AjaxResponse $response, EditBufferItemInterface $item) {
     $insert = ($this->context->getAdditionalContext('command') == 'insert');
-    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getContextString(), $item->getEntity(), $insert));
+    $response->addCommand(new DeliverEditBufferItemCommand($this->context->getContextString(), $item, $insert));
   }
 
   /**
    * {@inheritdoc}
    */
   public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $editor_widget_id) {
-    $response->addCommand(new DeliverParagraphPreviewCommand($this->context->getContextString(), $item->getEntity()));
-    $response->addCommand(new UpdateParagraphWidgetReferenceCommand($this->context->getContextString(), $item->getEntity(), $editor_widget_id));
+    $response->addCommand(new DeliverEditBufferItemCommand($this->context->getContextString(), $item));
+    $response->addCommand(new DeliverEditorWidgetCommand($this->context->getContextString(), $item->getEntity(), $editor_widget_id));
   }
 
   /**

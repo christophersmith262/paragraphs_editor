@@ -28,7 +28,7 @@ interface CommandContextFactoryInterface {
    *   A command context object representing the context a command was executed
    *   in.
    */
-  public function create($entity_type, $entity_id, $field_config_id, $widget_build_id, array $settings);
+  public function create($entity_type, $entity_id, $field_config_id, array $settings, $widget_build_id);
 
   /**
    * Frees the context from persistent storage.

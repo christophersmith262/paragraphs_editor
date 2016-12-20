@@ -81,8 +81,8 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $widget_build_id = Crypt::randomBytesBase64();
-    $context_string = $this->getContext($items->getEntity(), $widget_build_id)->getContextString();
+    $context = $this->getContext($items->getEntity());
+    $context_string = $context->getContextString();
     $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
 
     return array(
@@ -103,14 +103,16 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
           ),
         'drupalSettings' => array(
             'paragraphs_editor' => array(
-              $context_string => $this->getSettings(),
+              'instances' => array(
+                $context_string => $this->getSettings(),
+              ),
             ),
           ),
         ),
       ),
       'build_id' => array(
         '#type' => 'hidden',
-        '#default_value' => $widget_build_id,
+        '#default_value' => $context->getBuildId(),
       ),
     );
   }
@@ -262,7 +264,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     return $form_state->getTemporaryValue($path);
   }
 
-  protected function getContext(EntityInterface $entity, $widget_build_id) {
-    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $widget_build_id, $this->getSettings());
+  protected function getContext(EntityInterface $entity, $widget_build_id=NULL) {
+    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $this->getSettings(), $widget_build_id);
   }
 }
