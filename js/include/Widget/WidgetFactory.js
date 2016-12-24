@@ -20,7 +20,8 @@
       var sourceContext = this._contextResolver.resolveSourceContext($el);
       var targetContext = this._contextResolver.resolveTargetContext($el);
       var uuidAttribute = this._embedCodeFactory.getAttributes().uuid;
-      var bufferItemModel = sourceContext.getEditBuffer().getItem($el.attr(uuidAttribute));
+      var commandEmitter = this._embedCodeFactory.getCommandEmitter();
+      var bufferItemModel = sourceContext.getEditBuffer().getItem(commandEmitter, $el.attr(uuidAttribute));
 
       var options = {
         "embedCodeFactory": this._embedCodeFactory,
@@ -30,7 +31,7 @@
       var widgetModel = new this._prototype({
         "id": id,
         "itemContext": sourceContext.getContextString(),
-        "editorContext": targetContext.getContextString(),
+        "widgetContext": targetContext.getContextString(),
         "itemId": bufferItemModel.get('id'),
       }, options);
 

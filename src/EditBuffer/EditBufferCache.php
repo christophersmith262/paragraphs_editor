@@ -47,10 +47,21 @@ class EditBufferCache implements EditBufferCacheInterface {
    * {@inheritdoc}
    */
   public function delete($context_string) {
+    $buffer = $this->get($context_string);
+    foreach ($buffer->getChildBufferTags() as $child_cache_key) {
+      $this->delete($child_cache_key);
+    }
     $this->storage->delete($context_string);
   }
 
   public function save(EditBufferInterface $buffer) {
     $this->storage->set($buffer->getContextString(), $buffer, $this->expiry);
+
+    $parent_cache_key = $buffer->getParentBufferTag();
+    if ($parent_cache_key) {
+      $parent_buffer = $this->get($parent_cache_key);
+      $parent_buffer->addChildBufferTag($buffer->getContextString());
+      $this->save($parent_buffer);
+    }
   }
 }

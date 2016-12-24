@@ -24,7 +24,9 @@
       if (this._initialize()) {
         var editorContext = this._createContextResolver().resolveTargetContext($el);
         var contextResolver = this._createContextResolver(editorContext);
-        return editorContext ? new this._prototypes.ParagraphsEditorField(contextResolver, editorContext, this._embedCodeFactory, this._prototypes) : null;
+        var commandEmitter = new this._prototypes.EditorCommandEmitter(editorContext);
+        var embedCodeFactory = new this._prototypes.EmbedCodeFactory(this._contextFactory, commandEmitter, this._globalSettings.elements, this._prototypes);
+        return editorContext ? new this._prototypes.ParagraphsEditorField(contextResolver, editorContext, embedCodeFactory, this._prototypes) : null;
       }
       return null;
     },
@@ -36,7 +38,7 @@
 
       if (!this._initialized && this.validateSettings()) {
         this._contextFactory = new this._prototypes.ContextFactory(this._globalSettings, this._prototypes);
-        this._embedCodeFactory = new this._prototypes.EmbedCodeFactory(this._contextFactory, this._globalSettings.elements, this._prototypes);
+        this._embedCodeFactory = new this._prototypes.EmbedCodeFactory(this._contextFactory, null, this._globalSettings.elements, this._prototypes);
         this._initialized = true;
       }
 

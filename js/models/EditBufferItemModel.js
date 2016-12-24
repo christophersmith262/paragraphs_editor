@@ -53,6 +53,8 @@
        * @type {string}
        */
       "context": "",
+
+      "edits": {},
     },
 
   });

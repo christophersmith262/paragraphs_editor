@@ -13,8 +13,8 @@ class DeliverEditBufferItemCommand implements CommandInterface {
   protected $insert;
   protected $contextString;
 
-  public function __construct($context_string, EditBufferItemInterface $item, $insert = FALSE) {
-    $this->contextString = $context_string;
+  public function __construct($target_context, EditBufferItemInterface $item, $insert = FALSE) {
+    $this->context = $target_context;
     $this->item = $item;
     $this->insert = $insert;
   }
@@ -29,10 +29,10 @@ class DeliverEditBufferItemCommand implements CommandInterface {
     $markup = \Drupal::service('renderer')->render($view);
     return array(
       'command' => 'paragraphs_editor_data',
-      'context' => $this->contextString,
+      'context' => $this->context->getContextString(),
       'editBufferItem' => array(
         'id' => $paragraph->uuid(),
-        'context' => $this->contextString,
+        'context' => $this->context->getContextString(),
         'isNew' => $paragraph->isNew(),
         'insert' => $this->insert,
         'markup' => $markup,

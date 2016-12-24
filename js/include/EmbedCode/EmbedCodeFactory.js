@@ -7,8 +7,9 @@
 
   'use strict';
 
-  Drupal.paragraphs_editor.EmbedCodeFactory = function(contextFactory, elements, prototypes) {
+  Drupal.paragraphs_editor.EmbedCodeFactory = function(contextFactory, commandEmitter, elements, prototypes) {
     this._contextFactory = contextFactory;
+    this._commandEmitter = commandEmitter;
     this._elements = elements;
     this._prototypes = prototypes;
   }
@@ -26,13 +27,13 @@
         targetContext = fallbackContext;
       }
 
-      return new this._prototypes.EmbedCode(bufferItemModel, sourceContext, targetContext, this._elements.embed_template);
+      return new this._prototypes.EmbedCode(bufferItemModel, sourceContext, targetContext, this._commandEmitter, this._elements.embed_template);
     },
 
     createFromRefs: function(itemId, sourceContext, targetContext) {
       var sourceContext = this._contextFactory.create(sourceContext);
       var targetContext = this._contextFactory.create(targetContext);
-      var bufferItemModel = sourceContext.getEditBuffer().getItem(itemId);
+      var bufferItemModel = sourceContext.getEditBuffer().getItem(this._commandEmitter, itemId);
       return this.create(bufferItemModel, sourceContext, targetContext);
     },
 
@@ -53,6 +54,10 @@
 
     getClose: function() {
       return this._elements.embed_template.close;
+    },
+
+    getCommandEmitter: function() {
+      return this._commandEmitter;
     }
 
   });

@@ -48,34 +48,48 @@ class ContextAccessCheck implements AccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     // Load the context from the parameters.
     $requirement = $route->getRequirement($this->requirementsKey);
-    if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
-      $context = $route_match->getParameter($matches[1]);
-    }
-    else {
-      return AccessResult::forbidden();
-    }
-
-    // If no field config could be loaded for the context, we treat this as the
-    // user not being able to access the endpoint.
-    $field_config = $context->getFieldConfig();
-    if (!$field_config) {
-      $access = AccessResult::forbidden();
-    }
-    else {
-      $entity_type = $field_config->getTargetEntityTypeId();
-      $entity_bundle = $field_config->getTargetBundle();
-      $entity = $context->getEntity();
-
-      // If the operation pertains to an existing entity, the user must have
-      // edit access to perform editor commands. If it is a new entity, the user
-      // must have create access.
-      if ($entity) {
-        $access = $entity->access('edit', $account, TRUE);
+    $ands = explode('+', $requirement);
+    $chain = array();
+    foreach ($ands as $requirement) {
+      if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
+        $context = $route_match->getParameter($matches[1]);
       }
       else {
-        $access = $this->entityTypeManager->getAccessControlHandler($entity_type)
-          ->createAccess($entity_bundle, $account, array(), TRUE);
+        return AccessResult::forbidden();
       }
+
+      // If no field config could be loaded for the context, we treat this as the
+      // user not being able to access the endpoint.
+      $field_config = $context->getFieldConfig();
+      if (!$field_config) {
+        $access = AccessResult::forbidden();
+      }
+      else {
+        $entity_type = $field_config->getTargetEntityTypeId();
+        $entity_bundle = $field_config->getTargetBundle();
+        $entity = $context->getEntity();
+
+        // If the operation pertains to an existing entity, the user must have
+        // edit access to perform editor commands. If it is a new entity, the user
+        // must have create access.
+        if ($entity) {
+          $chain[] = $entity->access('edit', $account, TRUE);
+        }
+        else {
+          $chain[] = $this->entityTypeManager->getAccessControlHandler($entity_type)
+            ->createAccess($entity_bundle, $account, array(), TRUE);
+        }
+      }
+    }
+
+    if ($chain) {
+      $access = AccessResult::allowed();
+      foreach ($chain as $next_access) {
+        $access = $access->andIf($next_access);
+      }
+    }
+    else {
+      $access = AccessResult::neutral();
     }
 
     return $access;

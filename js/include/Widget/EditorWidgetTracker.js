@@ -44,15 +44,12 @@
       // If the widget is not currently using the editor view mode, we treat
       // it as being in 'export' form. This means we have to create an export
       // view to load the data.
-      if (this._adapter.getViewMode(widget, id, $el) != 'editor') {
-
-        // Update the widget model based on the markup.
+      if (!widgetEditorView.isEditorViewRendered()) {
         this._viewFactory.createTemporary(widgetModel, $el, 'export').save();
-        widgetEditorView.render();
       }
-
-      // Mark the widget as being rendered in the editor mode.
-      this._adapter.setViewMode(widget, id, $el, 'editor');
+      else {
+        widgetEditorView.save();
+      }
 
       // If there is more than one widget referencing the same buffer item we
       // need to duplicate it. Only one widget can ever reference a given
@@ -62,14 +59,10 @@
       // instance, so all the data about it is in the original field instance.
       var matchingContexts = sourceContext.getContextString() == targetContext.getContextString();
       if (this._widgetTable.count(widgetModel) > 1 || !matchingContexts) {
-
-        // Set temporary markup until the duplication process completes. We use
-        // silent here to prevent existing inline edits from being wiped out.
-        widgetModel.set({markup: "..."}, {silent: true});
-        widgetEditorView.render();
-
-        // Issue a duplication request.
         widgetModel.duplicate();
+      }
+      else {
+        widgetEditorView.render();
       }
     },
 

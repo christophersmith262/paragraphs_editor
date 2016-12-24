@@ -9,9 +9,11 @@ class EditBuffer implements EditBufferInterface {
 
   protected $contextString;
   protected $uid;
+  protected $parentBufferTag = NULL;
   protected $bufferCache = NULL;
   protected $paragraphs = array();
   protected $inlineEdits = array();
+  protected $childBufferTags = array();
 
   public function __construct($context_string, $uid) {
     $this->contextString = $context_string;
@@ -78,9 +80,26 @@ class EditBuffer implements EditBufferInterface {
     $this->bufferCache->save($this);
   }
 
+  public function tagParentBuffer($context_string) {
+    $this->parentBufferTag = $context_string;
+  }
+
+  public function getParentBufferTag() {
+    return $this->parentBufferTag;
+  }
+
+  public function addChildBufferTag($context_string) {
+    $this->childBufferTags[$context_string] = TRUE;
+  }
+
+  public function getChildBufferTags() {
+    return array_flip($this->childBufferTags);
+  }
+
   public function __sleep() {
     $properties = get_object_vars($this);
     unset($properties['bufferCache']);
+    unset($properties['parentBufferTag']);
     return array_keys($properties);
   }
 

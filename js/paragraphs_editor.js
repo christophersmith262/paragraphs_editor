@@ -53,10 +53,10 @@
       +   markup
       +   '<ul class="paragraphs-editor-widget-toolbar">'
       +     '<li class="paragraphs-editor-widget-toolbar__item">'
-      +       '<a href="#" class="paragraphs-editor-command paragraphs-editor-command--edit">edit</a>'
+      +       '<a href="#" class="paragraphs-editor-command paragraphs-editor-command--edit">Edit</a>'
       +     '</li>'
       +     '<li class="paragraphs-editor-widget-toolbar__item">'
-      +       '<a href="#" class="paragraphs-editor-command paragraphs-editor-command--remove">remove</a>'
+      +       '<a href="#" class="paragraphs-editor-command paragraphs-editor-command--remove">Remove</a>'
       +     '</li>'
       +   '</ul>'
       + '</div>';

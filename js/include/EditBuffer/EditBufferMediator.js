@@ -23,7 +23,7 @@
     requestBufferItem: function(bundleName, $el) {
       var targetContext = this._contextResolver.resolveTargetContext($el);
       this._contextListener.addContext(targetContext);
-      targetContext.getCommandEmitter().insert(bundleName);
+      this._embedCodeFactory.getCommandEmitter().insert(targetContext.getContextString(), bundleName);
         
     },
 
@@ -35,6 +35,7 @@
       // If the new model is ready to be inserted, insert an embed code in
       // Editor and mark the model as inserted.
       var embedCode = this._embedCodeFactory.create(bufferItemModel);
+      embedCode.setAttribute('data-paragraphs-editor-view', 'editor');
       this._adapter.insertEmbedCode(embedCode);
     }
 

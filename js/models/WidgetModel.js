@@ -48,14 +48,14 @@
        *
        * @type {string}
        */
-      "editorContext": "",
+      "widgetContext": "",
 
       /**
        * The data to be sent with the command.
        *
        * @type {string}
        */
-      "markup": "...",
+      "markup": "",
 
       /**
        * The data to be sent with the command.
@@ -63,6 +63,8 @@
        * @type {object}
        */
       "edits": {},
+
+      "duplicating": false,
     },
 
     set: function(attributes, options) {
@@ -71,17 +73,14 @@
     },
 
     edit: function() {
-      this.embedCode.getSourceContext()
-        .getCommandEmitter()
-        .edit(this.get('itemId'));
+      this.embedCode.getCommandEmitter().edit(this.get('widgetContext'), this.get('itemId'));
       return this;
     },
 
     duplicate: function() {
-      var targetContextString = this.embedCode.getTargetContext().getContextString();
-      this.embedCode.getSourceContext()
-        .getCommandEmitter()
-        .duplicate(this.get('itemId'), targetContextString, this.get('id'));
+      this.set({ duplicating: true });
+      this.embedCode.getCommandEmitter().duplicate(this.get('widgetContext'), this.get('itemContext'), this.get('itemId'), this.get('id'));
+        
       return this;
     },
 
@@ -91,14 +90,14 @@
 
     _refreshEmbedCode: function(attributes) {
       var oldItemContext = this.get('itemContext');
-      var oldEditorContext = this.get('editorContext');
+      var oldWidgetContext = this.get('widgetContext');
       var oldItemId = this.get('itemId');
       var newItemContext = attributes.itemContext ? attributes.itemContext : oldItemContext;
-      var newEditorContext = attributes.editorContext ? attributes.editorContext : oldEditorContext;
+      var newWidgetContext = attributes.widgetContext ? attributes.widgetContext : oldWidgetContext;
       var newItemId = attributes.itemId ? attributes.itemId : oldItemId;
 
-      if (newItemContext != oldItemContext || newEditorContext != oldEditorContext || newItemId != oldItemId) {
-        this.embedCode = this.embedCodeFactory.createFromRefs(newItemId, newItemContext, newEditorContext);
+      if (newItemContext != oldItemContext || newWidgetContext != oldWidgetContext || newItemId != oldItemId) {
+        this.embedCode = this.embedCodeFactory.createFromRefs(newItemId, newItemContext, newWidgetContext);
         this.stopListening()
           .listenTo(this.embedCode.getBufferItem(), 'change:markup', this._readFromBufferItem);
 

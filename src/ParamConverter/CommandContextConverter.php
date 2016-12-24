@@ -66,6 +66,11 @@ class CommandContextConverter implements ParamConverterInterface {
 
     $context = $this->contextFactory->create($entity_type, $entity_id, $field_config_id, $settings, $widget_build_id);
 
+    $editor_context = $this->request->get('editorContext');
+    if ($editor_context) {
+      $context->getEditBuffer()->tagParentBuffer($editor_context);
+    }
+
     // If the parameter definition gave any additional context about the command
     // that is being executed, we add that here so that delivery or bundle
     // selector plugins have access to it.

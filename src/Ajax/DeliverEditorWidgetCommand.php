@@ -10,8 +10,8 @@ class DeliverEditorWidgetCommand implements CommandInterface {
   protected $widgetId;
   protected $paragraphUuid;
 
-  public function __construct($context_string, ParagraphInterface $paragraph, $ckeditor_widget_id) {
-    $this->contextString = $context_string;
+  public function __construct($target_context, ParagraphInterface $paragraph, $ckeditor_widget_id) {
+    $this->context = $target_context;
     $this->widgetId = $ckeditor_widget_id;
     $this->paragraphUuid = $paragraph->uuid();
   }
@@ -19,10 +19,12 @@ class DeliverEditorWidgetCommand implements CommandInterface {
   public function render() {
     return array(
       'command' => 'paragraphs_editor_data',
-      'context' => $this->contextString,
+      'context' => $this->context->getEditBuffer()->getParentBufferTag(),
       'widget' => array(
         'id' => $this->widgetId,
         'itemId' => $this->paragraphUuid,
+        'itemContext' => $this->context->getContextString(),
+        'duplicating' => false,
       ),
     );
   }

@@ -29,8 +29,18 @@
       return this._getContext($el.attr(this._sourceContextAttribute));
     },
 
+    getEditorContext: function() {
+      return this._editorContext;
+    },
+
     _getContext: function(contextString) {
-      return contextString ? this._contextFactory.create(contextString) : this._editorContext;
+      if (contextString) {
+        var settings = this._editorContext ? this._editorContext.getSettings() : undefined;
+        return this._contextFactory.create(contextString, settings);
+      }
+      else {
+        return this._editorContext;
+      }
     }
 
   });

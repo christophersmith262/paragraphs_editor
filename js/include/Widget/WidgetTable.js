@@ -122,7 +122,7 @@
     },
 
     _cleanRow: function(i) {
-      if (this._views[i] && !this._views[i].length) {
+      if (this._views[i] && _.isEmpty(this._views[i])) {
         delete this._views[i];
       }
     }

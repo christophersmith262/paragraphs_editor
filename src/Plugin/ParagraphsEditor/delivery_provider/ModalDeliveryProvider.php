@@ -32,7 +32,7 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
         'core/drupal.dialog.ajax',
       ),
     ));
-    $response->addCommand(new OpenModalCommand($title, $contents, $this->context->getContextString()));
+    $response->addCommand(new OpenModalCommand($title, $contents, $this->context));
   }
 
   /**
@@ -40,21 +40,21 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
    */
   public function render(AjaxResponse $response, EditBufferItemInterface $item) {
     $insert = ($this->context->getAdditionalContext('command') == 'insert');
-    $response->addCommand(new DeliverEditBufferItemCommand($this->context->getContextString(), $item, $insert));
+    $response->addCommand(new DeliverEditBufferItemCommand($this->context, $item, $insert));
   }
 
   /**
    * {@inheritdoc}
    */
   public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $editor_widget_id) {
-    $response->addCommand(new DeliverEditBufferItemCommand($this->context->getContextString(), $item));
-    $response->addCommand(new DeliverEditorWidgetCommand($this->context->getContextString(), $item->getEntity(), $editor_widget_id));
+    $response->addCommand(new DeliverEditBufferItemCommand($this->context, $item));
+    $response->addCommand(new DeliverEditorWidgetCommand($this->context, $item->getEntity(), $editor_widget_id));
   }
 
   /**
    * {@inheritdoc}
    */
   public function close(AjaxResponse $response) {
-    $response->addCommand(new CloseModalCommand($this->context->getContextString()));
+    $response->addCommand(new CloseModalCommand($this->context));
   }
 }

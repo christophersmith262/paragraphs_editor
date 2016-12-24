@@ -7,9 +7,8 @@
 
   'use strict';
 
-  Drupal.paragraphs_editor.Context = function(contextString, commandEmitter, editBuffer, settings) {
+  Drupal.paragraphs_editor.Context = function(contextString, editBuffer, settings) {
     this._contextString = contextString;
-    this._commandEmitter = commandEmitter;
     this._editBuffer = editBuffer;
     this._settings = settings;
   }
@@ -26,10 +25,6 @@
 
     getEditBuffer: function() {
       return this._editBuffer;
-    },
-
-    getCommandEmitter: function() {
-      return this._commandEmitter;
     },
 
     getContextString: function () {

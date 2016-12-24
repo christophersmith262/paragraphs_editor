@@ -7,53 +7,69 @@
 
   'use strict';
 
-  /**
-   * Sends paragraph commands.
-   */
-  Drupal.paragraphs_editor.EditorCommandEmitter = function(contextString, settings) {
+  Drupal.paragraphs_editor.EditorCommandEmitter = function(editorContext) {
+    this._editorContext = editorContext;
+    this._params = [];
 
-    var params = [];
+    var settings = editorContext.getSettings();
     for (var key in settings) {
-      params.push('settings[' + key + ']=' + settings[key]);
+      this._params.push('settings[' + key + ']=' + settings[key]);
     }
-    params = '?' + params.join('&');
-    
-    var defaults = {
-      context: contextString,
-    };
+    this._params = '?' + this._params.join('&');
+  }
+
+  $.extend(Drupal.paragraphs_editor.EditorCommandEmitter.prototype, {
 
     /**
      * Executes an "insert" command.
      */
-    this.insert = function() {
-      execute(_.extend({command: "insert"}, defaults));
-    };
+    insert: function(targetContextString, bundleName) {
+      var options = {
+        command: "insert",
+        targetContext: targetContextString,
+      };
+
+      if (bundleName) {
+        options.bundleName = bundleName;
+      }
+
+      this._execute(options);
+    },
 
     /**
      * Executes an "edit" command.
      */
-    this.edit = function(uuid) {
-      execute(_.extend({command: "edit", paragraph: uuid}, defaults));
-    };
+    edit: function(targetContextString, uuid) {
+      this._execute({
+        command: "edit",
+        targetContext: targetContextString,
+        paragraph: uuid
+      });
+    },
 
     /**
      * Executes an "render" command.
      */
-    this.render = function(uuid) {
-      execute(_.extend({command: "render", paragraph: uuid}, defaults));
-    };
+    render: function(targetContextString, uuid) {
+      this._execute({
+        command: "render",
+        targetContext: targetContextString,
+        paragraph: uuid
+      });
+    },
 
     /**
      * Executes an "duplicate" command.
      */
-    this.duplicate = function(uuid, source_context, widget_id) {
-      execute(_.extend({
+    duplicate: function(targetContextString, sourceContextString, uuid, widgetId) {
+      this._execute({
         command: "duplicate",
+        targetContext: targetContextString,
+        sourceContext: sourceContextString,
         paragraph: uuid,
-        context2: source_context,
-        widget: widget_id
-      }, defaults));
-    };
+        widget: widgetId
+      });
+    },
 
     /**
      * Internal callback for triggering the command to be sent.
@@ -61,51 +77,48 @@
      * @param {Drupal.paragraphs_editor.CommandModel} model
      *   The command to be executed.
      */
-    function execute(command) {
+    _execute: function(command) {
       if (!command.command) {
         return;
       }
       var path = '/ajax/paragraphs-editor/' + command.command;
 
-      if (command.context) {
-        path += '/' + command.context;
+      if ('targetContext' in command) {
+        path += '/' + command.targetContext;
       }
 
-      if (command.context2) {
-        path += '/' + command.context2;
+      if ('sourceContext' in command) {
+        path += '/' + command.sourceContext;
       }
 
-      if (command.paragraph) {
+      if ('paragraph' in command) {
         path += '/' + command.paragraph;
       }
 
-      if (command.widget) {
+      if ('widget' in command) {
         path += '/' + command.widget;
       }
 
-      path += params;
+      path += this._params;
 
       var ajax = Drupal.ajax({
         url: path,
         progress: {
           message: "",
-        }
+        },
       });
 
-      ajax.success = function (response, status) {
-        var rtn = Drupal.Ajax.prototype.success.call(this, response, status);
-        Drupal.ajax.instances.splice(this.instanceIndex, 1);
-        return rtn;
-      }
+      ajax.options.data['editorContext'] = this._editorContext.getContextString();
 
-      ajax.error = function (xmlhttprequest, uri, customMessage) {
-        var rtn = Drupal.Ajax.prototype.error.call(this, xmlhttprequest, uri, customMessage);
-        Drupal.ajax.instances.splice(this.instanceIndex, 1);
-        return rtn;
+      var complete = ajax.options.complete;
+
+      ajax.options.complete = function (xmlhttprequest, status) {
+        complete.call(ajax.options, xmlhttprequest, status);
+        Drupal.ajax.instances.splice(ajax.instanceIndex, 1);
       }
 
       ajax.execute();
-    };
-  };
+    }
+  });
 
 })(jQuery, Drupal);

@@ -11,6 +11,7 @@ paragraphs_editor.command.insert:
   requirements: 
     _paragraphs_editor_access_context: '{context}'
     _entity_create_access: 'paragraph:{bundle_name}'
+
 paragraphs_editor.command.edit:
   path: '/ajax/paragraphs-editor/edit/{context}/{paragraph_uuid}'
   defaults:
@@ -23,6 +24,7 @@ paragraphs_editor.command.edit:
   requirements: 
     _paragraphs_editor_access_context: '{context}'
     _paragraphs_editor_access_paragraph: '{context}:{paragraph_uuid}'
+
 paragraphs_editor.command.render:
   path: '/ajax/paragraphs-editor/render/{context}/{paragraph_uuid}'
   defaults:
@@ -35,6 +37,7 @@ paragraphs_editor.command.render:
   requirements: 
     _paragraphs_editor_access_context: '{context}'
     _paragraphs_editor_access_paragraph: '{context}:{paragraph_uuid}'
+
 paragraphs_editor.command.duplicate:
   path: '/ajax/paragraphs-editor/duplicate/{target_context}/{source_context}/{paragraph_uuid}/{editor_widget_id}'
   defaults:
@@ -48,9 +51,9 @@ paragraphs_editor.command.duplicate:
         type: paragraphs_editor_command_context
         command: duplicate
   requirements: 
-    _paragraphs_editor_access_context: '{target_context}'
-    _paragraphs_editor_access_context: '{source_context}'
+    _paragraphs_editor_access_context: '{target_context}+{source_context}'
     _paragraphs_editor_access_paragraph: '{source_context}:{paragraph_uuid}'
+
 paragraphs_editor.command.cancel:
   path: '/ajax/paragraphs-editor/cancel/{context}'
   defaults:

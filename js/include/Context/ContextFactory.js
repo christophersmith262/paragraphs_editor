@@ -15,12 +15,16 @@
 
   $.extend(Drupal.paragraphs_editor.ContextFactory.prototype, {
 
-    create: function(contextString) {
+    create: function(contextString, settings) {
       if (!this._contexts[contextString]) {
-        var settings = this._getContextSettings(contextString);
-        var commandEmitter = new this._prototypes.EditorCommandEmitter(contextString, settings);
-        var editBuffer = new this._prototypes.EditBuffer(commandEmitter);
-        this._contexts[contextString] = new this._prototypes.Context(contextString, commandEmitter, editBuffer, settings);
+        if (!settings) {
+          settings = this._getContextSettings(contextString);
+        }
+        var editBuffer = new this._prototypes.EditBuffer([], {
+          model: this._prototypes.EditBufferItemModel,
+          targetContextString: contextString
+        });
+        this._contexts[contextString] = new this._prototypes.Context(contextString, editBuffer, settings);
       }
       return this._contexts[contextString];
     },

@@ -196,16 +196,17 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
     $this->setExtractionContext($items, $form, $form_state);
-    return parent::extractFormValues($items, $form, $form_state);
+    $values = parent::extractFormValues($items, $form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    // Get the editor context from the form state.
     list($items, $context) = $this->getExtractionContext($form, $form_state);
 
-    //
+    // Check revisioning status.
     $entity = $form_state->getFormObject()->getEntity();
     $new_revision = FALSE;
     if ($entity instanceof RevisionableInterface) {
@@ -217,18 +218,15 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       }
     }
 
-    // 
-    $field_name = $this->fieldDefinition->getName();
-    $widget_state = static::getWidgetState($form['#parents'], $field_name, $form_state);
-
-    // Generate
+    // Generate a flat entity list from the editor input.
     $edit_buffer = $context->getEditBuffer();
     $markup = $values['markup']['value'];
     $format = $values['markup']['format'];
     $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
     $entities = $this->fieldValueManager->update($field_value_wrapper, $edit_buffer, $markup, $format)->toArray();
 
-    //
+    // Do the "massaging" so that the returned values array is in the right
+    // format.
     $values = array();
     foreach ($entities as $delta => $paragraphs_entity) {
       $paragraphs_entity->setNewRevision($new_revision);
@@ -245,6 +243,12 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       $values[$delta]['target_id'] = $paragraphs_entity->id();
       $values[$delta]['target_revision_id'] = $paragraphs_entity->getRevisionId();
     }
+
+    // We no longer need to persist the context in the database. If the form
+    // needs to be rebuilt at this point, it will be rebuilt based on the
+    // updated entity that is in the process of being built, and we can
+    // generate a new context object if need be.
+    $this->contextFactory->free($context);
 
     return $values;
   }

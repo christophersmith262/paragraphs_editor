@@ -1,3 +1,13 @@
 paragraphs-editor-paragraph {
   display: block;
 }
+
+.paragraphs-editor-widget-toolbar {
+  list-style: none;
+  padding: 0;
+}
+
+.paragraphs-editor-widget-toolbar__item {
+  display: inline-block;
+  padding: 0 .5rem;
+}

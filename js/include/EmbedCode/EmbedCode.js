@@ -10,7 +10,9 @@
   /**
    * Handles fetching and caching of rendered paragraphs.
    */
-  Drupal.paragraphs_editor.EmbedCode = function(bufferItemModel, sourceContext, targetContext, embedTemplate) {
+  Drupal.paragraphs_editor.EmbedCode = function(bufferItemModel, sourceContext, targetContext, commandEmitter, embedTemplate) {
+
+    var extraAttributes = {};
 
     this.getSourceContext = function() {
       return sourceContext;
@@ -32,6 +34,14 @@
       return embedTemplate.close;
     }
 
+    this.getCommandEmitter = function() {
+      return commandEmitter;
+    }
+
+    this.setAttribute = function(name, value) {
+      extraAttributes[name] = value;
+    }
+
     this.getAttributes = function() {
       var attributes = {};
       for (var key in embedTemplate.attributes) {
@@ -42,6 +52,9 @@
         else if (key == 'context') {
           attributes[name] = this.getTargetContext().getContextString();
         }
+      }
+      for (var key in extraAttributes) {
+        attributes[key] = extraAttributes[key];
       }
       return attributes;
     }

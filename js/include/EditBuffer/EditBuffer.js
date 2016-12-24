@@ -7,39 +7,28 @@
 
   'use strict';
 
-  /**
-   * Handles fetching and caching of rendered paragraphs.
-   */
-  Drupal.paragraphs_editor.EditBuffer = function(commandEmitter) {
-    this._commandEmitter = commandEmitter;
-    this._editBufferCache = new Backbone.Collection([], {
-      model: Drupal.paragraphs_editor.BufferItemModel,
-    });
-  }
+  Drupal.paragraphs_editor.EditBuffer = Backbone.Collection.extend({
 
-  $.extend(Drupal.paragraphs_editor.EditBuffer.prototype, {
+    initialize: function(models, options) {
+      this.targetContextString = options.targetContextString;
+    },
 
-    getItem: function(paragraphUuid) {
-      var itemModel = this._editBufferCache.get(paragraphUuid);
+    getItem: function(commandEmitter, paragraphUuid) {
+      var itemModel = this.get(paragraphUuid);
       if (!itemModel) {
-        itemModel = this._editBufferCache.add({id: paragraphUuid}, {merge: true});
-        this._commandEmitter.render(paragraphUuid);
+        itemModel = this.add({id: paragraphUuid}, {merge: true});
+        commandEmitter.render(this.targetContextString, paragraphUuid);
       }
       return itemModel;
     },
 
     setItem: function(itemModel) {
-      return this._editBufferCache.add(itemModel, {merge: true});
+      return this.add(itemModel, {merge: true});
     },
 
-    destroy: function(paragraphUuid) {
-      this._editBufferCache.remove(paragraphUuid);
+    removeItem: function(paragraphUuid) {
+      this.remove(paragraphUuid);
     },
-
-    addListener: function(listener, events, callback) {
-      listener.listenTo(this._editBufferCache, events, callback);
-    }
-
   });
 
 })(Backbone, Drupal, jQuery);
