@@ -12,6 +12,7 @@ class OpenModalCommand extends OpenModalDialogCommand {
  public function __construct($title, $content, $target_context, array $dialog_options = array(), $settings = NULL) {
    if (empty($dialog_options['width'])) {
      $dialog_options['width'] = '50%';
+     $dialog_options['dialogClass'] = 'paragraphs-editor-dialog';
    }
 
    parent::__construct($title, $content, $dialog_options, $settings);

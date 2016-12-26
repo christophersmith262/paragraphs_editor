@@ -1,5 +1,8 @@
 widget:
   version: 1.x
+  css:
+    component:
+      css/admin.css: {}
   js:
     js/paragraphs_editor.js: {}
     js/paragraphs_editor.paragraphseditor.js: {}
