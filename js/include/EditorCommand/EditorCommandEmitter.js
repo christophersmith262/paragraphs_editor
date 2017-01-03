@@ -99,6 +99,10 @@
         path += '/' + command.widget;
       }
 
+      if ('bundleName' in command) {
+        path += '/' + command.bundleName;
+      }
+
       path += this._params;
 
       var ajax = Drupal.ajax({

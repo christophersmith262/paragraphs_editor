@@ -58,6 +58,10 @@
 
     getCommandEmitter: function() {
       return this._commandEmitter;
+    },
+
+    getContextFactory: function() {
+      return this._contextFactory;
     }
 
   });

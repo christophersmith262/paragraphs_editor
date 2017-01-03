@@ -65,3 +65,10 @@ paragraphs_editor.command.cancel:
         command: cancel
   requirements: 
     _paragraphs_editor_access_context: '{context}'
+
+paragraphs_editor.schema:
+  path: '/ajax/paragraphs-editor/schema/{field_config}'
+  defaults:
+    _controller: '\Drupal\paragraphs_editor\Controller\SchemaController::get'
+  requirements:
+    _access: 'TRUE'

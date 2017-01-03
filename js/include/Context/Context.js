@@ -7,13 +7,12 @@
 
   'use strict';
 
-  Drupal.paragraphs_editor.Context = function(contextString, editBuffer, settings) {
-    this._contextString = contextString;
-    this._editBuffer = editBuffer;
-    this._settings = settings;
-  }
+  Drupal.paragraphs_editor.Context = Backbone.Model.extend({
 
-  $.extend(Drupal.paragraphs_editor.Context.prototype, {
+    initialize: function(attributes, options) {
+      this._editBuffer = options.editBuffer;
+      this._settings = options.settings;
+    },
 
     getSettings: function() {
       return this._settings;
@@ -27,9 +26,22 @@
       return this._editBuffer;
     },
 
-    getContextString: function () {
-      return this._contextString;
+    getContextString: function() {
+      return this.get('id');
+    },
+
+    getEntityType: function() {
+      return this.get('id').split(':')[0];
+    },
+
+    getFieldId: function() {
+      return this.get('id').split(':')[1];
+    },
+
+    getBuildId: function() {
+      return this.get('id').split(':')[2];
     }
+
   });
 
 })(jQuery, Backbone, Drupal);

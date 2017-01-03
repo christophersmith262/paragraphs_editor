@@ -26,6 +26,10 @@
         $(this).data('paragraphsEditor', paragraphsEditor);
       }
 
+      if (!options) {
+        options = {}
+      }
+
       // Process the 'widget-manager' command by returning the widget manager
       // for this element.
       //
@@ -57,7 +61,12 @@
       }
 
       else if (action == 'context') {
-        rtn = paragraphsEditor ? paragraphsEditor.editorContext : null;
+        if (options.$el) {
+          rtn = paragraphsEditor.contextResolver.resolveTargetContext(options.$el);
+        }
+        else {
+          rtn = paragraphsEditor ? paragraphsEditor.editorContext : null;
+        }
       }
 
       else if (action == 'update') {
@@ -67,6 +76,7 @@
       }
 
       else if (action == 'insert') {
+        paragraphsEditor.widgetManager.insert(options.$el, options.type);
       }
 
       else if (action == 'edit') {

@@ -10,13 +10,13 @@
   Drupal.paragraphs_editor.ContextFactory = function(globalSettings, prototypes) {
     this._globalSettings = globalSettings;
     this._prototypes = prototypes;
-    this._contexts = {};
+    this._contexts = new Backbone.Collection();
   }
 
   $.extend(Drupal.paragraphs_editor.ContextFactory.prototype, {
 
     create: function(contextString, settings) {
-      if (!this._contexts[contextString]) {
+      if (!this._contexts.get(contextString)) {
         if (!settings) {
           settings = this._getContextSettings(contextString);
         }
@@ -24,9 +24,22 @@
           model: this._prototypes.EditBufferItemModel,
           targetContextString: contextString
         });
-        this._contexts[contextString] = new this._prototypes.Context(contextString, editBuffer, settings);
+        this._contexts.add(new this._prototypes.Context({
+          id: contextString}, {
+            editBuffer: editBuffer,
+            settings: settings,
+          }
+        ));
       }
-      return this._contexts[contextString];
+      return this._contexts.get(contextString);
+    },
+
+    touch: function(contextString) {
+      this.create(contextString);
+    },
+
+    collection: function() {
+      return this._contexts;
     },
 
     _getContextSettings: function(contextString) {

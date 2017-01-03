@@ -69,6 +69,14 @@
 
     set: function(attributes, options) {
       this._refreshEmbedCode(attributes);
+
+      var widgetModel = this;
+      if (attributes.edits) {
+        _.each(attributes.edits, function(item) {
+          widgetModel.embedCodeFactory.getContextFactory().touch(item.context);
+        });
+      }
+
       return Backbone.Model.prototype.set.call(this, attributes, options);
     },
 

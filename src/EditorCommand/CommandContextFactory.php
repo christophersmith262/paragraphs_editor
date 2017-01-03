@@ -130,6 +130,19 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
+   * Creates a bundle filter object.
+   *
+   * @param Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to create the filter for.
+   *
+   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
+   *   A filter object for the field definition.
+   */
+  public function createBundleFilter(FieldDefinitionInterface $field_definition) {
+    return new ParagraphBundleFilter($this->bundleInfo, $field_definition);
+  }
+
+  /**
    * Helper function for instantiating plugin instances for a command context.
    *
    * @param string $type
@@ -147,18 +160,5 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       ));
       $context->setPlugin($type, $plugin);
     }
-  }
-
-  /**
-   * Creates a bundle filter object.
-   *
-   * @param Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The field definition to create the filter for.
-   *
-   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   *   A filter object for the field definition.
-   */
-  protected function createBundleFilter(FieldDefinitionInterface $field_definition) {
-    return new ParagraphBundleFilter($this->bundleInfo, $field_definition);
   }
 }
