@@ -23,6 +23,10 @@
       return this._widgetTracker.track(widget, id, $targetEl);
     },
 
+    get: function(id) {
+      return this._widgetTracker.getTrackedTable().getModelById(id);
+    },
+
     edit: function(id) {
       this._applyToModel(id, function(widgetModel) {
         widgetModel.edit();
@@ -48,7 +52,7 @@
     },
 
     _applyToModel(id, callback) {
-      var widgetModel = this._widgetTracker.getTrackedTable().getModelById(id);
+      var widgetModel = this.get(id);
       if (widgetModel) {
         callback.apply(this, [widgetModel]);
       }

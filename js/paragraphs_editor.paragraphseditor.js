@@ -83,6 +83,11 @@
       }
 
       else if (action == 'get') {
+        if (paragraphsEditor && paragraphsEditor.widgetManager) {
+          if ('id' in options) {
+            rtn = paragraphsEditor.widgetManager.get(options.id);
+          }
+        }
       }
 
       else if (action == 'remove') {

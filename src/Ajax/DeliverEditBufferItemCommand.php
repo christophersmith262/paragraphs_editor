@@ -37,6 +37,7 @@ class DeliverEditBufferItemCommand implements CommandInterface {
         'insert' => $this->insert,
         'markup' => $markup,
         'inlineEdits' => $this->item->getInlineEdits(),
+        'bundle' => $paragraph->bundle(),
       ),
     );
   }
