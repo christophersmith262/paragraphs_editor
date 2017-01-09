@@ -76,7 +76,7 @@
     },
 
     _removeWidget: function(widgetModel) {
-      if (this._adapter.widgetExists(widgetModel.get('id'))) {
+      if (!widgetModel.hasState(Drupal.paragraphs_editor.WidgetState.DESTROYED_WIDGET)) {
         this._adapter.destroyWidget(widgetModel.get('id'));
       }
 

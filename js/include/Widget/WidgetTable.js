@@ -115,7 +115,7 @@
           view = this._views[i][j];
         }
         else {
-          //this.remove(widgetModel);
+          this.remove(widgetModel);
         }
       }
       return view;

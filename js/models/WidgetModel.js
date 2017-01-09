@@ -7,6 +7,13 @@
 
   'use strict';
 
+  Drupal.paragraphs_editor.WidgetState = {
+    READY: 0x01,
+    DESTROYED_WIDGET: 0x02,
+    DESTROYED_REFS: 0x04,
+    DESTROYED: 0x06,
+  }
+
   /**
    * Backbone  Model for representing paragraphs_editor paragraph widgets.
    *
@@ -65,6 +72,8 @@
       "edits": {},
 
       "duplicating": false,
+
+      "state": Drupal.paragraphs_editor.WidgetState.READY,
     },
 
     set: function(attributes, options) {
@@ -75,6 +84,10 @@
         _.each(attributes.edits, function(item) {
           widgetModel.embedCodeFactory.getContextFactory().touch(item.context);
         });
+      }
+
+      if (attributes.state) {
+        attributes.state |= this.get('state');
       }
 
       return Backbone.Model.prototype.set.call(this, attributes, options);
@@ -93,7 +106,18 @@
     },
 
     destroy: function(options) {
-      this.trigger('destroy', this, this.collection, options);
+      if (!this.hasState(Drupal.paragraphs_editor.WidgetState.DESTROYED)) {
+        this.trigger('destroy', this, this.collection, options);
+        this.setState(Drupal.paragraphs_editor.WidgetState.DESTROYED);
+      }
+    },
+
+    setState(state) {
+      return this.set({state: this.get('state') | state});
+    },
+
+    hasState: function(state) {
+      return (this.get('state') & state) == state;
     },
 
     _refreshEmbedCode: function(attributes) {

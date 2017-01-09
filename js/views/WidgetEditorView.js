@@ -24,11 +24,6 @@
       this.listenTo(this.model, 'change', this._changeHandler);
     },
 
-    events: {
-      'click .paragraphs-editor-command--edit': 'edit',
-      'click .paragraphs-editor-command--remove': 'remove',
-    },
-
     template: function(markup) {
       return Drupal.theme.paragraphsEditorWidget(markup);
     },
@@ -38,7 +33,14 @@
         this.$el.html(this.template('...'));
       }
       else {
+        var view = this;
         this.$el.html(this.template(this.model.get('markup')));
+        this.$el.find('.paragraphs-editor-command--edit').on('click', function() {
+          view.edit();
+        });
+        this.$el.find('.paragraphs-editor-command--remove').on('click', function() {
+          view.remove();
+        });
         this.renderAttributes();
         this.renderEdits();
       }
@@ -48,6 +50,7 @@
     renderAttributes: function() {
       var attributes = this.model.embedCode.getAttributes();
       attributes['data-paragraphs-editor-view'] = 'editor';
+      attributes['data-paragraphs-widget-id'] = this.model.get('id');
       for (var attributeName in attributes) {
         this.$el.attr(attributeName, attributes[attributeName]);
       }
@@ -99,6 +102,11 @@
         model.destroy();
       }
       return this;
+    },
+
+    stopListening: function() {
+      this.$el.find('.paragraphs-editor-command').off();
+      return Backbone.View.prototype.stopListening.call(this);
     },
 
     isEditorViewRendered: function() {
