@@ -7,7 +7,8 @@
 
   'use strict';
 
-  Drupal.paragraphs_editor.WidgetViewFactory = function(adapter) {
+  Drupal.paragraphs_editor.WidgetViewFactory = function(elements, adapter) {
+    this._elements = elements;
     this._adapter = adapter;
     this._viewModes = [];
   }
@@ -26,6 +27,7 @@
       return new this._viewModes[viewMode]({
         "model": widgetModel,
         "adapter": this._adapter,
+        "elements": this._elements,
         "el": $el.get(0),
       });
     },

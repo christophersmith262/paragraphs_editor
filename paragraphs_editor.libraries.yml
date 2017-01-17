@@ -9,11 +9,8 @@ widget:
     js/include/Adapter.js: {}
     js/include/loader.js: {}
     js/include/ParagraphsEditorField.js: {}
-    js/include/Context/Context.js: {}
-    js/include/Context/ContextFactory.js: {}
     js/include/Context/ContextListener.js: {}
     js/include/Context/ContextResolver.js: {}
-    js/include/EditBuffer/EditBuffer.js: {}
     js/include/EditBuffer/EditBufferMediator.js: {}
     js/include/EditorCommand/EditorCommandEmitter.js: {}
     js/include/EmbedCode/EmbedCode.js: {}
@@ -23,8 +20,13 @@ widget:
     js/include/Widget/WidgetManager.js: {}
     js/include/Widget/WidgetTable.js: {}
     js/include/Widget/WidgetViewFactory.js: {}
+    js/models/ContextModel.js: {}
     js/models/EditBufferItemModel.js: {}
+    js/models/SchemaModel.js: {}
     js/models/WidgetModel.js: {}
+    js/collections/ContextCollection.js: {}
+    js/collections/EditBufferItemCollection.js: {}
+    js/collections/SchemaCollection.js: {}
     js/views/WidgetEditorView.js: {}
     js/views/WidgetMementoView.js: {}
   dependencies:

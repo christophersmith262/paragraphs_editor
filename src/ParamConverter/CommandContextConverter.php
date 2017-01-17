@@ -50,11 +50,7 @@ class CommandContextConverter implements ParamConverterInterface {
     // Since a context string is just an ordered listing of information about
     // where the editor instance came from, we can separate out the ids here to
     // load the relevant plugins  and entities.
-    $context_params = explode(':', $value);
-    $entity_type = array_shift($context_params);
-    $field_config_id = array_shift($context_params);
-    $widget_build_id = array_shift($context_params);
-    $entity_id = array_shift($context_params);
+    list($field_config_id, $widget_build_id, $entity_id) = $this->contextFactory->parseContextString($value);
 
     // The settings array for the field widget has to be passed through the
     // request, either by POST or GET. Otherwise it's extremely difficult to get
@@ -64,7 +60,7 @@ class CommandContextConverter implements ParamConverterInterface {
       $settings = array();
     }
 
-    $context = $this->contextFactory->create($entity_type, $entity_id, $field_config_id, $settings, $widget_build_id);
+    $context = $this->contextFactory->create($field_config_id, $entity_id, $settings, $widget_build_id);
 
     $editor_context = $this->request->get('editorContext');
     if ($editor_context) {
@@ -78,6 +74,11 @@ class CommandContextConverter implements ParamConverterInterface {
       foreach ($definition as $key => $value) {
         $context->addAdditionalContext($key, $value);
       }
+    }
+
+    $nested_contexts = $this->request->get('nested_contexts');
+    if ($nested_contexts) {
+      $context->addAdditionalContext('nested_contexts', $nested_contexts);
     }
 
     return $context;

@@ -16,11 +16,12 @@
    */
   Drupal.paragraphs_editor.WidgetEditorView = Backbone.View.extend({
 
-    inlineEditorSelector: '.paragraphs-editor-nested-editor',
-    inlineEditorIdAttribute: 'data-editor-index',
+    commandSelector: '.paragraphs-editor-command',
 
     initialize: function(options) {
       this.adapter = options.adapter;
+      this.contextAttribute = options.elements.context_attribute;
+      this.inlineEditorSelector = '.paragraphs-editor-' + options.elements.inline_template.tag;
       this.listenTo(this.model, 'change', this._changeHandler);
     },
 
@@ -35,10 +36,10 @@
       else {
         var view = this;
         this.$el.html(this.template(this.model.get('markup')));
-        this.$el.find('.paragraphs-editor-command--edit').on('click', function() {
-          view.edit();
+        this.$el.find(this.commandSelector + '--edit').on('click', function() {
+          view.save().edit();
         });
-        this.$el.find('.paragraphs-editor-command--remove').on('click', function() {
+        this.$el.find(this.commandSelector + '--remove').on('click', function() {
           view.remove();
         });
         this.renderAttributes();
@@ -48,9 +49,8 @@
     },
 
     renderAttributes: function() {
-      var attributes = this.model.embedCode.getAttributes();
-      attributes['data-paragraphs-editor-view'] = 'editor';
-      attributes['data-paragraphs-widget-id'] = this.model.get('id');
+      var attributes = this.model.get('attributes');
+      attributes[this.model.embedCode.viewModeAttribute] = 'editor';
       for (var attributeName in attributes) {
         this.$el.attr(attributeName, attributes[attributeName]);
       }
@@ -59,16 +59,13 @@
 
     renderEdits: function() {
       var edits = this.model.get('edits');
-      this._inlineElementVisitor(function($el, index, selector) {
+      this._inlineElementVisitor(function($el, contextString, selector) {
         // Fetch the edit and set a data attribute to make associating edits
         // easier for whoever is going to attach the inline editor.
-        var edit = edits[index] ? edits[index] : '';
-        $el.attr(this.inlineEditorIdAttribute, index)
-          .attr('data-paragraphs-editor-context', edit.context)
-          .html(edit.value);
+        $el.html(edits[contextString] ? edits[contextString] : '');
 
         // Tell the widget manager to enable inline editing for this element.
-        this.adapter.attachInlineEditing(this, index, selector);
+        this.adapter.attachInlineEditing(this, contextString, selector);
       });
       return this;
     },
@@ -77,15 +74,23 @@
 
       if (!this.model.get('duplicating')) {
         var edits = {};
-        this._inlineElementVisitor(function($el, index, selector) {
-          edits[index] = {
-            context: $el.attr('data-paragraphs-editor-context'),
-            value: this.adapter.getInlineEdit(this, index, selector),
-          };
+        this._inlineElementVisitor(function($el, contextString, selector) {
+          edits[contextString] = this.adapter.getInlineEdit(this, contextString, selector);
         });
-
         this.model.set({"edits": edits}, {silent: true});
       }
+
+      return this;
+    },
+
+    rebase: function() {
+      var oldEdits = _.pairs(this.model.get('edits'));
+      var edits = {}
+      this._inlineElementVisitor(function($el, contextString, selector) {
+        var next = oldEdits.shift();
+        edits[contextString] = next ? next[1] : '';
+      });
+      this.model.set({"edits": edits});
 
       return this;
     },
@@ -105,12 +110,12 @@
     },
 
     stopListening: function() {
-      this.$el.find('.paragraphs-editor-command').off();
+      this.$el.find(this.commandSelector).off();
       return Backbone.View.prototype.stopListening.call(this);
     },
 
     isEditorViewRendered: function() {
-      return this.$el.attr('data-paragraphs-editor-view') == 'editor';
+      return this.$el.attr(this.model.embedCode.viewModeAttribute) == 'editor';
     },
 
     _changeHandler: function() {
@@ -118,23 +123,23 @@
       // server, or such a request just finished, we don't want to save the
       // current state of the editor since it is just displaying a 'loading'
       // message.
-      if (this.model.get('duplicating') || this.model.previous('duplicating')) {
-        this.render();
+      if (this.model.previous('duplicating')) {
+        this.render().rebase();
       }
 
       // If the markup changed and the widget wasn't duplicating, we have to
       // re-render everything.
-      else if (this.model.hasChanged('markup')) {
-        this.save().render().save();
+      else if (this.model.get('duplicating') || this.model.hasChanged('markup')) {
+        this.render();
       }
 
       // Otherwise we can just re-render the parts that changed.
       else {
         if (this.model.hasChanged('edits')) {
-          this.renderEdits().save();
+          this.renderEdits();
         }
 
-        if (this.model.hasChanged('embedKey')) {
+        if (this.model.hasChanged('attributes')) {
           this.renderAttributes();
         }
       }
@@ -143,11 +148,12 @@
     },
 
     _inlineElementVisitor(callback) {
-      var that = this;
-      this.$el.find(this.inlineEditorSelector).each(function(index) {
-        if ($(this).closest('paragraphs-editor-paragraph').is(that.$el)) {
-          var selector = that.inlineEditorSelector + '[' + that.inlineEditorIdAttribute + '="' + index + '"]';
-          callback.call(that, $(this), index, selector);
+      var view = this;
+      this.$el.find(this.inlineEditorSelector).each(function() {
+        if ($(this).closest(view.model.embedCodeFactory.getTag()).is(view.$el)) {
+          var contextString = $(this).attr(view.contextAttribute);
+          var selector = view.inlineEditorSelector + '[' + view.contextAttribute + '="' + contextString + '"]';
+          callback.call(view, $(this), contextString, selector);
         }
       });
     }

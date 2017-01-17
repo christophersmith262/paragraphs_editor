@@ -111,11 +111,10 @@
       var view = null;
 
       if (this._views[i] && this._views[i][j]) {
-        if (this._adapter.getRootEl().contains(this._views[i][j].el)) {
-          view = this._views[i][j];
-        }
-        else {
-          this.remove(widgetModel);
+        view = this._views[i][j];
+        if (!this._adapter.getRootEl().contains(view.el)) {
+          this.remove(view.model);
+          view = null;
         }
       }
       return view;

@@ -13,7 +13,7 @@
   $.extend(Drupal.paragraphs_editor.ContextListener.prototype, Backbone.Events, {
 
     addContext: function(context) {
-      this.listenTo(context.getEditBuffer(), 'add update', this._triggerEvents);
+      this.listenTo(context.editBuffer, 'add update', this._triggerEvents);
       return this;
     },
 

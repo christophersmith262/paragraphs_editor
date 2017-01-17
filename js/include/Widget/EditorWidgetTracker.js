@@ -57,7 +57,7 @@
       // target context we need to duplicate. A context mismatch essentially
       // means something was copied from another field instance into this field
       // instance, so all the data about it is in the original field instance.
-      var matchingContexts = sourceContext.getContextString() == targetContext.getContextString();
+      var matchingContexts = sourceContext.get('id') == targetContext.get('id');
       if (this._widgetTable.count(widgetModel) > 1 || !matchingContexts) {
         widgetModel.duplicate();
       }

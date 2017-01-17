@@ -39,35 +39,38 @@
     /**
      * Executes an "edit" command.
      */
-    edit: function(targetContextString, uuid) {
+    edit: function(targetContextString, uuid, edits) {
       this._execute({
         command: "edit",
         targetContext: targetContextString,
-        paragraph: uuid
+        paragraph: uuid,
+        edits: edits
       });
     },
 
     /**
      * Executes an "render" command.
      */
-    render: function(targetContextString, uuid) {
+    render: function(targetContextString, uuid, edits) {
       this._execute({
         command: "render",
         targetContext: targetContextString,
-        paragraph: uuid
+        paragraph: uuid,
+        edits: edits
       });
     },
 
     /**
      * Executes an "duplicate" command.
      */
-    duplicate: function(targetContextString, sourceContextString, uuid, widgetId) {
+    duplicate: function(targetContextString, sourceContextString, uuid, widgetId, edits) {
       this._execute({
         command: "duplicate",
         targetContext: targetContextString,
         sourceContext: sourceContextString,
         paragraph: uuid,
-        widget: widgetId
+        widget: widgetId,
+        edits: edits
       });
     },
 
@@ -112,7 +115,11 @@
         },
       });
 
-      ajax.options.data['editorContext'] = this._editorContext.getContextString();
+      ajax.options.data['editorContext'] = this._editorContext.get('id');
+
+      if (command.edits) {
+        ajax.options.data['nested_contexts'] = _.keys(command.edits);
+      }
 
       var complete = ajax.options.complete;
 

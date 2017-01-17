@@ -12,7 +12,6 @@ class EditBuffer implements EditBufferInterface {
   protected $parentBufferTag = NULL;
   protected $bufferCache = NULL;
   protected $paragraphs = array();
-  protected $inlineEdits = array();
   protected $childBufferTags = array();
 
   public function __construct($context_string, $uid) {
@@ -31,7 +30,6 @@ class EditBuffer implements EditBufferInterface {
   public function setItem(EditBufferItemInterface $item) {
     $uuid = $item->getEntity()->uuid();
     $this->paragraphs[$uuid] = $item->getEntity();
-    $this->inlineEdits[$uuid] = $item->getInlineEdits();
   }
 
   public function getItem($paragraph_uuid) {
@@ -97,17 +95,24 @@ class EditBuffer implements EditBufferInterface {
   }
 
   public function __sleep() {
+    return array_keys($this->toArray());
+  }
+
+  public function createCopy($context_string) {
+    $copy = clone $this;
+    $copy->contextString = $context_string;
+    return $copy;
+  }
+
+  public function toArray() {
     $properties = get_object_vars($this);
     unset($properties['bufferCache']);
     unset($properties['parentBufferTag']);
-    return array_keys($properties);
+    return $properties;
   }
 
   protected function createEditBufferItem(ParagraphInterface $paragraph) {
     $item = new EditBufferItem($paragraph, $this->bufferCache, $this);
-    if (isset($this->inlineEdits[$paragraph->uuid()])) {
-      $item->setInlineEdits($this->inlineEdits[$paragraph->uuid()]);
-    }
     return $item;
   }
 }

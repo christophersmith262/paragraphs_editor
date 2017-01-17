@@ -31,13 +31,20 @@
    */
   Drupal.AjaxCommands.prototype.paragraphs_editor_data = function(ajax, response, status){
     if (response.widget) {
-      $('.paragraphs-editor[data-paragraphs-editor-context="' + response.context + '"')
+      $('.paragraphs-editor[data-context="' + response.context + '"')
         .paragraphsEditor('update', response.widget);
+    }
+    if (response.updateContexts) {
+      _.each(response.updateContexts, function(newContextString, oldContextString) {
+        Drupal.paragraphs_editor.loader.getContextFactory()
+          .create(oldContextString)
+          .set({id: newContextString});
+      });
     }
     if (response.editBufferItem) {
       Drupal.paragraphs_editor.loader.getContextFactory()
         .create(response.context)
-        .getEditBuffer()
+        .editBuffer
         .setItem(response.editBufferItem);
     }
   }
@@ -70,10 +77,10 @@
    */
   Drupal.theme.paragraphsEditorWidgetMemento = function(items) {
     var result = '';
-    for (var i in items) {
-      result += '<paragraphs-editor-nested-editor '
-        + 'data-paragraphs-editor-context="' + items[i].context + '">'
-        + items[i].value + '</paragraphs-editor-nested-editor>';
+    for (var contextString in items) {
+      result += '<paragraph-field '
+        + 'data-context="' + contextString + '">'
+        + items[contextString] + '</paragraph-field>';
     }
     return result;
   }

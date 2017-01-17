@@ -75,14 +75,22 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     $this->bundleInfo = $bundle_info;
   }
 
+  public function parseContextString($context_string) {
+    $context_params = explode(':', $context_string);
+    $field_config_id = array_shift($context_params);
+    $widget_build_id = array_shift($context_params);
+    $entity_id = array_shift($context_params);
+    return array($field_config_id, $widget_build_id, $entity_id);
+  }
+
   /**
    * {@inheritdoc}
    */
-  public function create($entity_type, $entity_id, $field_config_id, array $settings, $widget_build_id = NULL) {
+  public function create($field_config_id, $entity_id, array $settings = array(), $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
 
     // If a widget build id isn't specified, we create a new one.
     if (!$widget_build_id) {
-      $widget_build_id = Crypt::randomBytesBase64();
+      $widget_build_id = $this->generateBuildId();
     }
 
     // If any exceptions are thrown while initializing any of the properties, we
@@ -91,9 +99,10 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     // bubbling the exception so that the controller access handler can deal
     // with it instead of the core exception handling.
     try {
-      $context_keys = array($entity_type, $field_config_id, $widget_build_id);
-      $entity_storage = $this->entityTypeManager->getStorage($entity_type);
+      $context_keys = array($field_config_id, $widget_build_id);
       $field_config = $this->fieldConfigStorage->load($field_config_id);
+      $entity_type = $field_config->getTargetEntityTypeId();
+      $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
       if ($entity_id) {
         $entity = $entity_storage->load($entity_id, $context_keys);
@@ -103,7 +112,13 @@ class CommandContextFactory implements CommandContextFactoryInterface {
         $entity = NULL;
       }
 
-      $edit_buffer = $this->bufferCache->get(implode(':', $context_keys));
+      $context_string = implode(':', $context_keys);
+      if ($edit_buffer_prototype) {
+        $edit_buffer = $edit_buffer_prototype->createCopy($context_string);
+      }
+      else {
+        $edit_buffer = $this->bufferCache->get($context_string);
+      }
       $bundle_filter = $this->createBundleFilter($field_config);
       $context = new CommandContext($entity, $field_config, $edit_buffer, $bundle_filter, $settings);
       $this->attachPlugin('delivery_provider', $settings, $context);
@@ -113,6 +128,17 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       return new InvalidCommandContext();
     }
     return $context;
+  }
+
+  public function regenerate(CommandContextInterface $from) {
+    $field_config_id = $from->getFieldConfig()->id();
+    $entity_id = $from->getEntity() ? $from->getEntity()->id() : NULL;
+    $settings = $from->getSettings();
+    $widget_build_id = $this->generateBuildId();
+    $to = $this->create($field_config_id, $entity_id, $settings, $widget_build_id, $from->getEditBuffer());
+    $to->getEditBuffer()->save();
+    $this->free($from);
+    return $to;
   }
 
   /**
@@ -160,5 +186,9 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       ));
       $context->setPlugin($type, $plugin);
     }
+  }
+
+  protected function generateBuildId() {
+    return Crypt::randomBytesBase64();
   }
 }

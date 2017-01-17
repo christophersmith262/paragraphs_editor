@@ -95,16 +95,30 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
           'class' => array(
             'paragraphs-editor'
           ),
-          'data-paragraphs-editor-context' => $context_string,
+          'data-context' => $context_string,
         ),
         '#attached' => array(
           'library' => array(
             'paragraphs_editor/widget',
           ),
-        'drupalSettings' => array(
+          'drupalSettings' => array(
             'paragraphs_editor' => array(
-              'instances' => array(
-                $context_string => $this->getSettings(),
+              'contexts' => array(
+                $context_string => array(
+                  'id' => $context_string,
+                  'settings' => $this->getSettings(),
+                  'bufferItems' => array(
+                  ),
+                ),
+              ),
+              'schema' => array(
+                $this->fieldDefinition->id() => array(
+                  'id' => $this->fieldDefinition->id(),
+                  'allowed' => array(
+                    'paragraphs_editor_text' => TRUE,
+                    'tabs' => TRUE,
+                  ),
+                ),
               ),
             ),
           ),
@@ -174,6 +188,10 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     );
 
     return $elements;
+  }
+
+  public static function afterBuild(array $element, FormStateInterface $form_state) {
+    return parent::afterBuild($element, $form_state);
   }
 
   /**
@@ -269,6 +287,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
   }
 
   protected function getContext(EntityInterface $entity, $widget_build_id=NULL) {
-    return $this->contextFactory->create($entity->getEntityType()->id(), $entity->id(), $this->fieldDefinition->id(), $this->getSettings(), $widget_build_id);
+    return $this->contextFactory->create($this->fieldDefinition->id(), $entity->id(), $this->getSettings(), $widget_build_id);
   }
 }

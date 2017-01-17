@@ -9,7 +9,8 @@ class EditBufferItem implements EditBufferItemInterface {
   protected $entity;
   protected $bufferCache;
   protected $buffer;
-  protected $inlineEdits = array();
+  protected $nestedContexts = array();
+  protected $contextMap = array();
 
   public function __construct(ParagraphInterface $entity, EditBufferCacheInterface $buffer_cache, EditBufferInterface $buffer) {
     $this->entity = $entity;
@@ -25,12 +26,24 @@ class EditBufferItem implements EditBufferItemInterface {
     $this->entity = $entity;
   }
 
-  public function setInlineEdits(array $edits) {
-    $this->inlineEdits = $edits;
+  public function setParagraphContexts(array $edits) {
+    $this->nestedContexts = $edits;
   }
 
-  public function getInlineEdits() {
-    return $this->inlineEdits;
+  public function getParagraphContexts() {
+    return $this->nestedContexts;
+  }
+
+  public function resetContextMap() {
+    $this->contextMap = array();
+  }
+
+  public function mapContext($from, $to) {
+    $this->contextMap[$from] = $to;
+  }
+
+  public function getContextMap() {
+    return $this->contextMap;
   }
 
   public function save() {

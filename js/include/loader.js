@@ -9,7 +9,7 @@
 
     validateSettings: function() {
       this._bootstrap();
-      return !!this._globalSettings['instances'];
+      return !!this._globalSettings['contexts'];
     },
 
     getContextFactory: function() {
@@ -20,12 +20,16 @@
       return this._initialize() ? this._embedCodeFactory : null;
     },
 
+    getSchema: function() {
+      return this._initialize() ? this._schema : null;
+    },
+
     wrapElement: function($el) {
       if (this._initialize()) {
         var editorContext = this._createContextResolver().resolveTargetContext($el);
         var contextResolver = this._createContextResolver(editorContext);
         var commandEmitter = new this._prototypes.EditorCommandEmitter(editorContext);
-        var embedCodeFactory = new this._prototypes.EmbedCodeFactory(this._contextFactory, commandEmitter, this._globalSettings.elements, this._prototypes);
+        var embedCodeFactory = new this._prototypes.EmbedCodeFactory(contextResolver, commandEmitter, this._globalSettings.elements, this._prototypes);
         return editorContext ? new this._prototypes.ParagraphsEditorField(contextResolver, editorContext, embedCodeFactory, this._prototypes) : null;
       }
       return null;
@@ -37,7 +41,8 @@
       this._bootstrap();
 
       if (!this._initialized && this.validateSettings()) {
-        this._contextFactory = new this._prototypes.ContextFactory(this._globalSettings, this._prototypes);
+        this._contextFactory = new this._prototypes.ContextCollection(_.toArray(this._globalSettings['contexts']), {prototypes: this._prototypes});
+        this._schema = new this._prototypes.SchemaCollection(_.toArray(this._globalSettings['schema']), {contextCollection: this._contextFactory});
         this._embedCodeFactory = new this._prototypes.EmbedCodeFactory(this._contextFactory, null, this._globalSettings.elements, this._prototypes);
         this._initialized = true;
       }
@@ -54,17 +59,17 @@
         }
 
         this._globalSettings.elements = {
-          context_attribute: 'data-paragraphs-editor-context',
+          context_attribute: 'data-context',
           editor_class: 'paragraphs-editor',
           embed_template: {
-            tag: 'paragraphs-editor-paragraph',
+            tag: 'paragraph',
             attributes: {
-              uuid: 'data-paragraph-uuid',
+              uuid: 'data-uuid',
               context: 'data-context-hint',
             }
           },
           inline_template: {
-            tag: 'paragraphs-editor-nested-editor',
+            tag: 'paragraph-field',
           }
         };
       }

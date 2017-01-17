@@ -17,7 +17,7 @@
   $.extend(Drupal.paragraphs_editor.EmbedCodeFactory.prototype, {
 
     create: function(bufferItemModel, sourceContext, targetContext) {
-      var fallbackContext = this._contextFactory.create(bufferItemModel.get('context'));
+      var fallbackContext = this._contextFactory.create(bufferItemModel.collection.getContextId());
 
       if (!sourceContext) {
         sourceContext = fallbackContext;
@@ -33,7 +33,7 @@
     createFromRefs: function(itemId, sourceContext, targetContext) {
       var sourceContext = this._contextFactory.create(sourceContext);
       var targetContext = this._contextFactory.create(targetContext);
-      var bufferItemModel = sourceContext.getEditBuffer().getItem(this._commandEmitter, itemId);
+      var bufferItemModel = sourceContext.editBuffer.getItem(this._commandEmitter, itemId);
       return this.create(bufferItemModel, sourceContext, targetContext);
     },
 
@@ -52,6 +52,10 @@
       }
     },
 
+    getAttribute(name) {
+      return this._elements.embed_template.attributes[name];
+    },
+
     getClose: function() {
       return this._elements.embed_template.close;
     },
@@ -62,6 +66,10 @@
 
     getContextFactory: function() {
       return this._contextFactory;
+    },
+
+    getElements: function() {
+      return this._elements;
     }
 
   });

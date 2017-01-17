@@ -12,6 +12,8 @@
    */
   Drupal.paragraphs_editor.EmbedCode = function(bufferItemModel, sourceContext, targetContext, commandEmitter, embedTemplate) {
 
+    this.viewModeAttribute = 'data-paragraphs-editor-view';
+
     var extraAttributes = {};
 
     this.getSourceContext = function() {
@@ -42,6 +44,10 @@
       extraAttributes[name] = value;
     }
 
+    this.setViewMode = function(value) {
+      extraAttributes[this.viewModeAttribute] = value;
+    }
+
     this.getAttributes = function() {
       var attributes = {};
       for (var key in embedTemplate.attributes) {
@@ -50,7 +56,7 @@
           attributes[name] = this.getBufferItem().get('id');
         }
         else if (key == 'context') {
-          attributes[name] = this.getTargetContext().getContextString();
+          attributes[name] = this.getTargetContext().get('id');
         }
       }
       for (var key in extraAttributes) {

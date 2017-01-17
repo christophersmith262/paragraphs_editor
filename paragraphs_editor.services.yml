@@ -30,6 +30,9 @@ services:
   paragraphs_editor.edit_buffer.item_factory:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactory
     arguments: ['@entity_type.manager']
+  paragraphs_editor.edit_buffer.markup_compiler:
+    class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompiler
+    arguments: ['@entity_type.manager', '@renderer', '@paragraphs_editor.command.context_factory', '%paragraphs_editor.field_value.elements%']
   paragraphs_editor.delivery_provider.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
     arguments: [delivery_provider, '@container.namespaces', '@cache.discovery', '@module_handler']
@@ -52,12 +55,12 @@ parameters:
     delivery_provider: '@paragraphs_editor.delivery_provider.manager'
   paragraphs_editor.edit_buffer.cache.lifetime: 24000
   paragraphs_editor.field_value.elements:
-    context_attribute: data-paragraphs-editor-context
+    context_attribute: data-context
     editor_class: paragraphs-editor
     embed_template:
-      tag: paragraphs-editor-paragraph
+      tag: paragraph
       attributes:
-        uuid: data-paragraph-uuid
+        uuid: data-uuid
         context: data-context-hint
     inline_template:
-      tag: paragraphs-editor-nested-editor
+      tag: paragraph-field

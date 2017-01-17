@@ -17,7 +17,7 @@
    *
    * @augments Backbone.Model
    */
-  Drupal.paragraphs_editor.BufferItemModel = Backbone.Model.extend({
+  Drupal.paragraphs_editor.EditBufferItemModel = Backbone.Model.extend({
 
     /**
      * @type {object}
@@ -27,18 +27,18 @@
     defaults: /** @lends Drupal.paragraphs_editor.CommandModel# */{
 
       /**
-       * Whether or not the item is ready to be inserted.
-       *
-       * @type {string}
-       */
-      "insert": false,
-
-      /**
        * Whether or not the item is for a new (unsaved) entity.
        *
        * @type {string}
        */
       "isNew": false,
+
+      /**
+       * Whether or not the item is ready to be inserted.
+       *
+       * @type {string}
+       */
+      "insert": false,
 
       /**
        * The item markup.
@@ -52,9 +52,7 @@
        *
        * @type {string}
        */
-      "context": "",
-
-      "edits": {},
+      'bundle': '',
     },
 
   });

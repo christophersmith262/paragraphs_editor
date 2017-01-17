@@ -27,7 +27,7 @@
       contextListener.addContext(this.editorContext);
 
       // Create factories for generating models and views.
-      var viewFactory = new this._prototypes.WidgetViewFactory(adapter);
+      var viewFactory = new this._prototypes.WidgetViewFactory(this.embedCodeFactory.getElements(), adapter);
       var widgetFactory = new this._prototypes.WidgetFactory(adapter, this.contextResolver, this.embedCodeFactory, this._prototypes.WidgetModel);
 
       // Add supported viewmodes.

@@ -11,6 +11,10 @@
 
     initialize: function(options) {
       this.adapter = options.adapter;
+      this.contextAttribute = options.elements.context_attribute;
+      this.inlineEditorSelector = options.elements.inline_template.tag;
+      this.attributeWhitelist = _.invert(this.model.embedCodeFactory.getAttributes());
+      
     },
 
     template: function(edits) {
@@ -18,24 +22,25 @@
     },
 
     render: function() {
+      var view = this;
       this.$el.html(this.template(this.model.get('edits')));
-      this.$el.removeAttr('data-paragraphs-editor-view');
+      _.each(this.el.attributes, function(attr) {
+        if (!view.attributeWhitelist[attr.name]) {
+          view.$el.removeAttr(attr.name);
+        }
+      });
       return this;
     },
 
     save: function() {
       var edits = {};
-      var that = this;
-      this.$el.find('paragraphs-editor-nested-editor').each(function(index) {
-        var contextString = $(this).attr('data-paragraphs-editor-context');
-        var selector = 'paragraphs-editor-nested-editor[data-paragraphs-editor-context="' + contextString + '"]';
-        edits[index] = {
-          context: $(this).attr('data-paragraphs-editor-context'),
-          value: $(this).html(),
-        };
+      var view = this;
+      this.$el.find(this.inlineEditorSelector).each(function() {
+        var contextString = $(this).attr(view.contextAttribute);
+        var selector = view.inlineEditorSelector + '[' + view.contextAttribute + '="' + contextString + '"]';
+        edits[contextString] = $(this).html();
       });
       this.model.set({"edits": edits}, {silent: true});
-
       return this;
     },
 

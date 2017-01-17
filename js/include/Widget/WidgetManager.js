@@ -40,9 +40,11 @@
       });
     },
 
-    destroy: function(id) {
+    destroy: function(id, widgetDestroyed) {
       this._applyToModel(id, function(widgetModel) {
-        widgetModel.setState(Drupal.paragraphs_editor.WidgetState.DESTROYED_WIDGET);
+        if (widgetDestroyed) {
+          widgetModel.setState(Drupal.paragraphs_editor.WidgetState.DESTROYED_WIDGET);
+        }
         widgetModel.destroy();
       });
     },

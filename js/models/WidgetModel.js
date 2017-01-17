@@ -48,14 +48,14 @@
        *
        * @type {string}
        */
-      "itemContext": "",
+      "itemContextId": "",
 
       /**
        * The context the widget is in.
        *
        * @type {string}
        */
-      "widgetContext": "",
+      "widgetContextId": "",
 
       /**
        * The data to be sent with the command.
@@ -74,27 +74,19 @@
       "duplicating": false,
 
       "state": Drupal.paragraphs_editor.WidgetState.READY,
+
+      "attributes": {}
     },
 
     set: function(attributes, options) {
-      this._refreshEmbedCode(attributes);
-
-      var widgetModel = this;
-      if (attributes.edits) {
-        _.each(attributes.edits, function(item) {
-          widgetModel.embedCodeFactory.getContextFactory().touch(item.context);
-        });
+      if (this._refreshEmbedCode(attributes) || attributes.edits) {
+        this._setupListeners(attributes);
       }
-
-      if (attributes.state) {
-        attributes.state |= this.get('state');
-      }
-
       return Backbone.Model.prototype.set.call(this, attributes, options);
     },
 
     edit: function() {
-      this.embedCode.getCommandEmitter().edit(this.get('widgetContext'), this.get('itemId'));
+      this.embedCode.getCommandEmitter().edit(this.get('widgetContext'), this.get('itemId'), this.get('edits'));
       return this;
     },
 
@@ -121,6 +113,7 @@
     },
 
     _refreshEmbedCode: function(attributes) {
+      var setupListeners = false;
       var oldItemContext = this.get('itemContext');
       var oldWidgetContext = this.get('widgetContext');
       var oldItemId = this.get('itemId');
@@ -130,15 +123,59 @@
 
       if (newItemContext != oldItemContext || newWidgetContext != oldWidgetContext || newItemId != oldItemId) {
         this.embedCode = this.embedCodeFactory.createFromRefs(newItemId, newItemContext, newWidgetContext);
-        this.stopListening()
-          .listenTo(this.embedCode.getBufferItem(), 'change:markup', this._readFromBufferItem);
-
+        setupListeners = true;
         attributes.markup = this.embedCode.getBufferItem().get('markup');
+        attributes.attributes = this.embedCode.getAttributes();
       }
+
+      return setupListeners;
     },
 
     _readFromBufferItem(bufferItemModel) {
       this.set({markup: bufferItemModel.get('markup')});
+    },
+
+    _updateContext(contextModel) {
+      var oldId = contextModel.previous('id');
+      var newId = contextModel.get('id');
+      var attributes = {};
+
+      // Update any context id references that may need to change.
+      if (this.get('itemContextId') == oldId) {
+        attributes.itemContextId = newId;
+      }
+      if (this.get('widgetContextId') == oldId) {
+        attributes.widgetContextId = newId;
+      }
+
+      // If the context was referenced by an edit on the model, update the edit.
+      var edits = this.get('edits');
+      if (edits[oldId]) {
+        attributes.edits = {};
+        _.each(edits, function(value, contextString) {
+          if (contextString == oldId) {
+            attributes.edits[newId] = value.replace(oldId, newId);
+          }
+          else {
+            attributes.edits[contextString] = value;
+          }
+        });
+      }
+
+      this.set(attributes, {silent: true});
+    },
+
+    _setupListeners: function(attributes) {
+      this.stopListening()
+        .listenTo(this.embedCode.getBufferItem(), 'change:markup', this._readFromBufferItem)
+        .listenTo(this.embedCode.getSourceContext(), 'change:id', this._updateContext)
+        .listenTo(this.embedCode.getTargetContext(), 'change:id', this._updateContext);
+
+      var model = this;
+      _.each(attributes.edits, function(value, contextString) {
+        var context = model.embedCodeFactory.getContextFactory().create(contextString);
+        model.listenTo(context, 'change:id', model._updateContext);
+      });
     }
 
   });

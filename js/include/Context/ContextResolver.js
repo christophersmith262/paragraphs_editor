@@ -22,18 +22,18 @@
         contextString = $el.closest('[' + this._targetContextAttribute + ']').attr(this._targetContextAttribute);
       }
 
-      return this._getContext(contextString);
+      return this.create(contextString);
     },
 
     resolveSourceContext: function($el) {
-      return this._getContext($el.attr(this._sourceContextAttribute));
+      return this.create($el.attr(this._sourceContextAttribute));
     },
 
     getEditorContext: function() {
       return this._editorContext;
     },
 
-    _getContext: function(contextString) {
+    create: function(contextString) {
       if (contextString) {
         var settings = this._editorContext ? this._editorContext.getSettings() : undefined;
         return this._contextFactory.create(contextString, settings);
@@ -41,6 +41,14 @@
       else {
         return this._editorContext;
       }
+    },
+
+    touch: function(contextString) {
+      return this._contextFactory.touch(contextString);
+    },
+
+    updateContextId: function(oldContextId, newContextId) {
+      return this._contextFactory.updateContextId(oldContextId, newContextId);
     }
 
   });
