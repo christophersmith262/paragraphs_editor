@@ -1,0 +1,17 @@
+{
+  "name": "christophersmith262/paragraphs_editor",
+  "description": "Adds a CKEDITOR plugin to allow inserting paragraphs into a text blob using a CKEDITOR dialog.",
+  "homepage": "https://github.com/christophersmith262/paragraphs_editor",
+  "authors": [
+    {
+      "name": "Christopher Smith",
+      "homepage": "https://github.com/christophersmith262"
+    }
+  ],
+  "support": {
+  },
+  "license": "GPL-2.0+",
+  "require": {
+    "drupal/paragraphs": "8.x"
+  }
+}
