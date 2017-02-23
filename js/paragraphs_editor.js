@@ -75,14 +75,45 @@
    * @return {string}
    *   A string representing a DOM fragment.
    */
-  Drupal.theme.paragraphsEditorWidgetMemento = function(items) {
-    var result = '';
-    for (var contextString in items) {
-      result += '<paragraph-field '
-        + 'data-context="' + contextString + '">'
-        + items[contextString] + '</paragraph-field>';
+  Drupal.theme.paragraphsEditorWidgetMemento = function(fields, edits) {
+
+    function write(fields) {
+      result = '';
+      _.each(fields, function(node) {
+        if (node.type == 'field') {
+          result += '<paragraph-field';
+          result += ' data-field-name="' + node.name + '"';
+          var edit; 
+
+          if (node.context) {
+            result += ' data-context="' + node.context + '"';
+            edit = edits[node.context];
+          }
+          else {
+            result += ' data-mutable="false"';
+          }
+
+          result += '>';
+
+          if (edit) {
+            result += edit;
+          }
+          else {
+            result += write(node);
+          }
+
+          result += '</paragraph-field>';
+        }
+        else if (node.type == 'paragraph') {
+          result += '<paragraph data-mutable="false" data-uuid="' + node.uuid + '">';
+          result += write(node);
+          result += '</paragraph>';
+        }
+      });
+
+      return result;
     }
-    return result;
+    return write(fields);
   }
 
   /**

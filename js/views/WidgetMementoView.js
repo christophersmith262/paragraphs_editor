@@ -17,13 +17,13 @@
       
     },
 
-    template: function(edits) {
-      return Drupal.theme.paragraphsEditorWidgetMemento(edits);
+    template: function(fields, edits) {
+      return Drupal.theme.paragraphsEditorWidgetMemento(fields, edits);
     },
 
     render: function() {
       var view = this;
-      this.$el.html(this.template(this.model.get('edits')));
+      this.$el.html(this.template(this.model.embedCode.getBufferItem().get('fields'), this.model.get('edits')));
       _.each(this.el.attributes, function(attr) {
         if (!view.attributeWhitelist[attr.name]) {
           view.$el.removeAttr(attr.name);

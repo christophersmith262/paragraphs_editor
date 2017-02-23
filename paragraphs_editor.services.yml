@@ -64,3 +64,5 @@ parameters:
         context: data-context-hint
     inline_template:
       tag: paragraph-field
+      attributes:
+        path: data-path

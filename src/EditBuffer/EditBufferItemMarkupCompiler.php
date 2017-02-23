@@ -12,7 +12,8 @@ class EditBufferItemMarkupCompilerSession {
 
   protected $contextFactory;
   protected $item;
-  protected $paragraphContexts = array();
+  protected $paragraphContexts = [];
+  protected $fieldMap = [];
 
   public function __construct(CommandContextFactoryInterface $context_factory, EditBufferItemInterface $item) {
     $this->contextFactory = $context_factory;
@@ -28,13 +29,79 @@ class EditBufferItemMarkupCompilerSession {
       list($field_config_id, $widget_build_id, $entity_id) = $this->contextFactory->parseContextString($this->paragraphContexts[$uuid]);
       $from_context = $this->contextFactory->create($field_config_id, $entity_id, array(), $widget_build_id);
       $context = $this->contextFactory->regenerate($from_context);
-      $this->item->mapContext($from_context->getContextString(), $context->getContextString());
+      $this->mapContext($from_context, $context);
+      unset($this->paragraphContexts[$uuid]);
     }
     else {
       $context = $this->contextFactory->create($field_config_id, $entity_id);
     }
 
     return $context;
+  }
+
+  public function cleanup() {
+    foreach ($this->paragraphContexts as $residual_context_string) {
+      list($field_config_id, $widget_build_id, $entity_id) = $this->contextFactory->parseContextString($residual_context_string);
+      $residual_context = $this->contextFactory->create($field_config_id, $entity_id, array(), $widget_build_id);
+      $this->contextFactory->free($residual_context);
+    }
+  }
+
+  public function mapContext($from_context, $to_context) {
+    $this->item->mapContext($from_context->getContextString(), $to_context->getContextString());
+  }
+
+  public function getContextMap() {
+    return $this->item->getContextMap();
+  }
+
+  public function getFieldMap() {
+    return $this->fieldMap;
+  }
+
+  public function mapPath(array $node_path) {
+    $map = &$this->fieldMap;
+    foreach ($node_path as $node) {
+
+      if ($node['type'] == 'field') {
+        $node_id = $node['name'];
+      }
+      else {
+        $node_id = $node['uuid'];
+      }
+
+      if (!isset($map[$node_id])) {
+        $map[$node_id] = $node;
+      }
+      else {
+        $map[$node_id] += $node;
+      }
+
+      $map = &$map[$node_id];
+    }
+  }
+}
+
+class EditBufferItemMarkupCompilerResult {
+
+  protected $session;
+  protected $markup;
+
+  public function __construct($session, $markup) {
+    $this->session = $session;
+    $this->markup = $markup;
+  }
+
+  public function getMarkup() {
+    return $this->markup;
+  }
+
+  public function getContextMap() {
+    return $this->session->getContextMap();
+  }
+
+  public function getFieldMap() {
+    return $this->session->getFieldMap();
   }
 }
 
@@ -62,28 +129,52 @@ class EditBufferItemMarkupCompiler {
 
     // Render the rendered markup for the view.
     $markup = $this->renderer->render($view);
-    return $markup;
+    $session->cleanup();
+    return new EditBufferItemMarkupCompilerResult($session, $markup);
   }
 
   public function buildView(array $build) {
     $session = $build['#paragraphs_editor_session'];
+    $path = $build['#paragraphs_editor_path'];
 
     foreach (Element::children($build) as $field_name) {
 
       // Only apply inline editing to nested paragraphs_editor enabled fields.
       $info = $build[$field_name];
       $field_definition = FieldConfig::loadByName($info['#entity_type'], $info['#bundle'], $info['#field_name']);
+
+      $base_path = $path;
+      if ($base_path) {
+        $base_path[] = [
+          'type' => 'paragraph',
+          'uuid' => $build['#paragraph']->uuid(),
+        ];
+      }
+
       if ($field_definition->getThirdPartySetting('paragraphs_editor', 'enabled')) {
         $context = $session->getContext($field_definition->id(), $info['#object']->id(), $info['#object']->uuid());
 
         // Mark the field render array with an editor context so the
         // preprocessor can decorate it with the right attributes.
         $build[$field_name]['#paragraphs_editor_context'] = $context->getContextString();
+        $edit_path = $base_path;
+        $edit_path[] = [
+          'type' => 'field',
+          'name' => $field_definition->getName(),
+          'context' => $context->getContextString(),
+        ];
+
+        $session->mapPath($edit_path);
       }
       else {
+        $edit_path = $base_path;
+        $edit_path[] = [
+          'type' => 'field',
+          'name' => $field_definition->getName(),
+        ];
         foreach (Element::children($build[$field_name]) as $delta) {
           if ($build[$field_name][$delta]['#theme'] == 'paragraph') {
-            $this->processElement($build[$field_name][$delta], $session);
+            $this->processElement($build[$field_name][$delta], $session, $edit_path);
           }
         }
       }
@@ -92,8 +183,9 @@ class EditBufferItemMarkupCompiler {
     return $build;
   }
 
-  protected function processElement(&$element, $session) {
+  protected function processElement(&$element, $session, $path = []) {
     $element['#pre_render'][] = array($this, 'buildView');
     $element['#paragraphs_editor_session'] = $session;
+    $element['#paragraphs_editor_path'] = $path;
   }
 }

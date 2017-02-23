@@ -20,6 +20,7 @@ class DeliverEditBufferItemCommand implements CommandInterface {
 
   public function render() {
     $paragraph = $this->item->getEntity();
+    $result = $this->markupCompiler->compile($this->item);
     $command = array(
       'command' => 'paragraphs_editor_data',
       'context' => $this->context->getContextString(),
@@ -27,7 +28,8 @@ class DeliverEditBufferItemCommand implements CommandInterface {
         'id' => $paragraph->uuid(),
         'isNew' => $paragraph->isNew(),
         'insert' => $this->insert,
-        'markup' => $this->markupCompiler->compile($this->item),
+        'markup' => $result->getMarkup(),
+        'fields' => $result->getFieldMap(),
         'bundle' => $paragraph->bundle(),
       ),
     );

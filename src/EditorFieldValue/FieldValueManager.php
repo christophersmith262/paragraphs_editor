@@ -47,16 +47,12 @@ class FieldValueManager implements FieldValueManagerInterface {
     // Reset the text entity markup in case we merged multiple text entities.
     $text_entity->{$settings['text_field']}->value = $markup;
 
-    $children = array();
-    /*foreach ($entities as $entity) {
-      foreach ($entity->getFields(FALSE) as $field_definition) {
-        if (self::isApplicable($field_definition)) {
-          $children[$entity->uuid()] = $this->wrap($entity->{$field_definition->getName()}, $settings);
-        }
-      }
-    }*/
+    /*$node = new ParseTreeNode($items->getFieldDefinition());
+    $node->attachData('field_value_wrapper', new FieldValueWrapper($text_entity, $entities, $settings));
+    $this->attachChildren($node, $entities, $settings);
+    return $node;*/
 
-    return new FieldValueWrapper($text_entity, $entities, $children, $settings);
+    return new FieldValueWrapper($text_entity, $entities, [], $settings);
   }
 
   public function update(FieldValueWrapperInterface $field_value_wrapper, EditBufferInterface $edit_buffer, $markup, $format) {
@@ -67,4 +63,48 @@ class FieldValueManager implements FieldValueManagerInterface {
     $field_value_wrapper->setFormat($format);
     return $field_value_wrapper;
   }
+
+  protected function attachChildren(ParseTreeNodeInterface $node, array $entities, array $settings) {
+    foreach ($entities as $entity) {
+      foreach ($entity->getFields(FALSE) as $field_definition) {
+        if ($field_definition->isParagraph()) {
+          $child_items = $entity->{$field_definition->getName()};
+          if (self::isApplicable($field_definition)) {
+            $child = $this->wrap($child_items, $settings);
+          }
+          else {
+            $child_entities = [];
+            foreach ($child_items as $item) {
+              $paragraph = $item->entity;
+              $child_entities[$paragraph->uuid()] = $paragraph;
+            }
+            $child = new ParseTreeNode($child_items->getFieldDefinition());
+            $this->attachChildren($child, $child_entities, $settings);
+          }
+          $node->addChild($child);
+        }
+      }
+    }
+  }
 }
+
+/*class ParagraphTreeNode {
+
+  public function __construct(FieldDefinitionInterface $field_definition) {
+  }
+
+  public function addChildren(array $children) {
+  }
+
+  public function addChild(ComponentTreeNodeInterface $child) {
+  }
+
+  public function setParent(ComponentTreeNodeInterface $parent) {
+  }
+
+  public function attachData($name, $value) {
+  }
+
+  public function getData($name) {
+  }
+}*/

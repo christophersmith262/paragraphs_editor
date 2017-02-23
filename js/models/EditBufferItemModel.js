@@ -53,6 +53,8 @@
        * @type {string}
        */
       'bundle': '',
+
+      'fields': {}
     },
 
   });
