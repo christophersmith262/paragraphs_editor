@@ -1,0 +1,34 @@
+{
+  "name": "paragraphs_editor",
+  "version": "1.0.0",
+  "description": "This module provides an ajax / javascript framework for editing paragraph fields with WYSIWYG editors. Since this module only provides an API. To use Editor integration on a site, you might want to start with the [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor) project.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/christophersmith262/paragraphs_editor.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/christophersmith262/paragraphs_editor/issues"
+  },
+  "homepage": "https://github.com/christophersmith262/paragraphs_editor#readme",
+  "dependencies": {
+    "widget-binder": "git+ssh://git@github.com/christophersmith262/widget-binder.git"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-replace": "^0.5.4",
+    "gulp-uglify": "^2.1.2",
+    "gulp-util": "^3.0.8",
+    "pump": "^1.0.2"
+  }
+}
