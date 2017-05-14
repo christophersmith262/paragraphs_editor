@@ -6,19 +6,14 @@ var gulp = require('gulp'),
   util = require('gulp-util'),
   pump = require('pump');
 
-uglify().on('error', function(err) {
-  console.log('asfasdfasfdas');
-  this.emit('end');
-})
-
 var jsSrc = 'js/src/index.js';
 var jsDst = 'js/dist';
-var fileName = 'paragraphseditor.js';
+var fileName = 'paragraphseditor';
 
 gulp.task('scripts', function(cb) {
-  gulp.src(jsSrc)
+  var s = gulp.src(jsSrc)
     .pipe(browserify({
-      debug: !!util.env.production,
+      debug: !util.env.production,
     }))
     .on('prebundle', function(bundle) {
       bundle.exclude('jquery');
@@ -32,15 +27,17 @@ gulp.task('scripts', function(cb) {
     .pipe(replace(/require\('backbone'\)/g, 'window.Backbone    '))
     .pipe(replace(/require\('drupal'\)/g, 'window.Drupal    '))
     .pipe(replace(/require\('drupal-settings'\)/g, 'window.drupalSettings     '))
-    .pipe(concat(fileName))
-    .pipe(gulp.dest(jsDst));
+    .pipe(concat(fileName + '.js'))
 
   if (util.env.production) {
     pump([
-      gulp.src(jsDst + '/*.js'),
+      s,
       uglify(),
       gulp.dest(jsDst),
     ], cb);
+  }
+  else {
+    s.pipe(gulp.dest(jsDst));
   }
 
 });
