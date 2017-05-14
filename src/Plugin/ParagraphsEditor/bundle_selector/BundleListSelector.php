@@ -85,7 +85,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
       ),
       '#attached' => array(
         'library' => array(
-          'paragraphs_editor/bundleselector'
+          'paragraphs_editor/core'
         ),
       ),
     );

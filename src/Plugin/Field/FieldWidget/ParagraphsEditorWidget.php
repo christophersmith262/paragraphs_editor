@@ -99,7 +99,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
         ),
         '#attached' => array(
           'library' => array(
-            'paragraphs_editor/widget',
+            'paragraphs_editor/core',
           ),
           'drupalSettings' => array(
             'paragraphs_editor' => array(

@@ -1,49 +1,12 @@
-widget:
+core:
   version: 1.x
   css:
     component:
       css/admin.css: {}
   js:
-    js/paragraphs_editor.js: {}
-    js/paragraphs_editor.paragraphseditor.js: {}
-    js/include/Adapter.js: {}
-    js/include/loader.js: {}
-    js/include/ParagraphsEditorField.js: {}
-    js/include/Context/ContextListener.js: {}
-    js/include/Context/ContextResolver.js: {}
-    js/include/EditBuffer/EditBufferMediator.js: {}
-    js/include/EditorCommand/EditorCommandEmitter.js: {}
-    js/include/EmbedCode/EmbedCode.js: {}
-    js/include/EmbedCode/EmbedCodeFactory.js: {}
-    js/include/Widget/EditorWidgetTracker.js: {}
-    js/include/Widget/WidgetFactory.js: {}
-    js/include/Widget/WidgetManager.js: {}
-    js/include/Widget/WidgetTable.js: {}
-    js/include/Widget/WidgetViewFactory.js: {}
-    js/models/ContextModel.js: {}
-    js/models/EditBufferItemModel.js: {}
-    js/models/SchemaModel.js: {}
-    js/models/WidgetModel.js: {}
-    js/collections/ContextCollection.js: {}
-    js/collections/EditBufferItemCollection.js: {}
-    js/collections/SchemaCollection.js: {}
-    js/views/WidgetEditorView.js: {}
-    js/views/WidgetMementoView.js: {}
+    js/dist/paragraphseditor.js: {}
   dependencies:
     - core/backbone
     - core/jquery
     - core/jquery.form
     - core/drupal.ajax
-bundleselector:
-  version: 1.x
-  js:
-    js/paragraphs_editor.bundleselector.js: {}
-toolbox:
-  version: 1.x
-  js:
-    js/toolbox.js: {}
-  css:
-    component:
-      css/toolbox.css: {}
-  dependencies:
-    - core/jquery
