@@ -50,6 +50,8 @@ Drupal.theme.paragraphsEditorExport = function(elementFactory, fields, edits) {
   return WidgetBinder.defaults.views['export'].options.template(elementFactory, fields, edits);
 }
 
+Drupal.paragraphs_editor.instances = {};
+
 Drupal.paragraphs_editor.register = function(module_name, adapter) {
   var config = _.extend({}, WidgetBinder.defaults);
 
@@ -82,3 +84,5 @@ Drupal.paragraphs_editor.register = function(module_name, adapter) {
 
   return this.instances[module_name] = new WidgetBinder(config);
 }
+
+Drupal.paragraphs_editor.WidgetBinder = WidgetBinder;

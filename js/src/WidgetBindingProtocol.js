@@ -1,7 +1,7 @@
 var Drupal = require('drupal'),
   WidgetBinder = require('widget-binder');
 
-module.exports = SyncProtocol.extend({
+module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
 
   send: function(type, data, settings, resolver) {
     if (type == 'FETCH_SCHEMA') {
