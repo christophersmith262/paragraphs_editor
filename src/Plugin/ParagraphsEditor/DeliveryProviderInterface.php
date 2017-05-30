@@ -4,6 +4,7 @@ namespace Drupal\paragraphs_editor\Plugin\ParagraphsEditor;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditorCommand\WidgetBinderData;
 
 /**
  * Represents a paragraphs editor form delivery plugin.
@@ -31,27 +32,7 @@ interface DeliveryProviderInterface {
    */
   public function navigate(AjaxResponse $response, $title, $contents);
 
-  /**
-   * Delivers a rendered paragraph to the browser.
-   *
-   * @param Drupal\Core\Ajax\AjaxResponse
-   *   The response object to add commands to.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
-   *   The edit buffer item to render.
-   */
-  public function render(AjaxResponse $response, EditBufferItemInterface $item);
-
-  /**
-   * Delivers a copy of a paragraph to the browser.
-   *
-   * @param Drupal\Core\Ajax\AjaxResponse
-   *   The response object to add commands to.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
-   *   The edit buffer item to render.
-   * @param string $editor_widget_id
-   *   The editor widget instance id the clone will apply to.
-   */
-  public function duplicate(AjaxResponse $response, EditBufferItemInterface $item, $editor_widget_id);
+  public function sendData(AjaxResponse $response, WidgetBinderData $data);
 
   /**
    * Closes a form for the user.

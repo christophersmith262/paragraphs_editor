@@ -23,7 +23,7 @@ services:
       - '%paragraphs_editor.plugin_managers%'
   paragraphs_editor.command.response_handler:
     class: Drupal\paragraphs_editor\EditorCommand\ResponseHandler
-    arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager']
+    arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_editor.edit_buffer.markup_compiler']
   paragraphs_editor.edit_buffer.cache:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferCache
     arguments: ['@keyvalue.expirable', '%paragraphs_editor.edit_buffer.cache.lifetime%', '@current_user']

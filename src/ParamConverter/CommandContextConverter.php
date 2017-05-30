@@ -76,9 +76,14 @@ class CommandContextConverter implements ParamConverterInterface {
       }
     }
 
-    $nested_contexts = $this->request->get('nested_contexts');
+    $nested_contexts = $this->request->get('nestedContexts');
     if ($nested_contexts) {
       $context->addAdditionalContext('nested_contexts', $nested_contexts);
+    }
+
+    $module = $this->request->get('module');
+    if ($module) {
+      $context->addAdditionalContext('module', $module);
     }
 
     return $context;

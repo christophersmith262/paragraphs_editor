@@ -7,14 +7,12 @@ use Drupal\paragraphs\ParagraphInterface;
 class EditBufferItem implements EditBufferItemInterface {
 
   protected $entity;
-  protected $bufferCache;
   protected $buffer;
   protected $nestedContexts = array();
   protected $contextMap = array();
 
-  public function __construct(ParagraphInterface $entity, EditBufferCacheInterface $buffer_cache, EditBufferInterface $buffer) {
+  public function __construct(ParagraphInterface $entity, EditBufferInterface $buffer) {
     $this->entity = $entity;
-    $this->bufferCache = $buffer_cache;
     $this->buffer = $buffer;
   }
 
@@ -34,20 +32,7 @@ class EditBufferItem implements EditBufferItemInterface {
     return $this->nestedContexts;
   }
 
-  public function resetContextMap() {
-    $this->contextMap = array();
-  }
-
-  public function mapContext($from, $to) {
-    $this->contextMap[$from] = $to;
-  }
-
-  public function getContextMap() {
-    return $this->contextMap;
-  }
-
   public function save() {
-    $this->buffer->setItem($this);
-    $this->bufferCache->save($this->buffer);
+    $this->buffer->setItem($this)->save();
   }
 }

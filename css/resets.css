@@ -2,12 +2,12 @@ paragraph {
   display: block;
 }
 
-.paragraphs-editor-widget-toolbar {
+.widget-binder-toolbox {
   list-style: none;
   padding: 0;
 }
 
-.paragraphs-editor-widget-toolbar__item {
+.widget-binder-toolbox__item {
   display: inline-block;
   padding: 0 .5rem;
 }

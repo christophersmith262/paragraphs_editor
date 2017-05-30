@@ -99,24 +99,25 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
         ),
         '#attached' => array(
           'library' => array(
-            'paragraphs_editor/widget',
+            'paragraphs_editor/core',
           ),
           'drupalSettings' => array(
             'paragraphs_editor' => array(
-              'contexts' => array(
-                $context_string => array(
-                  'id' => $context_string,
-                  'settings' => $this->getSettings(),
-                  'bufferItems' => array(
-                  ),
-                ),
-              ),
               'schema' => array(
                 $this->fieldDefinition->id() => array(
                   'id' => $this->fieldDefinition->id(),
                   'allowed' => array(
                     'paragraphs_editor_text' => TRUE,
                     'tabs' => TRUE,
+                  ),
+                ),
+              ),
+              'context' => array(
+                $context_string => array(
+                  'id' => $context_string,
+                  'schemaId' => $this->fieldDefinition->id(),
+                  'settings' => $this->getSettings(),
+                  'bufferItems' => array(
                   ),
                 ),
               ),
