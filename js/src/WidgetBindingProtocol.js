@@ -1,7 +1,12 @@
 var Drupal = require('drupal'),
+  $ = require('jquery'),
   WidgetBinder = require('widget-binder');
 
 module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
+
+  constructor: function(module_name) {
+    this.moduleName = module_name;
+  },
 
   send: function(type, data, settings, resolver) {
     if (type == 'FETCH_SCHEMA') {
@@ -19,30 +24,31 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
     }
     var path = '/ajax/paragraphs-editor/' + command.command;
 
-    if ('targetContext' in command) {
+    if (command.targetContext) {
       path += '/' + command.targetContext;
     }
 
-    if ('sourceContext' in command) {
+    if (command.sourceContext) {
       path += '/' + command.sourceContext;
     }
 
-    if ('paragraph' in command) {
-      path += '/' + command.paragraph;
+    if (command.itemId) {
+      path += '/' + command.itemId;
     }
 
-    if ('widget' in command) {
+    if (command.widget) {
       path += '/' + command.widget;
     }
 
-    if ('bundleName' in command) {
-      path += '/' + command.bundleName;
+    if (command.type) {
+      path += '/' + command.type;
     }
 
     var params = [];
     for (var key in settings) {
       params.push('settings[' + key + ']=' + settings[key]);
     }
+    params.push('module=' + this.moduleName);
     path += '?' + params.join('&');
 
     var ajax = Drupal.ajax({
@@ -52,10 +58,11 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
       },
     });
 
-    ajax.options.data['editorContext'] = this._editorContext.get('id');
+    ajax.options.data['editorContext'] = command.editorContext.get('id');
+    delete command.editorContext;
 
     if (command.edits) {
-      ajax.options.data['nested_contexts'] = _.keys(command.edits);
+      ajax.options.data['nestedContexts'] = _.keys(command.edits);
     }
 
     var complete = ajax.options.complete;

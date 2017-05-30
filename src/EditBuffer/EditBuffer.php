@@ -30,6 +30,7 @@ class EditBuffer implements EditBufferInterface {
   public function setItem(EditBufferItemInterface $item) {
     $uuid = $item->getEntity()->uuid();
     $this->paragraphs[$uuid] = $item->getEntity();
+    return $this;
   }
 
   public function getItem($paragraph_uuid) {
@@ -65,7 +66,7 @@ class EditBuffer implements EditBufferInterface {
   }
 
   public function createItem(ParagraphInterface $paragraph) {
-    $item = new EditBufferItem($paragraph, $this->bufferCache, $this);
+    $item = new EditBufferItem($paragraph, $this);
     $this->paragraphs[$paragraph->uuid()] = $paragraph;
     return $item;
   }
@@ -98,6 +99,10 @@ class EditBuffer implements EditBufferInterface {
     return array_keys($this->toArray());
   }
 
+  public function __wakeup() {
+    $this->bufferCache = \Drupal::service('paragraphs_editor.edit_buffer.cache');
+  }
+
   public function createCopy($context_string) {
     $copy = clone $this;
     $copy->contextString = $context_string;
@@ -112,7 +117,6 @@ class EditBuffer implements EditBufferInterface {
   }
 
   protected function createEditBufferItem(ParagraphInterface $paragraph) {
-    $item = new EditBufferItem($paragraph, $this->bufferCache, $this);
-    return $item;
+    return new EditBufferItem($paragraph, $this);
   }
 }

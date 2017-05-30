@@ -9,6 +9,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Plugin\PluginManagerInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompilerInterface;
 use Drupal\paragraphs_editor\Form\ParagraphEntityForm;
 
 /**
@@ -53,6 +54,8 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected $entityManager;
 
+  protected $markupCompiler;
+
   /**
    * Creates a ResponseHandler object.
    *
@@ -65,11 +68,12 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
    */
-  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager) {
+  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager, EditBufferItemMarkupCompilerInterface $markup_compiler) {
     $this->formBuilder = $form_builder;
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
     $this->entityManager = $entity_manager;
+    $this->markupCompiler = $markup_compiler;
   }
 
   /**
@@ -137,7 +141,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected function render(CommandContextInterface $context, EditBufferItemInterface $item) {
     $response = new AjaxResponse();
-    $context->getPlugin('delivery_provider')->render($response, $item);
+    $context->getPlugin('delivery_provider')->sendData($response, $this->markupCompiler->compile($context, $item));
     return $response;
   }
 
@@ -156,7 +160,15 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
     $response = new AjaxResponse();
-    $context->getPlugin('delivery_provider')->duplicate($response, $item, $editor_widget_id);
+    $data = $this->markupCompiler->compile($context, $item);
+    $data->addModel('widget', $editor_widget_id, [
+      'contextId' => $context->getContextString(),
+      'editorContextId' => $context->getEditBuffer()->getParentBufferTag(),
+      'itemContextId' => $context->getContextString(),
+      'itemId' => $item->getEntity()->uuid(),
+      'duplicating' => false,
+    ]);
+    $context->getPlugin('delivery_provider')->sendData($response, $data);
     return $response;
   }
 
@@ -199,7 +211,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    *   A render array for the paragraph edit form.
    */
   protected function getParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item) {
-    $form = new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager);
+    $form = new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager, $this->markupCompiler);
     return $this->formBuilder->getForm($form);
   }
 

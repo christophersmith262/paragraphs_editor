@@ -3,7 +3,8 @@
  * Provides Drupal API integrations for paragraphs_editor.
  */
 
-var Drupal = require('drupal'),
+var _ = require('underscore'),
+  Drupal = require('drupal'),
   drupalSettings = require('drupal-settings'),
   $ = require('jquery'),
   WidgetBindingProtocol = require('./WidgetBindingProtocol');
@@ -27,7 +28,9 @@ Drupal.paragraphs_editor = {};
  *   The model id for the command that was used.
  */
 Drupal.AjaxCommands.prototype.paragraphs_editor_data = function(ajax, response, status){
-  $.fn.paragraphsEditor.widgetBinder.getSyncActionResolver().resolve(response);
+  var module_name = response.module;
+  delete response.module;
+  Drupal.paragraphs_editor.instances[module_name].getSyncActionResolver().resolve(response);
 }
 
 /**
@@ -36,8 +39,11 @@ Drupal.AjaxCommands.prototype.paragraphs_editor_data = function(ajax, response, 
  * @return {string}
  *   A string representing a DOM fragment.
  */
-Drupal.theme.paragraphsEditorWidget = function(elementFactory, markup) {
-  return WidgetBinder.defaults.views['editor'].options.template(elementFactory, markup);
+Drupal.theme.paragraphsEditorWidget = function(elementFactory, markup, actions) {
+  _.each(actions, function(def, id) {
+    def.title = Drupal.t(def.title);
+  });
+  return WidgetBinder.defaults.views['editor'].options.template(elementFactory, markup, actions);
 }
 
 /**
@@ -53,11 +59,11 @@ Drupal.theme.paragraphsEditorExport = function(elementFactory, fields, edits) {
 Drupal.paragraphs_editor.instances = {};
 
 Drupal.paragraphs_editor.register = function(module_name, adapter) {
-  var config = _.extend({}, WidgetBinder.defaults);
+  var config = WidgetBinder.config();
 
   config.plugins = {
     adapter: adapter,
-    protocol: new WidgetBindingProtocol(),
+    protocol: new WidgetBindingProtocol(module_name),
   };
 
   config.elements.widget = {
@@ -66,21 +72,24 @@ Drupal.paragraphs_editor.register = function(module_name, adapter) {
       'data-uuid': '<uuid>',
       'data-context-hint': '<context>',
       'data-viewmode': '<viewmode>',
-    }
+    },
+    selector: 'paragraph[data-context-hint]'
   };
 
   config.elements.field = {
     tag: 'paragraph-field',
     attributes: {
-      'data-field-name': '<field>',
+      'data-field-name': '<name>',
       'data-context': '<context>',
       'data-mutable': '<editable>',
     },
-    selector: 'paragraph-field,.paragraph-field-marker',
+    selector: 'paragraph-field[data-mutable="true"],.editable-paragraph-field',
   };
 
   config.views['editor'].options.template = Drupal.theme.paragraphsEditorWidget;
   config.views['export'].options.template = Drupal.theme.paragraphsEditorExport;
+
+  config.data = drupalSettings.paragraphs_editor;
 
   return this.instances[module_name] = new WidgetBinder(config);
 }

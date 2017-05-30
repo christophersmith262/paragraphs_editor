@@ -27,6 +27,12 @@ class SchemaController implements ContainerInjectionInterface {
 
   public function get(FieldConfigInterface $field_config) {
     $bundle_filter = $this->contextFactory->createBundleFilter($field_config);
-    return new JsonResponse(array_keys($bundle_filter->getAllowedBundles()));
+    return new JsonResponse([
+      'schema' => [
+        $field_config->id() => [
+          'allowed' => $bundle_filter->getAllowedBundles(),
+        ],
+      ],
+    ]);
   }
 }

@@ -49,7 +49,7 @@ class ParagraphEntityForm extends ContentEntityForm {
    *   The entity manager service.
    */
   public function __construct(CommandContextInterface $context, EditBufferItemInterface $item,
-    ModuleHandlerInterface $module_handler, EntityTypeManagerInterface $entity_type_manager, EntityManagerInterface $entity_manager) {
+    ModuleHandlerInterface $module_handler, EntityTypeManagerInterface $entity_type_manager, EntityManagerInterface $entity_manager, $markup_compiler) {
 
     // The ContentEntityForm class actually has a whole bunch of hidden
     // dependendencies. They are injected by core via setters, however we
@@ -68,6 +68,7 @@ class ParagraphEntityForm extends ContentEntityForm {
     // Set dependencies for this class.
     $this->context = $context;
     $this->bufferItem = $item;
+    $this->markupCompiler = $markup_compiler;
   }
 
   /**
@@ -114,8 +115,13 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->bufferItem->overwrite($this->entity);
     $this->bufferItem->save();
 
+    $editable_contexts = unserialize($form_state->getValue('paragraphs_editor_editable_contexts'));
+    if ($editable_contexts) {
+      $this->bufferItem->setParagraphContexts($editable_contexts);
+    }
+
     // Make properties available to the static ajax handler.
-    $form_state->setTemporaryValue(['paragraphs_editor', 'item'], $this->bufferItem);
+    $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->markupCompiler->compile($this->context, $this->bufferItem));
     $form_state->setTemporaryValue(['paragraphs_editor', 'context'], $this->context);
   }
 
@@ -160,18 +166,13 @@ class ParagraphEntityForm extends ContentEntityForm {
    */
   static public function ajaxSubmit(array $form, FormStateInterface $form_state) {
     // Retrieve class mambers needed to build a response.
-    $item = $form_state->getTemporaryValue(['paragraphs_editor', 'item']);
+    $data = $form_state->getTemporaryValue(['paragraphs_editor', 'data']);
     $delivery = $form_state->getTemporaryValue(['paragraphs_editor', 'context'])->getPlugin('delivery_provider');
-
-    $editable_contexts = unserialize($form_state->getValue('paragraphs_editor_editable_contexts'));
-    if ($editable_contexts) {
-      $item->setParagraphContexts($editable_contexts);
-    }
 
     // Create a response that includes the rendered paragraph and signal that
     // the ajax workflow is completed.
     $response = new AjaxResponse();
-    $delivery->render($response, $item);
+    $delivery->sendData($response, $data);
     $delivery->close($response);
 
     return $response;

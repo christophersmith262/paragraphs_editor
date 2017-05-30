@@ -103,12 +103,5 @@ function paragraphs_editor_field_config_edit_form_builder($entity_type, $entity,
 }
 
 function paragraphs_editor_preprocess_field(&$variables) {
-  if (!empty($variables['element']['#paragraphs_editor_context'])) {
-    $context_string = $variables['element']['#paragraphs_editor_context'];
-    foreach ($variables['items'] as $delta => $item) {
-      $variables['items'][$delta]['attributes']->addClass('paragraphs-editor-paragraph-field');
-      $variables['items'][$delta]['attributes']->setAttribute('data-context', $context_string);
-      $variables['items'][$delta]['content'] = '';
-    }
-  }
+  \Drupal::service('paragraphs_editor.edit_buffer.markup_compiler')->preprocessField($variables);
 }
