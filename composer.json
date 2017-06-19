@@ -13,6 +13,6 @@
   },
   "license": "GPL-2.0+",
   "require": {
-    "drupal/paragraphs": "8.x"
+    "drupal/paragraphs": "^1.1"
   }
 }
