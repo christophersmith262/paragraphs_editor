@@ -2,10 +2,15 @@
 
 namespace Drupal\paragraphs_editor\EditorFieldValue;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 interface FieldValueManagerInterface {
-  public function wrap(FieldItemListInterface $items, array $settings);
-  public function update(FieldValueWrapperInterface $field_value_wrapper, EditBufferInterface $edit_buffer, $markup, $format);
+  public function wrapItems(FieldItemListInterface $items);
+  public function updateItems(FieldItemListInterface $items, FieldValueWrapperInterface $field_value_wrapper, $new_revision, $langcode);
+  public function getTextBundles(array $allowed_bundles = []);
+  public function validateTextBundle($bundle_name, $field_name);
+  public function isParagraphsField(FieldDefinitionInterface $field_definition);
+  public function isParagraphsEditorField(FieldDefinitionInterface $field_definition);
 }

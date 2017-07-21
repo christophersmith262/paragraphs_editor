@@ -9,5 +9,4 @@ interface FieldValueWrapperInterface {
   public function setMarkup($markup);
   public function setFormat($format);
   public function setEntities(array $entities);
-  public function toArray();
 }

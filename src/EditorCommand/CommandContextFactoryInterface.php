@@ -10,6 +10,8 @@ namespace Drupal\paragraphs_editor\EditorCommand;
  */
 interface CommandContextFactoryInterface {
 
+  public function get($context_id);
+
   /**
    * Creates a command context object.
    *

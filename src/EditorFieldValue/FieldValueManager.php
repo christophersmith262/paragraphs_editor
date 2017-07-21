@@ -2,22 +2,27 @@
 
 namespace Drupal\paragraphs_editor\EditorFieldValue;
 
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 class FieldValueManager implements FieldValueManagerInterface {
-  //use ParagraphsEditorAwarePluginTrait; 
 
+  protected $bundleStorage;
+  protected $entityFieldManager;
   protected $storage;
-  protected $embedCodeProcessor;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EmbedCodeProcessorInterface $embed_code_processor) {
+  public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityFieldManager = $entity_field_manager;
     $this->storage = $entity_type_manager->getStorage('paragraph');
-    $this->embedCodeProcessor = $embed_code_processor;
+    $this->bundleStorage = $entity_type_manager->getStorage('paragraphs_type');
   }
 
-  public function wrap(FieldItemListInterface $items, array $settings) {
+  public function wrapItems(FieldItemListInterface $items) {
+    $field_definition = $items->getFieldDefinition();
+    $settings = $field_definition->getThirdPartySettings('paragraphs_editor');
     $markup = '';
     $entities = array();
 
@@ -38,73 +43,117 @@ class FieldValueManager implements FieldValueManagerInterface {
 
     // If there is no text entity we need to create one.
     if (!$text_entity) {
-      $text_entity = $this->storage->create(array(
+      $text_entity = $this->storage->create([
         'type' => $settings['text_bundle'],
-      ));
-      $text_entity->{$settings['text_field']}->format = $settings['filter_format'];
+      ]);
     }
 
     // Reset the text entity markup in case we merged multiple text entities.
     $text_entity->{$settings['text_field']}->value = $markup;
 
-    /*$node = new ParseTreeNode($items->getFieldDefinition());
-    $node->attachData('field_value_wrapper', new FieldValueWrapper($text_entity, $entities, $settings));
-    $this->attachChildren($node, $entities, $settings);
-    return $node;*/
-
-    return new FieldValueWrapper($text_entity, $entities, [], $settings);
+    return new FieldValueWrapper($items->getFieldDefinition(), $text_entity, $entities);
   }
 
-  public function update(FieldValueWrapperInterface $field_value_wrapper, EditBufferInterface $edit_buffer, $markup, $format) {
-    $embed_codes = new EmbedCodeAccountant($edit_buffer);
-    $this->embedCodeProcessor->process($markup, $embed_codes);
-    $field_value_wrapper->setEntities($embed_codes->getEntities());
-    $field_value_wrapper->setMarkup($markup);
-    $field_value_wrapper->setFormat($format);
-    return $field_value_wrapper;
-  }
+  public function updateItems(FieldItemListInterface $items, FieldValueWrapperInterface $field_value_wrapper, $new_revision = FALSE, $langcode = NULL) {
+    $values = array();
+    $entities = array_merge([$field_value_wrapper->getTextEntity()], $field_value_wrapper->getEntities());
+    foreach ($entities as $delta => $paragraphs_entity) {
+      $paragraphs_entity->setNewRevision($new_revision);
 
-  protected function attachChildren(ParseTreeNodeInterface $node, array $entities, array $settings) {
-    foreach ($entities as $entity) {
-      foreach ($entity->getFields(FALSE) as $field_definition) {
-        if ($field_definition->isParagraph()) {
-          $child_items = $entity->{$field_definition->getName()};
-          if (self::isApplicable($field_definition)) {
-            $child = $this->wrap($child_items, $settings);
-          }
-          else {
-            $child_entities = [];
-            foreach ($child_items as $item) {
-              $paragraph = $item->entity;
-              $child_entities[$paragraph->uuid()] = $paragraph;
-            }
-            $child = new ParseTreeNode($child_items->getFieldDefinition());
-            $this->attachChildren($child, $child_entities, $settings);
-          }
-          $node->addChild($child);
+      if (isset($langcode) && $paragraphs_entity->get('langcode') != $langcode) {
+        if ($paragraphs_entity->hasTranslation($langcode)) {
+          $paragraphs_entity = $paragraphs_entity->getTranslation($langcode);
+        }
+        else {
+          $paragraphs_entity->set('langcode', $langcode);
         }
       }
+      $paragraphs_entity->setNeedsSave(TRUE);
+      $values[$delta]['entity'] = $paragraphs_entity;
+      $values[$delta]['target_id'] = $paragraphs_entity->id();
+      $values[$delta]['target_revision_id'] = $paragraphs_entity->getRevisionId();
     }
+
+    $items->setValue($values);
+    $items->filterEmptyItems();
+    return $items;
+  }
+
+  public function getTextBundles(array $allowed_bundles = []) {
+
+    if (!$allowed_bundles) {
+      foreach ($this->bundleStorage->getQuery()->execute() as $name) {
+        $allowed_bundles[$name] = array(
+          'label' => $this->bundleStorage->load($name)->label(),
+        );
+      }
+    }
+
+    $bundles = array();
+    foreach ($allowed_bundles as $name => $type) {
+      $text_fields = $this->getTextFields();
+      if (count($text_fields) == 1) {
+        $bundles[$name] = reset($text_fields) + [
+          'label' => $type['label'],
+        ];
+      }
+    }
+    return $bundles;
+  }
+
+  public function validateTextBundle($bundle_name, $field_name) {
+    return TRUE;
+  }
+
+  public function isParagraphsField(FieldDefinitionInterface $field_definition) {
+    if ($field_definition->getType() != 'entity_reference_revisions') {
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  public function isParagraphsEditorField(FieldDefinitionInterface $field_definition) {
+    if (!static::isParagraphsField($field_definition)) {
+      return FALSE;
+    }
+
+    // We only every allow this widget to be applied to fields that have
+    // unlimited cardinality. Otherwise we'd have to deal with keeping track of
+    // how many paragraphs are in the Editor instance.
+    $cardinality = $field_definition->getFieldStorageDefinition()->getCardinality();
+    if ($cardinality != FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
+      return FALSE;
+    }
+
+    // Make sure it is a pragraphs editor enabled field.
+    $settings = $field_definition->getThirdPartySettings('paragraphs_editor');
+    if (empty($settings['enabled'])) {
+      return FALSE;
+    }
+
+    // Make sure the bundle for storing text is valid.
+    $text_bundle = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle');
+    $text_field = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_field');
+    /*$text_bundle_manager = \Drupal::service('paragraphs_editor.field_value.text_bundle_manager');
+    if (!$text_bundle_manager->validateTextBundle($text_bundle, $text_field)) {
+      return FALSE;
+    }*/
+
+    return TRUE;
+  }
+
+  protected function isTextField(FieldDefinitionInterface $field_config) {
+    return $field_config->getType() == 'text_long';
+  }
+
+  protected function getTextFields($bundle_name) {
+    $field_definitions = $this->entityFieldManager->getFieldDefinitions('paragraph', $bundle_name);
+    foreach ($field_definitions as $field_definition) {
+      if ($this->isTextField($field_definition)) {
+        return $field_definition;
+      }
+    }
+    return NULL;
   }
 }
-
-/*class ParagraphTreeNode {
-
-  public function __construct(FieldDefinitionInterface $field_definition) {
-  }
-
-  public function addChildren(array $children) {
-  }
-
-  public function addChild(ComponentTreeNodeInterface $child) {
-  }
-
-  public function setParent(ComponentTreeNodeInterface $parent) {
-  }
-
-  public function attachData($name, $value) {
-  }
-
-  public function getData($name) {
-  }
-}*/

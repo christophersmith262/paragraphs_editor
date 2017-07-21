@@ -6,7 +6,6 @@ use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\paragraphs_editor\ParagraphsEditorAwarePluginTrait;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -22,7 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
-  use ParagraphsEditorAwarePluginTrait;
 
   protected $fieldValueManager;
 
@@ -53,7 +51,7 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = array();
 
-    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
+    $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
     $elements[0] = array(
       '#type' => 'processed_text',
       '#text' => $field_value_wrapper->getMarkup(),
@@ -64,4 +62,10 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
     return $elements;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+    return \Drupal::service('paragraphs_editor.field_value.manager')->isParagraphsEditorField($field_definition);
+  }
 }

@@ -2,16 +2,13 @@
 
 namespace Drupal\paragraphs_editor\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
-use Drupal\paragraphs_editor\ParagraphsEditorAwarePluginTrait;
-use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -32,7 +29,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class ParagraphsEditorWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
-  use ParagraphsEditorAwarePluginTrait;
 
   protected $contextFactory;
   protected $fieldValueManager;
@@ -42,12 +38,12 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
   /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, CommandContextFactoryInterface $context_factory, FieldValueManagerInterface $field_value_manager) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor, array $plugin_managers) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-    $this->contextFactory = $context_factory;
     $this->fieldValueManager = $field_value_manager;
-    $this->bundleSelectorManager = $context_factory->getPluginManager('bundle_selector');
-    $this->deliveryProviderManager = $context_factory->getPluginManager('delivery_provider');
+    $this->domProcessor = $dom_processor;
+    $this->bundleSelectorManager = $plugin_managers['bundle_selector'];
+    $this->deliveryProviderManager = $plugin_managers['delivery_provider'];
   }
 
   /**
@@ -60,8 +56,9 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('paragraphs_editor.command.context_factory'),
-      $container->get('paragraphs_editor.field_value.manager')
+      $container->get('paragraphs_editor.field_value.manager'),
+      $container->get('dom_processor.dom_processor'),
+      $container->getParameter('paragraphs_editor.plugin_managers')
     );
   }
 
@@ -81,55 +78,30 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $context = $this->getContext($items->getEntity());
-    $context_string = $context->getContextString();
-    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
-
-    return array(
-      'markup' => $element + array(
+    $editable_data = $this->process('load', $items, $form_state);
+    return [
+      'markup' => $element + [
         '#type' => 'text_format',
-        '#format' => $field_value_wrapper->getFormat(),
-        '#default_value' => $field_value_wrapper->getMarkup(),
+        '#format' => $editable_data->get('filter_format'),
+        '#default_value' => $editable_data->get('markup'),
         '#rows' => 100,
-        '#attributes' => array(
-          'class' => array(
+        '#atributes' => $editable_data->get('attributes'),
+        '#attributes' => [
+          'class' => [
             'paragraphs-editor'
-          ),
-          'data-context' => $context_string,
-        ),
-        '#attached' => array(
-          'library' => array(
-            'paragraphs_editor/core',
-          ),
-          'drupalSettings' => array(
-            'paragraphs_editor' => array(
-              'schema' => array(
-                $this->fieldDefinition->id() => array(
-                  'id' => $this->fieldDefinition->id(),
-                  'allowed' => array(
-                    'paragraphs_editor_text' => TRUE,
-                    'tabs' => TRUE,
-                  ),
-                ),
-              ),
-              'context' => array(
-                $context_string => array(
-                  'id' => $context_string,
-                  'schemaId' => $this->fieldDefinition->id(),
-                  'settings' => $this->getSettings(),
-                  'bufferItems' => array(
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      'build_id' => array(
+          ],
+          'data-context' => $editable_data->get('context_id'),
+        ],
+        '#attached' => [
+          'library' => $editable_data->get('libraries'),
+          'drupalSettings' => $editable_data->get('drupalSettings'),
+        ],
+      ],
+      'context_id' => [
         '#type' => 'hidden',
-        '#default_value' => $context->getBuildId(),
-      ),
-    );
+        '#default_value' => $editable_data->get('context_id'),
+      ],
+    ];
   }
 
   /**
@@ -191,10 +163,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     return $elements;
   }
 
-  public static function afterBuild(array $element, FormStateInterface $form_state) {
-    return parent::afterBuild($element, $form_state);
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -214,16 +182,21 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
-    $this->setExtractionContext($items, $form, $form_state);
-    $values = parent::extractFormValues($items, $form, $form_state);
+    $field_name = $this->fieldDefinition->getName();
+    $path = array_merge($form['#parents'], [$field_name]);
+    $values = NestedArray::getValue($form_state->getValues(), $path);
+    $this->process('update', $items, $form_state, $values['markup']['value'], $values['context_id']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    // Get the editor context from the form state.
-    list($items, $context) = $this->getExtractionContext($form, $form_state);
+  protected function process($variant, $items, FormStateInterface $form_state, $markup = NULL, $context_id = NULL) {
+    $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
+
+    if (!isset($markup)) {
+      $markup = $field_value_wrapper->getMarkup();
+    }
 
     // Check revisioning status.
     $entity = $form_state->getFormObject()->getEntity();
@@ -237,57 +210,35 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       }
     }
 
-    // Generate a flat entity list from the editor input.
-    $edit_buffer = $context->getEditBuffer();
-    $markup = $values['markup']['value'];
-    $format = $values['markup']['format'];
-    $field_value_wrapper = $this->fieldValueManager->wrap($items, $this->getSettings());
-    $entities = $this->fieldValueManager->update($field_value_wrapper, $edit_buffer, $markup, $format)->toArray();
-
-    // Do the "massaging" so that the returned values array is in the right
-    // format.
-    $values = array();
-    foreach ($entities as $delta => $paragraphs_entity) {
-      $paragraphs_entity->setNewRevision($new_revision);
-      if ($paragraphs_entity->get('langcode') != $form_state->get('langcode')) {
-        if ($paragraphs_entity->hasTranslation($form_state->get('langcode'))) {
-          $paragraphs_entity = $paragraphs_entity->getTranslation($form_state->get('langcode'));
-        }
-        else {
-          $paragraphs_entity->set('langcode', $form_state->get('langcode'));
-        }
-      }
-      $paragraphs_entity->setNeedsSave(TRUE);
-      $values[$delta]['entity'] = $paragraphs_entity;
-      $values[$delta]['target_id'] = $paragraphs_entity->id();
-      $values[$delta]['target_revision_id'] = $paragraphs_entity->getRevisionId();
-    }
-
-    // We no longer need to persist the context in the database. If the form
-    // needs to be rebuilt at this point, it will be rebuilt based on the
-    // updated entity that is in the process of being built, and we can
-    // generate a new context object if need be.
-    $this->contextFactory->free($context);
-
-    return $values;
+    return $this->domProcessor->process($markup, 'paragraphs_editor', $variant, [
+      'field' => [
+        'instance' => $items,
+        'context_id' => $context_id,
+        'is_mutable' => TRUE,
+        'wrapper' => $field_value_wrapper,
+      ],
+      'owner' => [
+        'entity' => $entity,
+        'new_revision' => $new_revision,
+      ],
+      'langcode' => $form_state->get('langcode'),
+      'settings' => $this->getSettings(),
+    ]);
   }
 
-  protected function setExtractionContext(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
-    $field_name = $this->fieldDefinition->getName();
-    $path = array_merge($form['#parents'], [$field_name]);
-    $values = NestedArray::getValue($form_state->getValues(), $path);
-    $item_state = [$items, $this->getContext($items->getEntity(), $values['build_id'])];
-    $form_state->setTemporaryValue(array_merge(['paragraphs_editor'], $path), $item_state);
-    return $path;
+  /**
+   * {@inheritdoc}
+   */
+  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+    return \Drupal::service('paragraphs_editor.field_value.manager')->isParagraphsEditorField($field_definition);
   }
 
-  protected function getExtractionContext(array $form, FormStateInterface $form_state) {
-    $field_name = $this->fieldDefinition->getName();
-    $path = array_merge(['paragraphs_editor'], $form['#parents'], [$field_name]);
-    return $form_state->getTemporaryValue($path);
-  }
-
-  protected function getContext(EntityInterface $entity, $widget_build_id=NULL) {
-    return $this->contextFactory->create($this->fieldDefinition->id(), $entity->id(), $this->getSettings(), $widget_build_id);
+  /**
+   * {@inheritdoc}
+   */
+  protected function mergeDefaults() {
+    $this->settings += $this->fieldDefinition->getThirdPartySettings('paragraphs_editor');
+    $this->settings += static::defaultSettings();
+    $this->defaultSettingsMerged = TRUE;
   }
 }

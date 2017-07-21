@@ -10,11 +10,14 @@ class FieldValueWrapper implements FieldValueWrapperInterface {
   protected $entities;
   protected $settings;
 
-  public function __construct(ParagraphInterface $text_entity, array $entities, array $children, array $settings) {
+  public function __construct($field_definition, ParagraphInterface $text_entity, array $entities) {
     $this->textEntity = $text_entity;
-    $this->settings = $settings;
     $this->setEntities($entities);
-    $this->children = $children;
+    $this->settings = $field_definition->getThirdPartySettings('paragraphs_editor');
+  }
+
+  public function getTextEntity() {
+    return $this->textEntity;
   }
 
   public function getMarkup() {
@@ -42,13 +45,5 @@ class FieldValueWrapper implements FieldValueWrapperInterface {
     foreach ($entities as $entity) {
       $this->entities[] = $entity;
     }
-  }
-
-  public function getChildren() {
-    return $this->children;
-  }
-
-  public function toArray() {
-    return array_merge([$this->textEntity], $this->entities);
   }
 }
