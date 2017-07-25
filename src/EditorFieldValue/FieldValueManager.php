@@ -59,10 +59,6 @@ class FieldValueManager implements FieldValueManagerInterface {
     $values = array();
     $entities = array_merge([$field_value_wrapper->getTextEntity()], array_values($field_value_wrapper->getEntities()));
     foreach ($entities as $delta => $paragraphs_entity) {
-      if (!is_object($paragraphs_entity)) {
-        print_r($field_value_wrapper->getEntities());
-        die();
-      }
       $paragraphs_entity->setNewRevision($new_revision);
 
       if (isset($langcode) && $paragraphs_entity->get('langcode') != $langcode) {

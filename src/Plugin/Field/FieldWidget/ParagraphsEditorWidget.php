@@ -185,17 +185,25 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     $field_name = $this->fieldDefinition->getName();
     $path = array_merge($form['#parents'], [$field_name]);
     $values = NestedArray::getValue($form_state->getValues(), $path);
-    $this->process('update', $items, $form_state, $values['markup']['value'], $values['context_id']);
+    $this->process('update', $items, $form_state, $values['markup']['format'], $values['markup']['value'], $values['context_id']);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function process($variant, $items, FormStateInterface $form_state, $markup = NULL, $context_id = NULL) {
+  protected function process($variant, $items, FormStateInterface $form_state, $format = NULL, $markup = NULL, $context_id = NULL) {
     $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
 
     if (!isset($markup)) {
       $markup = $field_value_wrapper->getMarkup();
+    }
+
+    if (!isset($format)) {
+      $format = $field_value_wrapper->getFormat();
+    }
+
+    if (!$format) {
+      $format = 'paragraphs_ckeditor';
     }
 
     // Check revisioning status.
@@ -223,6 +231,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       ],
       'langcode' => $form_state->get('langcode'),
       'settings' => $this->getSettings(),
+      'filter_format' => $format,
     ]);
   }
 

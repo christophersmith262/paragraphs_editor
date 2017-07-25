@@ -22,12 +22,12 @@ class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterf
     $this->contextFactory = $context_factory;
   }
 
-  public function compile(CommandContextInterface $context, EditBufferItemInterface $item, $view_mode) {
+  public function compile(CommandContextInterface $context, EditBufferItemInterface $item, $view_mode = NULL, $langcode = NULL) {
     $paragraph = $item->getEntity();
 
     // Attach the view builder that will decorate the view with information
     // needed to make nested paragraphs into nested editables.
-    $view =  $this->viewBuilder->view($paragraph, $view_mode);
+    $view =  $this->viewBuilder->view($paragraph, $view_mode, $langcode);
     $session = new EditBufferItemMarkupCompilerSession($this->contextFactory, $item);
     $this->processElement($view, $session);
 

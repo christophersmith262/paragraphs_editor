@@ -23,9 +23,10 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
   protected $widgetData;
   protected $expanded = [];
 
-  public function __construct($field_value_manager, array $elements, $context_factory) {
+  public function __construct($field_value_manager, array $elements, $context_factory, $markup_compiler) {
     $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
     $this->contextFactory = $context_factory;
+    $this->markupCompiler = $markup_compiler;
   }
 
   /**
@@ -35,7 +36,8 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
     return new static(
       $container->get('paragraphs_editor.field_value.manager'),
       $container->getParameter('paragraphs_editor.field_value.elements'),
-      $container->get('paragraphs_editor.command.context_factory')
+      $container->get('paragraphs_editor.command.context_factory'),
+      $container->get('paragraphs_editor.edit_buffer.markup_compiler')
     );
   }
 
@@ -152,6 +154,8 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
     if ($field_context_id) {
       $attribute_name = $this->getAttributeName('widget', '<context>');
       $data->node()->setAttribute($attribute_name, $field_context_id);
+      $context = $this->contextFactory->get($field_context_id);
+      $item = $context->getEditBuffer()->createItem($data->get('paragraph.entity'));
     }
     return $result;
   }

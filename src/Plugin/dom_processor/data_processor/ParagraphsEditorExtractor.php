@@ -58,7 +58,10 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
       $wrapper = $data->get('field.wrapper');
       if ($wrapper) {
         $wrapper->setMarkup($data->getInnerHTML());
-        $this->fieldValueManager->updateItems($items, $wrapper);
+        $wrapper->setFormat($data->get('filter_format'));
+        $new_revision = $data->get('owner.new_revision');
+        $langcode = $data->get('langcode');
+        $this->fieldValueManager->updateItems($items, $wrapper, $new_revision, $langcode);
       }
     }
 
