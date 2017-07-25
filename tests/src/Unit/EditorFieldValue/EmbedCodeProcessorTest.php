@@ -1,7 +1,5 @@
 <?php
 
-namespace Drupal\Tests\paragraphs_editor\Unit\EditorFieldValue;
-
 use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -16,43 +14,7 @@ use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 use Drupal\Tests\UnitTestCase;
 
-class EmbedCodeProcessorTestStream implements EmbedCodeVisitorInterface {
-
-  public $items = [];
-
-  public function visit(\DOMNode $node, array $item) {
-    $normalized_item = [];
-    $normalized_item['type'] = $item['type'];
-    $normalized_item['uuid'] = !empty($item['paragraph']['entity']) ? strval($item['paragraph']['entity']->uuid()) : false;
-
-    if (!empty($item['field']['instance'])) {
-      $normalized_item['field_name'] = $item['field']['instance']->getFieldDefinition()->getName();
-    }
-    else {
-      $normalized_item['field_name'] = false;
-    }
-    $normalized_item['is_mutable'] = !empty($item['field']['is_mutable']) ? true : false;
-
-    if ($item['type'] == 'field') {
-      $normalized_item['context_id'] = !empty($item['field']['context_id']) ? $item['field']['context_id'] : false;
-    }
-    else if ($item['type'] == 'paragraph') {
-      $normalized_item['context_id'] = !empty($item['paragraph']['context_id']) ? $item['paragraph']['context_id'] : false;
-    }
-    else {
-      $normalized_item['context_id'] = false;
-    }
-
-    $this->items[] = $normalized_item;
-  }
-}
-
-/**
- * @coversDefaultClass Drupal\paragraphs_editor\EditorFieldValue\EmbedCodeProcessor
- *
- * @group paragraphs_editor
- */
-class EmbedCodeProcessorTest extends UnitTestCase {
+class _BACKUP extends UnitTestCase {
 
   const elements = [
     'widget' =>  [

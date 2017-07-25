@@ -212,7 +212,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
 
     return $this->domProcessor->process($markup, 'paragraphs_editor', $variant, [
       'field' => [
-        'instance' => $items,
+        'items' => $items,
         'context_id' => $context_id,
         'is_mutable' => TRUE,
         'wrapper' => $field_value_wrapper,

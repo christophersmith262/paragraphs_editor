@@ -20,9 +20,10 @@ trait ParagraphsEditorDomProcessorPluginTrait {
   }
 
   protected function getAttributeName($element_name, $attribute_name) {
+    $element = $this->getElement($element_name);
     if (!empty($element['attributes'])) {
       $map = array_flip($element['attributes']);
-      $key = !empty($map[$data_key]) ? $map[$data_key] : NULL;
+      $key = !empty($map[$attribute_name]) ? $map[$attribute_name] : NULL;
       return $key;
     }
     else {

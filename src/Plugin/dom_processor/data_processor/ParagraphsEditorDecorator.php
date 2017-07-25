@@ -72,7 +72,7 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
       }
 
       // Create a new editing context for the field.
-      $field_definition = $data->get('field.instance')->getFieldDefinition();
+      $field_definition = $data->get('field.items')->getFieldDefinition();
       $owner_entity = $data->get('owner.entity');
       if ($field_definition && $owner_entity) {
         $settings = $data->get('settings');

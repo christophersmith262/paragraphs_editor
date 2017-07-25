@@ -41,9 +41,10 @@ class FieldValueWrapper implements FieldValueWrapperInterface {
   }
 
   public function setEntities(array $entities) {
-    $this->entities = array();
-    foreach ($entities as $entity) {
-      $this->entities[] = $entity;
-    }
+    $this->entities = $entities;
+  }
+
+  public function addReferencedEntity($entity) {
+    $this->entities[$entity->uuid()] = $entity;
   }
 }

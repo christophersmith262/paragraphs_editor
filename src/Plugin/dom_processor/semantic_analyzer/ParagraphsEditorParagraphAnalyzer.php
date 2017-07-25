@@ -29,6 +29,18 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
   /**
    * {@inheritdoc}
    */
+  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $container->get('paragraphs_editor.field_value.manager'),
+      $container->getParameter('paragraphs_editor.field_value.elements'),
+      $container->get('entity_type.manager'),
+      $container->get('paragraphs_editor.command.context_factory')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function analyze(SemanticDataInterface $data) {
     if ($data->is($this->getSelector('widget'))) {
       return $this->analyzeWidget($data);
@@ -39,15 +51,6 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
     else {
       return $data;
     }
-  }
-
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $container->get('paragraphs_editor.field_value.manager'),
-      $container->getParameter('paragraphs_editor.field_value.elements'),
-      $container->get('entity_type.manager'),
-      $container->get('paragraphs_editor.command.context_factory')
-    );
   }
 
   protected function analyzeWidget(SemanticDataInterface $data) {
@@ -81,8 +84,8 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     // If we are currently within a paragraph field try to get the entity from
     // the field.
-    else if ($data->has('field.instance')) {
-      foreach ($data->get('field.instance')->referencedEntities() as $entity_candidate) {
+    else if ($data->has('field.items')) {
+      foreach ($data->get('field.items')->referencedEntities() as $entity_candidate) {
         if ($entity_candidate->uuid() == $uuid) {
           $entity = $entity_candidate;
           break;
@@ -92,7 +95,12 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     // Otherwise try to laod the entity from the database.
     else {
-      $entity = $this->storage->load($uuid);
+      $matches = $this->storage->loadByProperties([
+        'uuid' => $uuid,
+      ]);
+      if ($matches) {
+        $entity = reset($matches);
+      }
     }
 
     // Fail if we couldn't load the entity from anywhere.
@@ -124,20 +132,20 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
       throw new DomProcessorError("Could not access field on entity.");
     }
 
-    $field = $paragraph->{$field_name};
-    $field_definition = $field->getFieldDefinition();
-    if (!static::isParagraphsField($field_definition)) {
+    $items = $paragraph->{$field_name};
+    $field_definition = $items->getFieldDefinition();
+    if (!$this->fieldValueManager->isParagraphsField($field_definition)) {
       throw new DomProcessorError("Attempted to access non-paragraphs field.");
     }
 
-    if ($is_mutable && !self::isApplicable($field_definition)) {
+    if ($is_mutable && !$this->fieldValueManager->isParagraphsEditorField($field_definition)) {
       throw new DomProcessorError("Edits defined for a non-editable field.");
     }
 
-    $field_value_wrapper = $is_mutable ? $this->fieldValueManager->wrap($field, []) : NULL;
-       
+    $field_value_wrapper = $is_mutable ? $this->fieldValueManager->wrapItems($items) : NULL;
+
     return $data->tag('field', [
-      'instance' => $field,
+      'items' => $items,
       'context_id' => $context_id,
       'is_mutable' => $is_mutable,
       'wrapper' => $field_value_wrapper,
