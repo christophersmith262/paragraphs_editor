@@ -20,7 +20,8 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
   use ParagraphsEditorDomProcessorPluginTrait;
 
   protected $contextFactory;
-  protected $ownerInfo = NULL;
+  protected $widgetData;
+  protected $expanded = [];
 
   public function __construct($field_value_manager, array $elements, $context_factory) {
     $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
@@ -42,34 +43,47 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
    * {@inheritdoc}
    */
   public function process(SemanticDataInterface $data, DomProcessorResultInterface $result) {
-    if (!$this->ownerInfo) {
-      $this->ownerInfo = $this->generateOwnerInfo($data, $result);
+    if (!$data->has('decorator.pass')) {
+      return $this->generateOwnerInfo($data, $result);
     }
 
-    if ($this->is($data, 'widget')) {
-      return $this->expandWidget($data, $result);
+    if ($data->get('decorator.pass') == 'expand') {
+      if ($this->is($data, 'widget')) {
+        return $this->expandWidget($data, $result);
+      }
+      else if ($this->is($data, 'field')) {
+        return $this->expandField($data, $result);
+      }
+      else if ($data->isRoot()) {
+        return $result->reprocess($data->tag('decorator', [
+          'pass' => 'decorate',
+        ]));
+      }
     }
-    else if ($data->isRoot()) {
-      return $this->finishResult($result);
+    else if ($data->get('decorator.pass') == 'decorate') {
+      if ($this->is($data, 'widget')) {
+        return $this->decorateWidget($data, $result);
+      }
+      else if ($this->is($data, 'field')) {
+        return $this->decorateField($data, $result);
+      }
+      else if ($data->isRoot()) {
+        return $this->finishResult($data, $result);
+      }
     }
-    else {
-      return $result;
-    }
+    return $result;
   }
 
   protected function generateOwnerInfo(SemanticDataInterface $data, DomProcessorResultInterface $result) {
-    $result = $result::create();
+    $data = $data->tag('decorator', [
+      'pass' => 'expand',
+    ]);
 
     $field_value_wrapper = $data->get('field.wrapper');
     if ($field_value_wrapper) {
 
       // Apply the default format if none is already provided.
       $filter_format = $field_value_wrapper->getFormat();
-      if (!$filter_format) {
-        $result = $result->merge([
-          'filter_format' => $data->get('settings.filter_format')
-        ]);
-      }
 
       // Create a new editing context for the field.
       $field_definition = $data->get('field.items')->getFieldDefinition();
@@ -77,9 +91,6 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
       if ($field_definition && $owner_entity) {
         $settings = $data->get('settings');
         $context = $this->contextFactory->create($field_definition->id(), $owner_entity->id(), $settings);
-        $result = $result->merge([
-          'context_id' => $context->getContextString(),
-        ]);
 
         $widget_data = new WidgetBinderData();
         $widget_data->addModel('context', $context->getContextString(), [
@@ -95,29 +106,91 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
             'tabs' => TRUE,
           ],
         ]);
-        $result = $result->merge([
-          'drupalSettings' => [
-            'paragraphs_editor' => $widget_data->toArray(),
-          ],
-        ]);
+        $this->widgetData = $widget_data;
+        $data = $data->tag('field', [
+          'context_id' => $context->getContextString(),
+        ], TRUE);
       }
     }
 
-    return $result;
+    return $result->reprocess($data);
   }
 
   public function expandWidget(SemanticDataInterface $data, DomProcessorResultInterface $result) {
     $paragraph = $data->get('paragraph.entity');
     $context_id = $data->get('paragraph.context_id');
-    if ($paragraph && !$context_id) {
+    $field_context_id = $data->get('field.context_id');
+    $settings = $data->get('settings');
+    if ($paragraph && !$this->isExpanded($paragraph)) {
+
+      foreach ($paragraph->getFields() as $items) {
+        $field_definition = $items->getFieldDefinition();
+        if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+          $field_node = $data->node()->ownerDocument->createElement($this->getElement('field')['tag']);
+          $attribute_name = $this->getAttributeName('field', '<name>');
+          $field_node->setAttribute($attribute_name, $field_definition->getName());
+
+          if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
+            $attribute_name = $this->getAttributeName('field', '<editable>');
+            $field_node->setAttribute($attribute_name, 'true');
+          }
+
+          $data->node()->appendChild($field_node);
+        }
+      }
+
+      $this->markExpanded($paragraph);
+      return $result->reprocess();
     }
     else {
       return $result;
     }
   }
 
-  protected function finishResult(DomProcessorResultInterface $result) {
-    $result = $result->merge($this->ownerInfo);
+  public function decorateWidget(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $field_context_id = $data->get('field.context_id');
+    if ($field_context_id) {
+      $attribute_name = $this->getAttributeName('widget', '<context>');
+      $data->node()->setAttribute($attribute_name, $field_context_id);
+    }
+    return $result;
+  }
+
+  public function expandField(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $is_mutable = $data->get('field.is_mutable');
+    $context_id = $data->get('field.context_id');
+    $paragraph = $data->get('paragraph.entity');
+    $items = $data->get('field.items');
+    if (!$is_mutable && !$data->node()->hasChildNodes() && $items->referencedEntities()) {
+      foreach ($items->referencedEntities() as $entity) {
+        $paragraph_node = $data->node()->ownerDocument->createElement($this->getElement('widget')['tag']);
+        $attribute_name = $this->getAttributeName('widget', '<uuid>');
+        $paragraph_node->setAttribute($attribute_name, $entity->uuid());
+        $data->node()->appendChild($paragraph_node);
+      }
+      return $result->reprocess();
+    }
+    return $result;
+  }
+
+  public function decorateField(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $paragraph = $data->get('paragraph.entity');
+    $is_mutable = $data->get('field.is_mutable');
+    if ($is_mutable && !$data->get('field.context_id')) {
+      $wrapper = $data->get('field.wrapper');
+      $field_definition = $data->get('field.items')->getFieldDefinition();
+      $settings = $data->get('settings');
+      $context = $this->contextFactory->create($field_definition->id(), $paragraph->id(), $settings);
+      $attribute_name = $this->getAttributeName('field', '<context>');
+      $data->node()->setAttribute($attribute_name, $context->getContextString());
+      return $result->setInnerHtml($data, $wrapper->getMarkup())->reprocess();
+    }
+    else {
+      return $result;
+    }
+  }
+
+  protected function finishResult(SemanticDataInterface $data, DomProcessorResultInterface $result) {
 
     // Add the core paragraphs editor library.
     $result = $result->merge([
@@ -132,10 +205,32 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
         'class' => [
           'class' => 'paragraphs-editor',
         ],
-        $this->getAttributeName('widget', '<context>') => $result->get('context_id'),
+        $this->getAttributeName('widget', '<context>') => $data->get('field.context_id'),
       ],
     ]);
 
+    $result = $result->merge([
+      'context_id' => $data->get('field.context_id'),
+    ]);
+
+    $result = $result->merge([
+      'drupalSettings' => [
+        'paragraphs_editor' => $this->widgetData->toArray(),
+      ],
+    ]);
+
+    $result = $result->merge([
+      'filter_format' => 'paragraphs_ckeditor',
+    ]);
+
     return $result;
+  }
+
+  protected function isExpanded($paragraph) {
+    return !empty($this->expanded[$paragraph->uuid()]);
+  }
+
+  protected function markExpanded($paragraph) {
+    $this->expanded[$paragraph->uuid()] = TRUE;
   }
 }

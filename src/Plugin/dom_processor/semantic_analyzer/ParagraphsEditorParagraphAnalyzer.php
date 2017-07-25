@@ -67,15 +67,18 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
     if ($context_id) {
       $field_context_id = $data->get('field.context_id');
 
-      if ($context_id != $field_context_id) {
+      /*if ($context_id != $field_context_id) {
         $context_id = $node->set('paragraph.context_id', $field_context_id);
         throw new DomProcessorWarning("Corrected faulty context id.");
-      }
+      }*/
 
       try {
         $context = $this->contextFactory->get($context_id);
         $edit_buffer = $context->getEditBuffer();
-        $entity = $edit_buffer->getItem($uuid)->getEntity();
+        $item = $edit_buffer->getItem($uuid);
+        if ($item) {
+          $entity = $item->getEntity();
+        }
       }
       catch (\Exception $e) {
         throw new DomProcessorError("Could not load entity from context.");
