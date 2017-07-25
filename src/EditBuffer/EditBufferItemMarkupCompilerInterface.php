@@ -6,7 +6,7 @@ use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 interface EditBufferItemMarkupCompilerInterface {
 
-  public function compile(CommandContextInterface $context, EditBufferItemInterface $item, $view_mode);
+  public function compile(CommandContextInterface $context, EditBufferItemInterface $item, $view_mode, $langcode);
 
   public function preprocessField(array &$variables);
 }

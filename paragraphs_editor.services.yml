@@ -1,19 +1,23 @@
 services:
+
   paragraphs_editor.command.context_access:
     class: Drupal\paragraphs_editor\Access\ContextAccessCheck
     arguments: ['@entity_type.manager']
     tags:
       - { name: access_check, applies_to: _paragraphs_editor_access_context }
+
   paragraphs_editor.command.paragraph_access:
     class: Drupal\paragraphs_editor\Access\ParagraphAccessCheck
     arguments: ['@paragraphs_editor.edit_buffer.item_factory']
     tags:
       - { name: access_check, applies_to: _paragraphs_editor_access_paragraph }
+
   paragraphs_editor.command.context_converter:
     class: Drupal\paragraphs_editor\ParamConverter\CommandContextConverter
     arguments: ['@request_stack', '@paragraphs_editor.command.context_factory']
     tags:
       - { name: paramconverter }
+
   paragraphs_editor.command.context_factory:
     class: Drupal\paragraphs_editor\EditorCommand\CommandContextFactory
     arguments: 
@@ -21,48 +25,54 @@ services:
       - '@paragraphs_editor.edit_buffer.cache'
       - '@entity_type.bundle.info'
       - '%paragraphs_editor.plugin_managers%'
+
   paragraphs_editor.command.response_handler:
     class: Drupal\paragraphs_editor\EditorCommand\ResponseHandler
     arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_editor.edit_buffer.markup_compiler']
+
   paragraphs_editor.edit_buffer.cache:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferCache
     arguments: ['@keyvalue.expirable', '%paragraphs_editor.edit_buffer.cache.lifetime%', '@current_user']
+
   paragraphs_editor.edit_buffer.item_factory:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactory
     arguments: ['@entity_type.manager']
+
   paragraphs_editor.edit_buffer.markup_compiler:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompiler
     arguments: ['@entity_type.manager', '@renderer', '@paragraphs_editor.command.context_factory', '%paragraphs_editor.field_value.elements%']
+
   paragraphs_editor.delivery_provider.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
     arguments: [delivery_provider, '@container.namespaces', '@cache.discovery', '@module_handler']
+
   paragraphs_editor.bundle_selector.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
     arguments: [bundle_selector, '@container.namespaces', '@cache.discovery', '@module_handler']
-  paragraphs_editor.field_value.text_bundle_manager:
-    class: Drupal\paragraphs_editor\EditorFieldValue\TextBundleManager
-    arguments: ['@entity_field.manager', '@entity_type.manager']
-  paragraphs_editor.field_value.embed_code_processor:
-    class: Drupal\paragraphs_editor\EditorFieldValue\EmbedCodeProcessor
-    arguments: ['%paragraphs_editor.field_value.elements%']
+
   paragraphs_editor.field_value.manager:
     class: Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
-    arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.embed_code_processor']
+    arguments: ['@entity_field.manager', '@entity_type.manager', '@dom_processor.dom_processor']
 
 parameters:
+
   paragraphs_editor.plugin_managers:
     bundle_selector: '@paragraphs_editor.bundle_selector.manager'
     delivery_provider: '@paragraphs_editor.delivery_provider.manager'
+
   paragraphs_editor.edit_buffer.cache.lifetime: 24000
+
   paragraphs_editor.field_value.elements:
-    context_attribute: data-context
-    editor_class: paragraphs-editor
-    embed_template:
-      tag: paragraph
+    widget:
+      tag: 'paragraph'
       attributes:
-        uuid: data-uuid
-        context: data-context-hint
-    inline_template:
-      tag: paragraph-field
+        data-uuid: '<uuid>'
+        data-context-hint: '<context>'
+        data-viewmode: '<viewmode>'
+    field:
+      tag: 'paragraph-field'
       attributes:
-        path: data-path
+        data-field-name: '<name>'
+        data-context: '<context>'
+        data-mutable: '<editable>'
+      selector: '.widget-binder-field[data-mutable="true"]'
