@@ -10,13 +10,80 @@ use Drupal\paragraphs_editor\EditorCommand\WidgetBinderData;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+abstract class MultipassDataProcessor implements DataProcessorInterface {
+
+  protected $passKeys = [];
+  protected $passCallbackMap = [];
+  protected $passFsmMap = [];
+  protected $tagId;
+
+  public function __construct($tag_id) {
+    $this->tagId = $tag_id;
+    $last_key = NULL;
+    foreach ($this->passes() as $key => $cb) {
+      $this->passKeys[] = $key;
+      $this->passCallbackMap[$key] = $cb;
+      if ($last_key) {
+        $this->passFsmMap[$last_key] = $key;
+      }
+      $last_key = $key;
+    }
+  }
+
+  abstract protected function passes();
+
+  protected function passTransition(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $current_pass = $data->get($this->tagId . '.pass');
+    if (!$current_pass) {
+      $next_pass = reset($this->passKeys);
+    }
+    else {
+      $next_pass = !empty($this->passFsmMap[$current_pass]) ? $this->passFsmMap[$current_pass] : NULL;
+    }
+
+    if ($next_pass) {
+      return $result->reprocess($data->tag($this->tagId, [
+        'pass' => $next_pass,
+      ], TRUE));
+    }
+    else {
+      return $result;
+    }
+  }
+
+  protected function passCallback(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $pass = $data->get($this->tagId . '.pass');
+    $cb = !empty($this->passCallbackMap[$pass]) ? $this->passCallbackMap[$pass] : NULL;
+    return call_user_func($cb, $data, $result);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function process(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    if (!$data->has($this->tagId . '.pass')) {
+      return $this->passTransition($data, $result);
+    }
+    else {
+      $result = $this->passCallback($data, $result);
+
+      if ($data->isRoot()) {
+        $result = $this->passTransition($data, $result);
+      }
+
+      return $result;
+    }
+  }
+
+}
+
 /**
  * @DomProcessorDataProcessor(
  *   id = "paragraphs_editor_decorator",
  *   label = "Paragraphs Editor Decorator"
  * )
  */
-class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFactoryPluginInterface {
+class ParagraphsEditorDecorator extends MultiPassDataProcessor implements ContainerFactoryPluginInterface {
   use ParagraphsEditorDomProcessorPluginTrait;
 
   protected $contextFactory;
@@ -24,6 +91,7 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
   protected $expanded = [];
 
   public function __construct($field_value_manager, array $elements, $context_factory, $markup_compiler) {
+    parent::__construct('decorator');
     $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
     $this->contextFactory = $context_factory;
     $this->markupCompiler = $markup_compiler;
@@ -44,42 +112,55 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
   /**
    * {@inheritdoc}
    */
+  protected function passes() {
+    return [
+      'expand' => [$this, 'expand'],
+      'contextualize' => [$this, 'contextualize'],
+      'decorate' => [$this, 'decorate'],
+    ];
+  }
+
   public function process(SemanticDataInterface $data, DomProcessorResultInterface $result) {
-    if (!$data->has('decorator.pass')) {
+    if (!$data->has('decorator.ready')) {
       return $this->generateOwnerInfo($data, $result);
     }
+    return parent::process($data, $result);
+  }
 
-    if ($data->get('decorator.pass') == 'expand') {
-      if ($this->is($data, 'widget')) {
-        return $this->expandWidget($data, $result);
-      }
-      else if ($this->is($data, 'field')) {
-        return $this->expandField($data, $result);
-      }
-      else if ($data->isRoot()) {
-        return $result->reprocess($data->tag('decorator', [
-          'pass' => 'decorate',
-        ]));
-      }
+  protected function expand(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    if ($this->is($data, 'widget')) {
+      return $this->expandWidget($data, $result);
     }
-    else if ($data->get('decorator.pass') == 'decorate') {
-      if ($this->is($data, 'widget')) {
-        return $this->decorateWidget($data, $result);
-      }
-      else if ($this->is($data, 'field')) {
-        return $this->decorateField($data, $result);
-      }
-      else if ($data->isRoot()) {
-        return $this->finishResult($data, $result);
-      }
+    else if ($this->is($data, 'field')) {
+      return $this->expandField($data, $result);
+    }
+    return $result;
+  }
+
+  protected function contextualize(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    if ($this->is($data, 'widget')) {
+      return $this->compileWidget($data, $result);
+    }
+    return $result;
+  }
+
+  protected function decorate(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    if ($this->is($data, 'widget')) {
+      return $this->decorateWidget($data, $result);
+    }
+    else if ($this->is($data, 'field')) {
+      return $this->decorateField($data, $result);
+    }
+    else if ($data->isRoot()) {
+      return $this->finishResult($data, $result);
     }
     return $result;
   }
 
   protected function generateOwnerInfo(SemanticDataInterface $data, DomProcessorResultInterface $result) {
     $data = $data->tag('decorator', [
-      'pass' => 'expand',
-    ]);
+      'ready' => TRUE,
+    ], TRUE);
 
     $field_value_wrapper = $data->get('field.wrapper');
     if ($field_value_wrapper) {
@@ -149,13 +230,21 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
     }
   }
 
-  public function decorateWidget(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+  public function compileWidget(SemanticDataInterface $data, DomProcessorResultInterface $result) {
     $field_context_id = $data->get('field.context_id');
     if ($field_context_id) {
-      $attribute_name = $this->getAttributeName('widget', '<context>');
-      $data->node()->setAttribute($attribute_name, $field_context_id);
       $context = $this->contextFactory->get($field_context_id);
       $item = $context->getEditBuffer()->createItem($data->get('paragraph.entity'));
+      $this->widgetData = $this->widgetData->merge($this->markupCompiler->compile($context, $item));
+    }
+    return $result;
+  }
+
+  public function decorateWidget(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $field_context_id = $data->get('field.context_id');
+    if ($field_context_id) { 
+      $attribute_name = $this->getAttributeName('widget', '<context>');
+      $data->node()->setAttribute($attribute_name, $field_context_id);
     }
     return $result;
   }
@@ -182,11 +271,9 @@ class ParagraphsEditorDecorator implements DataProcessorInterface, ContainerFact
     $is_mutable = $data->get('field.is_mutable');
     if ($is_mutable && !$data->get('field.context_id')) {
       $wrapper = $data->get('field.wrapper');
-      $field_definition = $data->get('field.items')->getFieldDefinition();
-      $settings = $data->get('settings');
-      $context = $this->contextFactory->create($field_definition->id(), $paragraph->id(), $settings);
+      $context_id = $this->widgetData->getContextId($paragraph->uuid(), $data->get('field.items')->getFieldDefinition()->id());
       $attribute_name = $this->getAttributeName('field', '<context>');
-      $data->node()->setAttribute($attribute_name, $context->getContextString());
+      $data->node()->setAttribute($attribute_name, $context_id);
       return $result->setInnerHtml($data, $wrapper->getMarkup())->reprocess();
     }
     else {

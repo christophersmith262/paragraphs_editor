@@ -27,7 +27,10 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
         '#title' => t('Paragraphs Editor'),
       );
 
-      $options = \Drupal::service('paragraphs_editor.field_value.text_bundle_manager')->getTextBundles();
+      $options = \Drupal::service('paragraphs_editor.field_value.manager')->getTextBundles();
+      foreach ($options as &$option) {
+        $option = $option['label'];
+      }
       if ($options) {
         $form['third_party_settings']['paragraphs_editor'] += array(
           '#type' => 'fieldset',
@@ -81,11 +84,12 @@ function paragraphs_editor_field_config_edit_form_validate(&$element, $form_stat
   $text_bundle = $settings['text_bundle'];
   $target_bundles = $form_state->getValue(['settings', 'handler_settings', 'target_bundles']);
   if (!$target_bundles || !empty($target_bundles[$text_bundle])) {
-    $text_field = \Drupal::service('paragraphs_editor.field_value.text_bundle_manager')->getBundleTextField($text_bundle);
+    $text_fields = \Drupal::service('paragraphs_editor.field_value.manager')->getTextFields($text_bundle);
+    $text_field = reset($text_fields);
     if ($text_field) {
       $parents = array_slice($element['#parents'], 0, -1);
       $parents[] = 'text_field';
-      $form_state->setValue($parents, $text_field->getName());
+      $form_state->setValue($parents, $text_field);
       return;
     }
   }

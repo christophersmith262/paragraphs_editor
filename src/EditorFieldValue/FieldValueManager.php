@@ -55,24 +55,29 @@ class FieldValueManager implements FieldValueManagerInterface {
     return new FieldValueWrapper($items->getFieldDefinition(), $text_entity, $entities);
   }
 
-  public function updateItems(FieldItemListInterface $items, FieldValueWrapperInterface $field_value_wrapper, $new_revision = FALSE, $langcode = NULL) {
-    $values = array();
-    $entities = array_merge([$field_value_wrapper->getTextEntity()], array_values($field_value_wrapper->getEntities()));
-    foreach ($entities as $delta => $paragraphs_entity) {
-      $paragraphs_entity->setNewRevision($new_revision);
+  public function prepareEntityForSave($entity, $new_revision, $langcode) {
+    $entity->setNewRevision($new_revision);
 
-      if (isset($langcode) && $paragraphs_entity->get('langcode') != $langcode) {
-        if ($paragraphs_entity->hasTranslation($langcode)) {
-          $paragraphs_entity = $paragraphs_entity->getTranslation($langcode);
-        }
-        else {
-          $paragraphs_entity->set('langcode', $langcode);
-        }
+    if (isset($langcode) && $entity->get('langcode') != $langcode) {
+      if ($entity->hasTranslation($langcode)) {
+        $entity = $entity->getTranslation($langcode);
       }
-      $paragraphs_entity->setNeedsSave(TRUE);
-      $values[$delta]['entity'] = $paragraphs_entity;
-      $values[$delta]['target_id'] = $paragraphs_entity->id();
-      $values[$delta]['target_revision_id'] = $paragraphs_entity->getRevisionId();
+      else {
+        $entity->set('langcode', $langcode);
+      }
+    }
+    $entity->setNeedsSave(TRUE);
+  }
+
+  public function updateItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
+    $values = array();
+    $delta = 0;
+    foreach ($entities as $entity) {
+      $this->prepareEntityForSave($entity, $new_revision, $langcode);
+      $values[$delta]['entity'] = $entity;
+      $values[$delta]['target_id'] = $entity->id();
+      $values[$delta]['target_revision_id'] = $entity->getRevisionId();
+      $delta++;
     }
 
     $items->setValue($values);
@@ -92,10 +97,11 @@ class FieldValueManager implements FieldValueManagerInterface {
 
     $bundles = array();
     foreach ($allowed_bundles as $name => $type) {
-      $text_fields = $this->getTextFields();
+      $text_fields = $this->getTextFields($name);
       if (count($text_fields) == 1) {
-        $bundles[$name] = reset($text_fields) + [
+        $bundles[$name] = [
           'label' => $type['label'],
+          'text_field' => reset($text_fields),
         ];
       }
     }
@@ -136,10 +142,9 @@ class FieldValueManager implements FieldValueManagerInterface {
     // Make sure the bundle for storing text is valid.
     $text_bundle = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle');
     $text_field = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_field');
-    /*$text_bundle_manager = \Drupal::service('paragraphs_editor.field_value.text_bundle_manager');
-    if (!$text_bundle_manager->validateTextBundle($text_bundle, $text_field)) {
+    if (!$this->validateTextBundle($text_bundle, $text_field)) {
       return FALSE;
-    }*/
+    }
 
     return TRUE;
   }
@@ -148,13 +153,14 @@ class FieldValueManager implements FieldValueManagerInterface {
     return $field_config->getType() == 'text_long';
   }
 
-  protected function getTextFields($bundle_name) {
+  public function getTextFields($bundle_name) {
+    $matches = [];
     $field_definitions = $this->entityFieldManager->getFieldDefinitions('paragraph', $bundle_name);
     foreach ($field_definitions as $field_definition) {
       if ($this->isTextField($field_definition)) {
-        return $field_definition;
+        $matches[] = $field_definition->getName();
       }
     }
-    return NULL;
+    return $matches;
   }
 }

@@ -36,9 +36,12 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
    * {@inheritdoc}
    */
   public function process(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $new_revision = $data->get('owner.new_revision');
+    $langcode = $data->get('langcode');
 
     if ($this->is($data, 'widget')) {
       $entity = $data->get('paragraph.entity');
+      $this->fieldValueManager->prepareEntityForSave($entity, $new_revision, $langcode);
 
       $wrapper = $data->get('field.wrapper');
       if ($wrapper) {
@@ -56,12 +59,11 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
     else if ($this->is($data, 'field') || $data->isRoot()) {
       $items = $data->get('field.items');
       $wrapper = $data->get('field.wrapper');
+
       if ($wrapper) {
         $wrapper->setMarkup($data->getInnerHTML());
         $wrapper->setFormat($data->get('filter_format'));
-        $new_revision = $data->get('owner.new_revision');
-        $langcode = $data->get('langcode');
-        $this->fieldValueManager->updateItems($items, $wrapper, $new_revision, $langcode);
+        $this->fieldValueManager->updateItems($items, $wrapper->getEntities(), $new_revision, $langcode);
       }
     }
 

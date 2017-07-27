@@ -21,16 +21,18 @@ class EditBufferItemMarkupCompilerSession {
     // We regenerate the context each time the field item is rendered to
     // prevent issues with form caching. This means we have to map existing
     // edits fro mthe old context to the new one.
-    if (!empty($this->paragraphContexts[$uuid])) {
-      list($field_config_id, $widget_build_id, $entity_id) = $this->contextFactory->parseContextString($this->paragraphContexts[$uuid]);
-      $from_context = $this->contextFactory->create($field_config_id, $entity_id, array(), $widget_build_id);
+    if (!empty($this->paragraphContexts[$uuid][$field_config_id])) {
+      $from_context = $this->contextFactory->get($this->paragraphContexts[$uuid][$field_config_id]);
       $context = $this->contextFactory->regenerate($from_context);
       $this->mapContext($from_context, $context);
-      unset($this->paragraphContexts[$uuid]);
+      unset($this->paragraphContexts[$uuid][$field_config_id]);
     }
     else {
       $context = $this->contextFactory->create($field_config_id, $entity_id);
       $this->addContext($context->getContextString(), [
+        'id' => $context->getContextString(),
+        'ownerId' => $uuid,
+        'fieldId' => $field_config_id,
         'schemaId' => $field_config_id,
       ]);
     }
@@ -39,10 +41,11 @@ class EditBufferItemMarkupCompilerSession {
   }
 
   public function cleanup() {
-    foreach ($this->paragraphContexts as $residual_context_string) {
-      list($field_config_id, $widget_build_id, $entity_id) = $this->contextFactory->parseContextString($residual_context_string);
-      $residual_context = $this->contextFactory->create($field_config_id, $entity_id, array(), $widget_build_id);
-      $this->contextFactory->free($residual_context);
+    foreach ($this->paragraphContexts as $residual_context_ids) {
+      foreach ($residual_context_ids as $residual_context_id) {
+        $residual_context = $this->contextFactory->get($residual_context_id);
+        $this->contextFactory->free($residual_context);
+      }
     }
   }
 
