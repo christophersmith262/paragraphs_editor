@@ -60,8 +60,13 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
 
     ajax.options.data['editorContext'] = command.editorContext.id;
 
-    if (command.edits) {
-      ajax.options.data['nestedContexts'] = _.keys(command.edits);
+    if (command.editableContexts) {
+      _.each(command.editableContexts, function(context) {
+        var key = 'editableContexts';
+        key += '[' + context.ownerId + ']';
+        key += '[' + context.fieldId + ']';
+        ajax.options.data[key] = context.id;
+      });
     }
 
     var complete = ajax.options.complete;

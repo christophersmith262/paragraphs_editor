@@ -77,27 +77,19 @@ class ParagraphEntityForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    $nested_contexts = $form_state->getValue('paragraphs_editor_nested_contexts');
-    if (!$nested_contexts) {
-      $nested_contexts = $this->context->getAdditionalContext('nested_contexts');
+    $editable_contexts = $form_state->getValue('paragraphs_editor_editable_contexts');
+    if (!$editable_contexts) {
+      $editable_contexts = $this->context->getAdditionalContext('editable_contexts');
     }
     else {
-      $nested_contexts = unserialize($nested_contexts);
+      $editable_contexts = unserialize($editable_contexts);
     }
-    if (!$nested_contexts) {
-      $nested_contexts = array();
+    if (!$editable_contexts) {
+      $editable_contexts = array();
     }
 
     // Ensure that any paragraph fields that are going to be nested editable
     // have entities in their reference fields.
-    $editable_contexts = array();
-    $copy_nested_contexts = $nested_contexts;
-    $this->fillEditableParagraphs($this->entity, $copy_nested_contexts, $editable_contexts);
-
-    $form['paragraphs_editor_nested_contexts'] = array(
-      '#type' => 'hidden',
-      '#default_value' => serialize($nested_contexts),
-    );
 
     $form['paragraphs_editor_editable_contexts'] = array(
       '#type' => 'hidden',
@@ -176,34 +168,5 @@ class ParagraphEntityForm extends ContentEntityForm {
     $delivery->close($response);
 
     return $response;
-  }
-
-  protected function fillEditableParagraphs($paragraph, array &$available_contexts, array &$inline_contexts) {
-    foreach ($paragraph->getFieldDefinitions() as $field_definition) {
-      if ($field_definition->getType() == 'entity_reference_revisions') {
-        $field_name = $field_definition->getName();
-        if ($field_definition->getThirdPartySetting('paragraphs_editor', 'enabled')) {
-          if (!isset($paragraphs{$field_name}[0])) {
-            $text_bundle = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle');
-            $paragraph->{$field_name}[0] = array(
-              'entity' => \Drupal::service('entity_type.manager')->getStorage('paragraph')->create(array(
-                'type' => $text_bundle,
-              )),
-            );
-          }
-          $context_string = array_shift($available_contexts);
-          if ($context_string) {
-            $inline_contexts[$paragraph->uuid()] = $context_string;
-          }
-        }
-        else {
-          foreach ($paragraph->{$field_name} as $field_item) {
-            if ($field_item->entity) {
-              $this->fillEditableParagraphs($field_item->entity, $available_contexts, $inline_contexts);
-            }
-          }
-        }
-      }
-    }
   }
 }
