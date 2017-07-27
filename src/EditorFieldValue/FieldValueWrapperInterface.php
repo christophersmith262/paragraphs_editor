@@ -8,5 +8,6 @@ interface FieldValueWrapperInterface {
   public function getEntities();
   public function setMarkup($markup);
   public function setFormat($format);
-  public function setEntities(array $entities);
+  public function getReferencedEntities();
+  public function setReferencedEntities(array $entities);
 }

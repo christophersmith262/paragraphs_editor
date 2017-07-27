@@ -55,23 +55,20 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
   protected function analyzeWidget(SemanticDataInterface $data) {
     $entity = NULL;
-    $uuid = $this->getAttribute($data, 'widget', '<uuid>');
-    $context_id = $this->getAttribute($data, 'widget', '<context>');
 
+    $uuid = $this->getAttribute($data, 'widget', '<uuid>');
     if (!$uuid) {
       throw new DomProcessorError("Reference to empty UUID discarded.");
+    }
+
+    $context_id = $this->getAttribute($data, 'widget', '<context>');
+    if (!$context_id) {
+      $context_id = $data->get('field.context_id');
     }
 
     // If there is a context id provided, try to get the paragraph from the
     // context.
     if ($context_id) {
-      $field_context_id = $data->get('field.context_id');
-
-      /*if ($context_id != $field_context_id) {
-        $context_id = $node->set('paragraph.context_id', $field_context_id);
-        throw new DomProcessorWarning("Corrected faulty context id.");
-      }*/
-
       try {
         $context = $this->contextFactory->get($context_id);
         $edit_buffer = $context->getEditBuffer();
@@ -87,7 +84,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     // If we are currently within a paragraph field try to get the entity from
     // the field.
-    else if ($data->has('field.items')) {
+    if (!$entity && $data->has('field.items')) {
       foreach ($data->get('field.items')->referencedEntities() as $entity_candidate) {
         if ($entity_candidate->uuid() == $uuid) {
           $entity = $entity_candidate;
@@ -97,7 +94,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
     }
 
     // Otherwise try to laod the entity from the database.
-    else {
+    if (!$entity) {
       $matches = $this->storage->loadByProperties([
         'uuid' => $uuid,
       ]);

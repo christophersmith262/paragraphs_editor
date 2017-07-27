@@ -31,6 +31,9 @@ class EditBufferItemMarkupCompilerSession {
     else {
       $context = $this->contextFactory->create($field_config_id, $entity_id);
       $this->addContext($context->getContextString(), [
+        'id' => $context->getContextString(),
+        'ownerId' => $uuid,
+        'fieldId' => $field_config_id,
         'schemaId' => $field_config_id,
       ]);
     }

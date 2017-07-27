@@ -8,16 +8,16 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
     this.moduleName = module_name;
   },
 
-  send: function(type, data, settings, resolver) {
+  send: function(type, data, resolver) {
     if (type == 'FETCH_SCHEMA') {
       this._get(data, resolver);
     }
     else {
-      this._sendAjaxCommand(data, settings, resolver);
+      this._sendAjaxCommand(data, resolver);
     }
   },
 
-  _sendAjaxCommand: function(command, settings, resolver) {
+  _sendAjaxCommand: function(command, resolver) {
 
     if (!command.command) {
       return;
@@ -45,8 +45,8 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
     }
 
     var params = [];
-    for (var key in settings) {
-      params.push('settings[' + key + ']=' + settings[key]);
+    for (var key in command.settings) {
+      params.push('settings[' + key + ']=' + command.settings[key]);
     }
     params.push('module=' + this.moduleName);
     path += '?' + params.join('&');
@@ -58,8 +58,7 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
       },
     });
 
-    ajax.options.data['editorContext'] = command.editorContext.get('id');
-    delete command.editorContext;
+    ajax.options.data['editorContext'] = command.editorContext.id;
 
     if (command.edits) {
       ajax.options.data['nestedContexts'] = _.keys(command.edits);

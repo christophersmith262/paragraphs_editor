@@ -90,7 +90,8 @@ class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterf
           'name' => $field_definition->getName(),
         ];
         foreach (Element::children($build[$field_name]) as $delta) {
-          if ($build[$field_name][$delta]['#theme'] == 'paragraph') {
+          $theme = !empty($build[$field_name][$delta]['#theme']) ? $build[$field_name][$delta]['#theme'] : '';
+          if ($theme == 'paragraph') {
             $this->processElement($build[$field_name][$delta], $session, $edit_path);
           }
         }
