@@ -36,7 +36,7 @@ services:
 
   paragraphs_editor.edit_buffer.item_factory:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactory
-    arguments: ['@entity_type.manager']
+    arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.manager']
 
   paragraphs_editor.edit_buffer.markup_compiler:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompiler

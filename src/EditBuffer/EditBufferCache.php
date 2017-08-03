@@ -27,7 +27,7 @@ class EditBufferCache implements EditBufferCacheInterface {
     // access it.
     $buffer = $this->storage->get($context_string);
     if ($buffer) {
-      if ($buffer->getContextString() != $context_string || $buffer->getOwner() != $this->user->id()) {
+      if ($buffer->getContextString() != $context_string || $buffer->getUser() != $this->user->id()) {
         $buffer = NULL;
       }
     }

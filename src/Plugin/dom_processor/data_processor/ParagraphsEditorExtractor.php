@@ -41,11 +41,17 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
 
     if ($this->is($data, 'widget')) {
       $entity = $data->get('paragraph.entity');
-      $this->fieldValueManager->prepareEntityForSave($entity, $new_revision, $langcode);
 
       $wrapper = $data->get('field.wrapper');
       if ($wrapper) {
         $wrapper->addReferencedEntity($entity);
+      }
+      else {
+        $result = $result->merge([
+          'entities' => [
+            $entity->uuid() => $entity,
+          ],
+        ]);
       }
 
       if ($data->node()->hasChildNodes()) {
@@ -63,8 +69,17 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
       if ($wrapper) {
         $wrapper->setMarkup($data->getInnerHTML());
         $wrapper->setFormat($data->get('filter_format'));
-        $this->fieldValueManager->updateItems($items, $wrapper->getEntities(), $new_revision, $langcode);
+        $this->fieldValueManager->setItems($items, $wrapper->getEntities(), $new_revision, $langcode);
       }
+      else {
+        $entities = $result->get('entities');
+        if (!$entities) {
+          $entities = [];
+        }
+        $this->fieldValueManager->updateItems($items, $entities, $new_revision, $langcode);
+      }
+
+      $result = $result->clear('entities');
     }
 
     return $result;

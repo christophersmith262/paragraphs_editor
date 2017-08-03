@@ -81,6 +81,11 @@ class CommandContextConverter implements ParamConverterInterface {
       $context->addAdditionalContext('editable_contexts', $editable_contexts);
     }
 
+    $edits = $this->request->get('edits');
+    if ($edits) {
+      $context->addAdditionalContext('edits', $edits);
+    }
+
     $module = $this->request->get('module');
     if ($module) {
       $context->addAdditionalContext('module', $module);

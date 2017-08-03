@@ -49,4 +49,29 @@ trait ParagraphsEditorDomProcessorPluginTrait {
   protected function is(SemanticDataInterface $data, $element_name) {
     return $data->is($this->getSelector($element_name));
   }
+
+  protected function getReferencedEntities(SemanticDataInterface $data, $items) {
+    $revision_cache = $data->get('cache.entity');
+    if ($revision_cache) {
+
+      $target_entities = [];
+      foreach ($items as $delta => $item) {
+        if ($item->hasNewEntity()) {
+          $target_entities[$delta] = $item->entity;
+        }
+        elseif ($item->target_revision_id !== NULL) {
+          $key = 'revision:' . $item->target_revision_id;
+          if (empty($revision_cache[$key])) {
+            throw new \Exception('Paragraph is not reachable from the render root!');
+          }
+          $target_entities[$delta] = $revision_cache[$key];
+        }
+      }
+
+      return $target_entities;
+    }
+    else {
+      return $items->referencedEntities();
+    }
+  }
 }

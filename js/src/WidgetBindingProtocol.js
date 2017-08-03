@@ -36,7 +36,7 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
       path += '/' + command.itemId;
     }
 
-    if (command.widget) {
+    if (!_.isUndefined(command.widget)) {
       path += '/' + command.widget;
     }
 
@@ -67,6 +67,12 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
         key += '[' + context.fieldId + ']';
         ajax.options.data[key] = context.id;
       });
+    }
+
+    if (command.command == 'duplicate' && command.edits) {
+      _.each(command.edits, function(edit, contextId) {
+        ajax.options.data['edits[' + contextId + ']'] = edit;
+      })
     }
 
     var complete = ajax.options.complete;

@@ -6,7 +6,7 @@ use Drupal\Core\Account\AccountInterface;
 use Drupal\paragraphs\ParagraphInterface;
 
 interface EditBufferInterface {
-  public function getOwner();
+  public function getUser();
   public function getContextString();
   public function setItem(EditBufferItemInterface $item);
   public function getItem($paragraph_uuid);
