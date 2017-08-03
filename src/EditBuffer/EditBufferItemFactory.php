@@ -15,8 +15,9 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    */
   protected $storage;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, $field_value_manager) {
     $this->storage = $entity_type_manager->getStorage('paragraph');
+    $this->fieldValueManager = $field_value_manager;
   }
 
   /**
@@ -84,7 +85,42 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   }
 
   public function duplicateBufferItem(CommandContextInterface $context, EditBufferItemInterface $item) {
-    return $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
+    $new_item = $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
+
+    $entity_map = [];
+    $this->createEntityMap($item->getEntity(), $new_item->getEntity(), $entity_map);
+    $context->addAdditionalContext('entity_map', $entity_map);
+    return $new_item;
+  }
+
+  protected function createEntityMap($entity1, $entity2, array &$map) {
+    $map[$entity1->uuid()] = $entity2->uuid();
+
+    if ($entity1->bundle() != $entity2->bundle()) {
+      throw new \Exception('mismatch');
+    }
+    foreach ($entity1->getFields() as $field) {
+      $field_definition = $field->getFieldDefinition();
+      $field_name = $field_definition->getName();
+      if (!isset($entity2->{$field_name})) {
+        throw new \Exception('mismatch');
+      }
+
+      if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+        $items1 = $entity1->{$field_name};
+        $items2 = $entity2->{$field_name};
+
+        if (count($items1) != count($items2)) {
+          throw new \Exception('mismatch');
+        }
+
+        foreach ($items1 as $delta => $item) {
+          $cmp_entity1 = $items1[$delta]->entity;
+          $cmp_entity2 = $items2[$delta]->entity;
+          $this->createEntityMap($cmp_entity1, $cmp_entity2, $map);
+        }
+      }
+    }
   }
 
   /**

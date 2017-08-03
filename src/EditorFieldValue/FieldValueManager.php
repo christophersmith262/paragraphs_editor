@@ -14,11 +14,16 @@ class FieldValueManager implements FieldValueManagerInterface {
   protected $bundleStorage;
   protected $entityFieldManager;
   protected $storage;
+  protected $revisionCache = [];
 
   public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager) {
     $this->entityFieldManager = $entity_field_manager;
     $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->bundleStorage = $entity_type_manager->getStorage('paragraphs_type');
+  }
+
+  public function updateCache(array $revision_cache) {
+    $this->revisionCache += $revision_cache;
   }
 
   public function wrapItems(FieldItemListInterface $items) {
@@ -30,15 +35,26 @@ class FieldValueManager implements FieldValueManagerInterface {
     // Build a list of refrenced entities and filter out the text entities.
     $text_entity = NULL;
     foreach ($items as $item) {
-      $paragraph = $item->entity;
-      if ($paragraph->bundle() == $settings['text_bundle']) {
-        $markup .= $paragraph->{$settings['text_field']}->value;
+      if ($item->hasNewEntity()) {
+        $entity = $item->entity;
+      }
+      else if ($item->target_revision_id !== NULL) {
+        if (!empty($this->revisionCache[$item->target_revision_id])) {
+          $entity = $this->revisionCache[$item->target_revision_id];
+        }
+        else {
+          $entity = $this->revisionCache[$item->target_revision_id] = $this->storage->loadRevision($item->target_revision_id);
+        }
+      }
+
+      if ($entity->bundle() == $settings['text_bundle']) {
+        $markup .= $entity->{$settings['text_field']}->value;
         if (!$text_entity) {
-          $text_entity = $paragraph;
+          $text_entity = $entity;
         }
       }
       else {
-        $entities[$paragraph->uuid()] = $paragraph;
+        $entities[$entity->uuid()] = $entity;
       }
     }
 
@@ -66,14 +82,28 @@ class FieldValueManager implements FieldValueManagerInterface {
         $entity->set('langcode', $langcode);
       }
     }
+
     $entity->setNeedsSave(TRUE);
+
+    return $entity;
   }
 
   public function updateItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
+    $updated = [];
+    foreach ($items->referencedEntities() as $entity) {
+      $updated[$entity->uuid()] = $entity;
+    }
+    foreach ($entities as $entity) {
+      $updated[$entity->uuid()] = $entity;
+    }
+    return $this->setItems($items, $updated, $new_revision, $langcode);
+  }
+
+  public function setItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
     $values = array();
     $delta = 0;
     foreach ($entities as $entity) {
-      $this->prepareEntityForSave($entity, $new_revision, $langcode);
+      $entity = $this->prepareEntityForSave($entity, $new_revision, $langcode);
       $values[$delta]['entity'] = $entity;
       $values[$delta]['target_id'] = $entity->id();
       $values[$delta]['target_revision_id'] = $entity->getRevisionId();

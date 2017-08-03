@@ -19,7 +19,7 @@ class EditBuffer implements EditBufferInterface {
     $this->uid = $uid;
   }
 
-  public function getOwner() {
+  public function getUser() {
     return $this->uid;
   }
 

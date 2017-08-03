@@ -161,12 +161,27 @@ class ResponseHandler implements ResponseHandlerInterface {
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
     $response = new AjaxResponse();
     $data = $this->markupCompiler->compile($context, $item);
+
+    $old_edits = $context->getAdditionalContext('edits');
+    $new_edits = [];
+    $contexts = $context->getAdditionalContext('editable_contexts');
+    $entity_map = $context->getAdditionalContext('entity_map');
+    foreach ($contexts as $uuid => $fields) {
+      foreach ($fields as $field_name => $old_context_id) {
+        $new_context_id = $data->getContextId($entity_map[$uuid], $field_name);
+        if (!empty($old_edits[$old_context_id])) {
+          $new_edits[$new_context_id] = $old_edits[$old_context_id];
+        }
+      }
+    }
+
     $data->addModel('widget', $editor_widget_id, [
       'contextId' => $context->getContextString(),
       'editorContextId' => $context->getEditBuffer()->getParentBufferTag(),
       'itemContextId' => $context->getContextString(),
       'itemId' => $item->getEntity()->uuid(),
       'duplicating' => false,
+      'edits' => $new_edits,
     ]);
     $context->getPlugin('delivery_provider')->sendData($response, $data);
     return $response;

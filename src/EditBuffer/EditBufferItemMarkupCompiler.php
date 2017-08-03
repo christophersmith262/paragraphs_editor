@@ -107,7 +107,9 @@ class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterf
       foreach ($variables['items'] as $delta => $item) {
         $variables['items'][$delta]['attributes']->addClass('editable-paragraph-field');
         $variables['items'][$delta]['attributes']->setAttribute('data-context', $context_string);
-        $variables['items'][$delta]['content'] = '';
+        $variables['items'][$delta]['content'] = \Drupal\Core\Render\Markup::create(
+          preg_replace('/data-uuid=/', 'data-context-hint="' . $context_string . '" data-uuid=', \Drupal::service('paragraphs_editor.field_value.manager')->wrapItems($variables['element']['#items'])->getMarkup())
+        );
       }
     }
   }
