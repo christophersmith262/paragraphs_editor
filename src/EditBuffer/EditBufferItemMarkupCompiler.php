@@ -5,6 +5,8 @@ namespace Drupal\paragraphs_editor\EditBuffer;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\RenderContext;
+use Drupal\editor_assets\EditorAssetProcessorInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\paragraphs_editor\EditorCommand\WidgetBinderData;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
@@ -13,12 +15,17 @@ use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterface {
 
   protected $viewBuilder;
+
   protected $renderer;
+
+  protected $assetProcessor;
+
   protected $contextFactory;
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, CommandContextFactoryInterface $context_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, EditorAssetProcessorInterface $asset_processor, CommandContextFactoryInterface $context_factory) {
     $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');
     $this->renderer = $renderer;
+    $this->assetProcessor = $asset_processor;
     $this->contextFactory = $context_factory;
   }
 
@@ -31,11 +38,20 @@ class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterf
     $session = new EditBufferItemMarkupCompilerSession($this->contextFactory, $item);
     $this->processElement($view, $session);
 
-    // Render the rendered markup for the view.
-    $markup = $this->renderer->render($view);
+    // Render the rendered markup for the view and collect any bubbled
+    // attachment information from the context.
+    $render_context = new RenderContext();
+    $renderer = $this->renderer;
+    $markup = $renderer->executeInRenderContext($render_context, function() use ($renderer, $view) {
+      return $renderer->render($view);
+    });
+    $assets = $this->assetProcessor->processAttachments($render_context->pop()->getAttachments());
     $session->cleanup();
-
     $data = new WidgetBinderData();
+    foreach ($assets as $id => $asset) {
+      $asset['editorContextId'] = $context->getAdditionalContext('editor_context');
+      $data->addModel('asset', $id, $asset);
+    }
     $data->addModels('context', $session->getContexts());
     $item_model = [
       'contextId' => $context->getContextString(),
@@ -72,8 +88,12 @@ class EditBufferItemMarkupCompiler implements EditBufferItemMarkupCompilerInterf
         $context = $session->getContext($field_definition->id(), $info['#object']->id(), $info['#object']->uuid());
 
         // Mark the field render array with an editor context so the
-        // preprocessor can decorate it with the right attributes.
+        // preprocessor can decorate it with the right attributes. Any render
+        // array containing a path to an editable context is not cachable since
+        // the context needs to be regenereted on render.
         $build[$field_name]['#paragraphs_editor_context'] = $context->getContextString();
+        $build[$field_name]['#cache']['max-age'] = 0;
+
         $edit_path = $base_path;
         $edit_path[] = [
           'type' => 'field',

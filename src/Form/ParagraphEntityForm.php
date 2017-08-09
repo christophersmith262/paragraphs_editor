@@ -71,31 +71,32 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->markupCompiler = $markup_compiler;
   }
 
+  protected function bootstrapContext($form_state) {
+    $saved = $form_state->getValue('paragraphs_editor_additional_context');
+    if ($saved) {
+      $saved = unserialize($saved);
+      foreach ($saved as $key => $value) {
+        $value = $value;
+        $this->context->addAdditionalContext($key, $value);
+      }
+    }
+
+    return $this->context;
+  }
+
+  protected function persistAdditionalContext(array &$form, FormStateInterface $form_state) {
+    $form['paragraphs_editor_additional_context'] = [
+      '#type' => 'hidden',
+      '#default_value' => serialize($this->bootstrapContext($form_state)->getAdditionalContext()),
+    ];
+  }
+
   /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-
-    $editable_contexts = $form_state->getValue('paragraphs_editor_editable_contexts');
-    if (!$editable_contexts) {
-      $editable_contexts = $this->context->getAdditionalContext('editable_contexts');
-    }
-    else {
-      $editable_contexts = unserialize($editable_contexts);
-    }
-    if (!$editable_contexts) {
-      $editable_contexts = array();
-    }
-
-    // Ensure that any paragraph fields that are going to be nested editable
-    // have entities in their reference fields.
-
-    $form['paragraphs_editor_editable_contexts'] = array(
-      '#type' => 'hidden',
-      '#default_value' => serialize($editable_contexts),
-    );
-
+    $this->persistAdditionalContext($form, $form_state);
     return $form;
   }
 
@@ -103,17 +104,19 @@ class ParagraphEntityForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    $context = $this->bootstrapContext($form_state);
+
     // Save the changes to the editor buffer.
     $this->bufferItem->overwrite($this->entity);
     $this->bufferItem->save();
 
-    $editable_contexts = unserialize($form_state->getValue('paragraphs_editor_editable_contexts'));
+    $editable_contexts = $context->getAdditionalContext('editable_contexts');
     if ($editable_contexts) {
       $this->bufferItem->setParagraphContexts($editable_contexts);
     }
 
     // Make properties available to the static ajax handler.
-    $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->markupCompiler->compile($this->context, $this->bufferItem));
+    $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->markupCompiler->compile($context, $this->bufferItem));
     $form_state->setTemporaryValue(['paragraphs_editor', 'context'], $this->context);
   }
 

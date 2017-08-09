@@ -4,5 +4,7 @@ description: 'Adds a CKEDITOR plugin to allow inserting paragraphs into a text b
 package: Componentize
 core: '8.x'
 dependencies:
+  - dom_processor
   - editor
+  - editor_assets
   - paragraphs

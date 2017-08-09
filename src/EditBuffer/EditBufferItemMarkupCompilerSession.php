@@ -9,6 +9,7 @@ class EditBufferItemMarkupCompilerSession {
   protected $contextFactory;
   protected $item;
   protected $paragraphContexts = [];
+  protected $contexts = [];
   protected $fieldMap = [];
 
   public function __construct(CommandContextFactoryInterface $context_factory, EditBufferItemInterface $item) {

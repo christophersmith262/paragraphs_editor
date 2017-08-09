@@ -200,6 +200,7 @@ class CommandContext implements CommandContextInterface {
     array(
       'query' => array(
         'settings' => $this->getSettings(),
+        'additional_context' => serialize($this->additionalContext),
       ),
     ));
   }
@@ -214,7 +215,12 @@ class CommandContext implements CommandContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAdditionalContext($key) {
-    return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
+  public function getAdditionalContext($key = NULL) {
+    if ($key) {
+      return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
+    }
+    else {
+      return $this->additionalContext;
+    }
   }
 }

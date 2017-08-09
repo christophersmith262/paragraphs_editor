@@ -64,7 +64,15 @@ class CommandContextConverter implements ParamConverterInterface {
 
     $editor_context = $this->request->get('editorContext');
     if ($editor_context) {
+      $context->addAdditionalContext('editor_context', $editor_context);
       $context->getEditBuffer()->tagParentBuffer($editor_context);
+    }
+
+    $additional_context = $this->request->get('additional_context');
+    if ($additional_context) {
+      foreach (unserialize($additional_context) as $key => $value) {
+        $context->addAdditionalContext($key, $value);
+      }
     }
 
     // If the parameter definition gave any additional context about the command
