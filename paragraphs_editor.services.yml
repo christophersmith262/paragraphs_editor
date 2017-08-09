@@ -40,7 +40,11 @@ services:
 
   paragraphs_editor.edit_buffer.markup_compiler:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompiler
-    arguments: ['@entity_type.manager', '@renderer', '@paragraphs_editor.command.context_factory', '%paragraphs_editor.field_value.elements%']
+    arguments:
+      - '@entity_type.manager'
+      - '@renderer'
+      - '@editor_assets.processor'
+      - '@paragraphs_editor.command.context_factory'
 
   paragraphs_editor.delivery_provider.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
