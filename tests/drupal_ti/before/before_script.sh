@@ -9,11 +9,11 @@ set -e $DRUPAL_TI_DEBUG
 # The first time this is run, it will install Drupal.
 # Note: This function is re-entrant.
 git clone --depth 1 --branch "$DRUPAL_TI_CORE_BRANCH" http://git.drupal.org/project/drupal.git
-cd drupal
+cd "$DRUPAL_TI_DRUPAL_DIR"
 composer install
 
 # Change to the Drupal directory
-cd "$DRUPAL_TI_MODULES_PATH"
+cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
 
 # Manually clone the dependencies
 git clone --depth 1 https://github.com/christophersmith262/dom_processor.git
