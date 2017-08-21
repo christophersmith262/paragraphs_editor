@@ -8,9 +8,8 @@ set -e $DRUPAL_TI_DEBUG
 # Ensure the right Drupal version is installed.
 # The first time this is run, it will install Drupal.
 # Note: This function is re-entrant.
-git clone --depth 1 --branch "$DRUPAL_TI_CORE_BRANCH" http://git.drupal.org/project/drupal.git
-cd "$DRUPAL_TI_DRUPAL_DIR"
-composer install
+drupal_ti_ensure_drush
+drupal_ti_ensure_drupal
 
 # Change to the Drupal directory
 cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
