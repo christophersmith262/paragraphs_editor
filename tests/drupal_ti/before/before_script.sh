@@ -16,5 +16,5 @@ composer install
 cd "$DRUPAL_TI_MODULES_PATH"
 
 # Manually clone the dependencies
-git clone --depth 1 git@github.com:christophersmith262/dom_processor.git
-git clone --depth 1 git@github.com:christophersmith262/editor_assets.git
+git clone --depth 1 https://github.com/christophersmith262/dom_processor.git
+git clone --depth 1 https://github.com/christophersmith262/editor_assets.git
