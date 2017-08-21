@@ -11,7 +11,6 @@ language: php
 sudo: false
 
 php:
-  - 5.3
   - 5.4
   - 5.5
   - 5.6
@@ -31,7 +30,7 @@ env:
 
     # Configuration variables.
     - DRUPAL_TI_MODULE_NAME="paragraphs_editor"
-    - DRUPAL_TI_SIMPLETEST_GROUP="[[[FILL THIS OUT]]]"
+    - DRUPAL_TI_SIMPLETEST_GROUP="paragraphs_editor"
 
     # Define runners and environment vars to include before and after the
     # main runners / environment vars.
