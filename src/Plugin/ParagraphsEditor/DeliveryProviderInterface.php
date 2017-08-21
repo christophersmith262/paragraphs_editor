@@ -3,8 +3,7 @@
 namespace Drupal\paragraphs_editor\Plugin\ParagraphsEditor;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_editor\EditorCommand\WidgetBinderData;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 
 /**
  * Represents a paragraphs editor form delivery plugin.
@@ -32,6 +31,9 @@ interface DeliveryProviderInterface {
    */
   public function navigate(AjaxResponse $response, $title, $contents);
 
+  /**
+   *
+   */
   public function sendData(AjaxResponse $response, WidgetBinderData $data);
 
   /**
@@ -41,4 +43,5 @@ interface DeliveryProviderInterface {
    *   The response object to add commands to.
    */
   public function close(AjaxResponse $response);
+
 }

@@ -1,0 +1,8 @@
+uuid: f1865a79-57f5-48e7-a3a5-a5d4e5ba05a7
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: 0o0TacPShYA65HWrp0JmKOE-FCx3ofvZSUyx4Pj440Q
+id: paragraphs_editor_text
+label: Text

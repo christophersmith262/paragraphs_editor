@@ -5,12 +5,18 @@ namespace Drupal\paragraphs_editor\EditBuffer;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 
+/**
+ *
+ */
 class EditBufferCache implements EditBufferCacheInterface {
 
   protected $storage;
   protected $expiry;
   protected $user;
 
+  /**
+   *
+   */
   public function __construct(KeyValueExpirableFactoryInterface $keyvalue_factory, $expiry, AccountInterface $user) {
     $this->storage = $keyvalue_factory->get('paragraphs_editor.edit_buffer');
     $this->expiry = $expiry;
@@ -54,6 +60,9 @@ class EditBufferCache implements EditBufferCacheInterface {
     $this->storage->delete($context_string);
   }
 
+  /**
+   *
+   */
   public function save(EditBufferInterface $buffer) {
     $this->storage->set($buffer->getContextString(), $buffer, $this->expiry);
 
@@ -64,4 +73,5 @@ class EditBufferCache implements EditBufferCacheInterface {
       $this->save($parent_buffer);
     }
   }
+
 }

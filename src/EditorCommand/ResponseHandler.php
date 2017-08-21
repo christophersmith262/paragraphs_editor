@@ -7,9 +7,8 @@ use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Plugin\PluginManagerInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompilerInterface;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 use Drupal\paragraphs_editor\Form\ParagraphEntityForm;
 
 /**
@@ -68,7 +67,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
    */
-  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager, EditBufferItemMarkupCompilerInterface $markup_compiler) {
+  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager, WidgetBinderDataCompilerInterface $markup_compiler) {
     $this->formBuilder = $form_builder;
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
@@ -160,29 +159,8 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
     $response = new AjaxResponse();
+    $context->addAdditionalContext('widgetId', $editor_widget_id);
     $data = $this->markupCompiler->compile($context, $item);
-
-    $old_edits = $context->getAdditionalContext('edits');
-    $new_edits = [];
-    $contexts = $context->getAdditionalContext('editable_contexts');
-    $entity_map = $context->getAdditionalContext('entity_map');
-    foreach ($contexts as $uuid => $fields) {
-      foreach ($fields as $field_name => $old_context_id) {
-        $new_context_id = $data->getContextId($entity_map[$uuid], $field_name);
-        if (!empty($old_edits[$old_context_id])) {
-          $new_edits[$new_context_id] = $old_edits[$old_context_id];
-        }
-      }
-    }
-
-    $data->addModel('widget', $editor_widget_id, [
-      'contextId' => $context->getContextString(),
-      'editorContextId' => $context->getEditBuffer()->getParentBufferTag(),
-      'itemContextId' => $context->getContextString(),
-      'itemId' => $item->getEntity()->uuid(),
-      'duplicating' => false,
-      'edits' => $new_edits,
-    ]);
     $context->getPlugin('delivery_provider')->sendData($response, $data);
     return $response;
   }
@@ -241,9 +219,11 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected function getDialogTitle(CommandContextInterface $context) {
     if ($context->getAdditionalContext('command') == 'insert') {
-      return t('Insert @title', array('@title' => $context->getSetting('title')));
-    } else {
-      return t('Edit @title', array('@title' => $context->getSetting('title')));
+      return t('Insert @title', ['@title' => $context->getSetting('title')]);
+    }
+    else {
+      return t('Edit @title', ['@title' => $context->getSetting('title')]);
     }
   }
+
 }

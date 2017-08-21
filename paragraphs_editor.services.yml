@@ -28,7 +28,7 @@ services:
 
   paragraphs_editor.command.response_handler:
     class: Drupal\paragraphs_editor\EditorCommand\ResponseHandler
-    arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_editor.edit_buffer.markup_compiler']
+    arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_editor.widget_binder.data_compiler']
 
   paragraphs_editor.edit_buffer.cache:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferCache
@@ -37,14 +37,6 @@ services:
   paragraphs_editor.edit_buffer.item_factory:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactory
     arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.manager']
-
-  paragraphs_editor.edit_buffer.markup_compiler:
-    class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemMarkupCompiler
-    arguments:
-      - '@entity_type.manager'
-      - '@renderer'
-      - '@editor_assets.processor'
-      - '@paragraphs_editor.command.context_factory'
 
   paragraphs_editor.delivery_provider.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
@@ -56,7 +48,41 @@ services:
 
   paragraphs_editor.field_value.manager:
     class: Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
-    arguments: ['@entity_field.manager', '@entity_type.manager', '@dom_processor.dom_processor']
+    arguments: ['@entity_field.manager', '@entity_type.manager', '%paragraphs_editor.field_value.elements%']
+
+  paragraphs_editor.widget_binder.data_compiler:
+    class: Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompiler
+    arguments: ['@entity_type.manager', '@renderer', '@paragraphs_editor.field_value.manager']
+    tags:
+      - { name: service_collector, tag: paragraphs_editor_data_generator, call: addGenerator }
+
+  paragraphs_editor.widget_binder.data_compiler.generators.asset:
+    class: Drupal\paragraphs_editor\WidgetBinder\Generators\AssetGenerator
+    arguments: ['@editor_assets.processor']
+    tags:
+      - { name: paragraphs_editor_data_generator }
+
+  paragraphs_editor.widget_binder.data_compiler.generators.context:
+    class: Drupal\paragraphs_editor\WidgetBinder\Generators\ContextGenerator
+    arguments: ['@paragraphs_editor.command.context_factory']
+    tags:
+      - { name: paragraphs_editor_data_generator, priority: 100 }
+
+  paragraphs_editor.widget_binder.data_compiler.generators.editable:
+    class: Drupal\paragraphs_editor\WidgetBinder\Generators\EditableGenerator
+    arguments: ['@paragraphs_editor.field_value.manager', '@dom_processor.dom_processor']
+    tags:
+      - { name: paragraphs_editor_data_generator }
+
+  paragraphs_editor.widget_binder.data_compiler.generators.item:
+    class: Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator
+    tags:
+      - { name: paragraphs_editor_data_generator }
+
+  paragraphs_editor.widget_binder.data_compiler.generators.widget:
+    class: Drupal\paragraphs_editor\WidgetBinder\Generators\WidgetGenerator
+    tags:
+      - { name: paragraphs_editor_data_generator, priority: -100 }
 
 parameters:
 
@@ -73,10 +99,12 @@ parameters:
         data-uuid: '<uuid>'
         data-context-hint: '<context>'
         data-viewmode: '<viewmode>'
+      selector: 'paragraph[data-context-hint]'
     field:
       tag: 'paragraph-field'
       attributes:
         data-field-name: '<name>'
         data-context: '<context>'
         data-mutable: '<editable>'
-      selector: '.widget-binder-field[data-mutable="true"]'
+      selector: 'paragraph-field[data-mutable="true"],.editable-paragraph-field'
+      flag: 'editable-paragraph-field'

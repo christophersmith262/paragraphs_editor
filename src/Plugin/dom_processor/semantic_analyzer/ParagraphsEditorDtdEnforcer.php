@@ -17,6 +17,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphsEditorDtdEnforcer implements SemanticAnalyzerInterface, ContainerFactoryPluginInterface {
   use ParagraphsEditorDomProcessorPluginTrait;
 
+  /**
+   *
+   */
   public function __construct($field_value_manager, array $elements) {
     $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
   }
@@ -24,7 +27,7 @@ class ParagraphsEditorDtdEnforcer implements SemanticAnalyzerInterface, Containe
   /**
    * {@inheritdoc}
    */
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $container->get('paragraphs_editor.field_value.manager'),
       $container->getParameter('paragraphs_editor.field_value.elements')
@@ -36,15 +39,16 @@ class ParagraphsEditorDtdEnforcer implements SemanticAnalyzerInterface, Containe
    */
   public function analyze(SemanticDataInterface $data) {
     /*if ($this->is($data, 'field')) {
-      if ($data->isRoot() || !$this->is($data->parent(), 'widget')) {
-        throw new DomProcessorError("Fields must appear beneath paragraphs.");
-      }
+    if ($data->isRoot() || !$this->is($data->parent(), 'widget')) {
+    throw new DomProcessorError("Fields must appear beneath paragraphs.");
+    }
     }
     else if (!$data->isRoot() && $this->is($data->parent(), 'widget')) {
-      if (!$this->is($data, 'field')) {
-        throw new DomProcessorError("Only fields can appear beneath paragraphs.");
-      }
+    if (!$this->is($data, 'field')) {
+    throw new DomProcessorError("Only fields can appear beneath paragraphs.");
+    }
     }*/
     return $data;
   }
+
 }

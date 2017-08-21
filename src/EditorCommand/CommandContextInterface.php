@@ -146,7 +146,7 @@ interface CommandContextInterface {
    * @return Drupal\Core\Url
    *   The Drupal url object pertaining to the command.
    */
-  public function createCommandUrl($command, array $params = array());
+  public function createCommandUrl($command, array $params = []);
 
   /**
    * Adds additional context about the command.
@@ -165,4 +165,5 @@ interface CommandContextInterface {
    *   The name of the context to get.
    */
   public function getAdditionalContext($key);
+
 }

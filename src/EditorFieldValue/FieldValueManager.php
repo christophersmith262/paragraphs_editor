@@ -3,50 +3,76 @@
 namespace Drupal\paragraphs_editor\EditorFieldValue;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\FieldableEntityInterface;
 
+/**
+ *
+ */
 class FieldValueManager implements FieldValueManagerInterface {
 
   protected $bundleStorage;
   protected $entityFieldManager;
   protected $storage;
   protected $revisionCache = [];
+  protected $elements;
 
-  public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager) {
+  /**
+   *
+   */
+  public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, array $elements) {
     $this->entityFieldManager = $entity_field_manager;
     $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->bundleStorage = $entity_type_manager->getStorage('paragraphs_type');
+    $this->elements = $elements;
   }
 
+  /**
+   *
+   */
   public function updateCache(array $revision_cache) {
     $this->revisionCache += $revision_cache;
   }
 
-  public function wrapItems(FieldItemListInterface $items) {
-    $field_definition = $items->getFieldDefinition();
-    $settings = $field_definition->getThirdPartySettings('paragraphs_editor');
-    $markup = '';
-    $entities = array();
-
-    // Build a list of refrenced entities and filter out the text entities.
-    $text_entity = NULL;
+  /**
+   *
+   */
+  public function getReferencedEntities(FieldItemListInterface $items) {
+    $entities = [];
     foreach ($items as $item) {
-      if ($item->hasNewEntity()) {
+      $value = $item->getValue();
+      if (!empty($value['entity']) && $value['entity'] instanceof EntityInterface) {
         $entity = $item->entity;
       }
-      else if ($item->target_revision_id !== NULL) {
+      elseif ($item->target_revision_id !== NULL) {
         if (!empty($this->revisionCache[$item->target_revision_id])) {
           $entity = $this->revisionCache[$item->target_revision_id];
         }
         else {
-          $entity = $this->revisionCache[$item->target_revision_id] = $this->storage->loadRevision($item->target_revision_id);
+          $entity = $this->storage->loadRevision($item->target_revision_id);
+          $this->revisionCache[$item->target_revision_id] = $entity;
         }
       }
+      $entities[] = $entity;
+    }
+    return $entities;
+  }
 
+  /**
+   *
+   */
+  public function wrapItems(FieldItemListInterface $items) {
+    $field_definition = $items->getFieldDefinition();
+    $settings = $field_definition->getThirdPartySettings('paragraphs_editor');
+    $markup = '';
+    $entities = [];
+
+    // Build a list of refrenced entities and filter out the text entities.
+    $text_entity = NULL;
+    foreach ($this->getReferencedEntities($items) as $entity) {
       if ($entity->bundle() == $settings['text_bundle']) {
         $markup .= $entity->{$settings['text_field']}->value;
         if (!$text_entity) {
@@ -67,10 +93,16 @@ class FieldValueManager implements FieldValueManagerInterface {
 
     // Reset the text entity markup in case we merged multiple text entities.
     $text_entity->{$settings['text_field']}->value = $markup;
+    if (empty($text_entity->{$settings['text_field']}->format) && !empty($settings['filter_format'])) {
+      $text_entity->{$settings['text_field']}->format = $settings['filter_format'];
+    }
 
     return new FieldValueWrapper($items->getFieldDefinition(), $text_entity, $entities);
   }
 
+  /**
+   *
+   */
   public function prepareEntityForSave($entity, $new_revision, $langcode) {
     $entity->setNewRevision($new_revision);
 
@@ -88,9 +120,12 @@ class FieldValueManager implements FieldValueManagerInterface {
     return $entity;
   }
 
+  /**
+   *
+   */
   public function updateItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
     $updated = [];
-    foreach ($items->referencedEntities() as $entity) {
+    foreach ($this->getReferencedEntities($items) as $entity) {
       $updated[$entity->uuid()] = $entity;
     }
     foreach ($entities as $entity) {
@@ -99,8 +134,11 @@ class FieldValueManager implements FieldValueManagerInterface {
     return $this->setItems($items, $updated, $new_revision, $langcode);
   }
 
+  /**
+   *
+   */
   public function setItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
-    $values = array();
+    $values = [];
     $delta = 0;
     foreach ($entities as $entity) {
       $entity = $this->prepareEntityForSave($entity, $new_revision, $langcode);
@@ -115,17 +153,20 @@ class FieldValueManager implements FieldValueManagerInterface {
     return $items;
   }
 
+  /**
+   *
+   */
   public function getTextBundles(array $allowed_bundles = []) {
 
     if (!$allowed_bundles) {
       foreach ($this->bundleStorage->getQuery()->execute() as $name) {
-        $allowed_bundles[$name] = array(
+        $allowed_bundles[$name] = [
           'label' => $this->bundleStorage->load($name)->label(),
-        );
+        ];
       }
     }
 
-    $bundles = array();
+    $bundles = [];
     foreach ($allowed_bundles as $name => $type) {
       $text_fields = $this->getTextFields($name);
       if (count($text_fields) == 1) {
@@ -138,10 +179,9 @@ class FieldValueManager implements FieldValueManagerInterface {
     return $bundles;
   }
 
-  public function validateTextBundle($bundle_name, $field_name) {
-    return TRUE;
-  }
-
+  /**
+   *
+   */
   public function isParagraphsField(FieldDefinitionInterface $field_definition) {
     if ($field_definition->getType() != 'entity_reference_revisions') {
       return FALSE;
@@ -150,6 +190,9 @@ class FieldValueManager implements FieldValueManagerInterface {
     return TRUE;
   }
 
+  /**
+   *
+   */
   public function isParagraphsEditorField(FieldDefinitionInterface $field_definition) {
     if (!static::isParagraphsField($field_definition)) {
       return FALSE;
@@ -172,17 +215,20 @@ class FieldValueManager implements FieldValueManagerInterface {
     // Make sure the bundle for storing text is valid.
     $text_bundle = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle');
     $text_field = $field_definition->getThirdPartySetting('paragraphs_editor', 'text_field');
-    if (!$this->validateTextBundle($text_bundle, $text_field)) {
-      return FALSE;
-    }
 
     return TRUE;
   }
 
+  /**
+   *
+   */
   protected function isTextField(FieldDefinitionInterface $field_config) {
     return $field_config->getType() == 'text_long';
   }
 
+  /**
+   *
+   */
   public function getTextFields($bundle_name) {
     $matches = [];
     $field_definitions = $this->entityFieldManager->getFieldDefinitions('paragraph', $bundle_name);
@@ -193,4 +239,40 @@ class FieldValueManager implements FieldValueManagerInterface {
     }
     return $matches;
   }
+
+  /**
+   *
+   */
+  public function getElement($element_name) {
+    return isset($this->elements[$element_name]) ? $this->elements[$element_name] : NULL;
+  }
+
+  /**
+   *
+   */
+  public function getAttributeName($element_name, $attribute_name) {
+    $element = $this->getElement($element_name);
+    if (!empty($element['attributes'])) {
+      $map = array_flip($element['attributes']);
+      $key = !empty($map[$attribute_name]) ? $map[$attribute_name] : NULL;
+      return $key;
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  /**
+   *
+   */
+  public function getSelector($element_name) {
+    $element = $this->getElement($element_name);
+    $selector = !empty($element['tag']) ? $element['tag'] : '';
+    if (!empty($element['attributes']['class'])) {
+      $classes = explode(' ', $element['attributes']['class']);
+      $selector .= '.' . implode('.', $classes);
+    }
+    return $selector;
+  }
+
 }

@@ -18,17 +18,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFactoryPluginInterface {
   use ParagraphsEditorDomProcessorPluginTrait;
 
-  public function __construct($field_value_manager, array $elements) {
-    $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
+  /**
+   *
+   */
+  public function __construct($field_value_manager) {
+    $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager);
   }
 
   /**
    * {@inheritdoc}
    */
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $container->get('paragraphs_editor.field_value.manager'),
-      $container->getParameter('paragraphs_editor.field_value.elements')
+      $container->get('paragraphs_editor.field_value.manager')
     );
   }
 
@@ -60,9 +62,9 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
         }
       }
 
-      $data->node()->removeAttribute($this->getAttributeName('widget', '<context>'));
+      $this->removeAttribute($data->node(), 'widget', '<context>');
     }
-    else if ($this->is($data, 'field') || $data->isRoot()) {
+    elseif ($this->is($data, 'field') || $data->isRoot()) {
       $items = $data->get('field.items');
       $wrapper = $data->get('field.wrapper');
 
@@ -76,7 +78,7 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
         if (!$entities) {
           $entities = [];
         }
-        $this->fieldValueManager->updateItems($items, $entities, $new_revision, $langcode);
+        $this->fieldValueManager->setItems($items, $entities, $new_revision, $langcode);
       }
 
       $result = $result->clear('entities');
@@ -84,5 +86,5 @@ class ParagraphsEditorExtractor implements DataProcessorInterface, ContainerFact
 
     return $result;
   }
-}
 
+}

@@ -6,7 +6,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
-use Drupal\paragraphs_editor\Plugin\ParagraphsEditor\DeliveryPluginInterface;
 
 /**
  * Represents the command execution context.
@@ -32,7 +31,7 @@ class CommandContext implements CommandContextInterface {
   /**
    * The edit buffer associated with the editor instance.
    *
-   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferInterface $edit_buffer
+   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
    */
   protected $editBuffer;
 
@@ -57,21 +56,21 @@ class CommandContext implements CommandContextInterface {
    *
    * @var array
    */
-  protected $plugins = array();
+  protected $plugins = [];
 
   /**
    * A temporary value store for persisting information across a single request.
    *
    * @var array
    */
-  protected $temporary = array();
+  protected $temporary = [];
 
   /**
    * An array of additional context entries the route provided.
    *
    * @var array
    */
-  protected $additionalContext = array();
+  protected $additionalContext = [];
 
   /**
    * Creates a command context object.
@@ -85,7 +84,7 @@ class CommandContext implements CommandContextInterface {
    * @param array $settings
    *   The field widget settings for the editor.
    */
-  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, ParagraphBundleFilterInterface $bundle_filter = NULL, array $settings = array()) {
+  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, ParagraphBundleFilterInterface $bundle_filter = NULL, array $settings = []) {
     $this->entity = $entity;
     $this->fieldDefinition = $field_config;
     $this->editBuffer = $edit_buffer;
@@ -137,6 +136,9 @@ class CommandContext implements CommandContextInterface {
     return $this->editBuffer->getContextString();
   }
 
+  /**
+   *
+   */
   public function getBuildId() {
     return $this->buildId;
   }
@@ -193,16 +195,16 @@ class CommandContext implements CommandContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function createCommandUrl($command, array $params = array()) {
-    return Url::fromRoute("paragraphs_editor.command.$command", array(
+  public function createCommandUrl($command, array $params = []) {
+    return Url::fromRoute("paragraphs_editor.command.$command", [
       'context' => $this->getContextString(),
-    ) + $params,
-    array(
-      'query' => array(
+    ] + $params,
+    [
+      'query' => [
         'settings' => $this->getSettings(),
         'additional_context' => serialize($this->additionalContext),
-      ),
-    ));
+      ],
+    ]);
   }
 
   /**
@@ -223,4 +225,5 @@ class CommandContext implements CommandContextInterface {
       return $this->additionalContext;
     }
   }
+
 }

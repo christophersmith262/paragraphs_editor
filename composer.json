@@ -12,6 +12,10 @@
   "support": {
   },
   "license": "GPL-2.0+",
+  "scripts": {
+    "lint": "phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md ./ --ignore=node_modules/*,tests/*",
+    "fix-lint": "phpcbf --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md ./ --ignore=node_modules/*,tests/*"
+  },
   "require": {
     "drupal/paragraphs": "^1.1"
   }
