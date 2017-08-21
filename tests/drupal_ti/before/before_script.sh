@@ -8,16 +8,12 @@ set -e $DRUPAL_TI_DEBUG
 # Ensure the right Drupal version is installed.
 # The first time this is run, it will install Drupal.
 # Note: This function is re-entrant.
-drupal_ti_ensure_drupal
+git clone --depth 1 --branch "$DRUPAL_TI_CORE_BRANCH" http://git.drupal.org/project/drupal.git
+cd drupal
+composer install
 
 # Change to the Drupal directory
-cd "$DRUPAL_TI_DRUPAL_DIR"
-
-# Create the the module directory (only necessary for D7)
-# For D7, this is sites/default/modules
-# For D8, this is modules
-mkdir -p "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
-cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
+cd "$DRUPAL_TI_MODULES_PATH"
 
 # Manually clone the dependencies
 git clone --depth 1 git@github.com:christophersmith262/dom_processor.git
