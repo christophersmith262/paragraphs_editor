@@ -123,20 +123,6 @@ class FieldValueManager implements FieldValueManagerInterface {
   /**
    *
    */
-  public function updateItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
-    $updated = [];
-    foreach ($this->getReferencedEntities($items) as $entity) {
-      $updated[$entity->uuid()] = $entity;
-    }
-    foreach ($entities as $entity) {
-      $updated[$entity->uuid()] = $entity;
-    }
-    return $this->setItems($items, $updated, $new_revision, $langcode);
-  }
-
-  /**
-   *
-   */
   public function setItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
     $values = [];
     $delta = 0;

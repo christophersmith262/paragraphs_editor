@@ -8,8 +8,8 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 use Drupal\paragraphs_editor\Form\ParagraphEntityForm;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 
 /**
  * Response handler for paragraphs editor commands.
@@ -24,21 +24,21 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * The form builder service for serving up forms.
    *
-   * @var Drupal\Core\Form\FormBuilderInterface
+   * @var \Drupal\Core\Form\FormBuilderInterface
    */
   protected $formBuilder;
 
   /**
    * The entity type manager service.
    *
-   * @var Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
    * The module handler service.
    *
-   * @var Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected $moduleHandler;
 
@@ -49,30 +49,37 @@ class ResponseHandler implements ResponseHandlerInterface {
    * The only reason it is included here is because the drupal core content
    * entity edit form depends on it.
    *
-   * @var Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityManagerInterface
    */
   protected $entityManager;
 
-  protected $markupCompiler;
+  /**
+   * The widget binder data compiler service.
+   *
+   * @var \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface
+   */
+  protected $dataCompiler;
 
   /**
    * Creates a ResponseHandler object.
    *
-   * @param Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder for generating forms.
-   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface $data_compiler
+   *   The widget binder data compiler service.
    */
-  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager, WidgetBinderDataCompilerInterface $markup_compiler) {
+  public function __construct(FormBuilderInterface $form_builder, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, EntityManagerInterface $entity_manager, WidgetBinderDataCompilerInterface $data_compiler) {
     $this->formBuilder = $form_builder;
     $this->entityTypeManager = $entity_type_manager;
     $this->moduleHandler = $module_handler;
     $this->entityManager = $entity_manager;
-    $this->markupCompiler = $markup_compiler;
+    $this->dataCompiler = $data_compiler;
   }
 
   /**
@@ -113,7 +120,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for opening a form.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    * @param mixed $contents
    *   A render array or markup string containing the contents to be delivered.
@@ -130,9 +137,9 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for delivering a paragraph.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be rendered in the response.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
@@ -140,16 +147,16 @@ class ResponseHandler implements ResponseHandlerInterface {
    */
   protected function render(CommandContextInterface $context, EditBufferItemInterface $item) {
     $response = new AjaxResponse();
-    $context->getPlugin('delivery_provider')->sendData($response, $this->markupCompiler->compile($context, $item));
+    $context->getPlugin('delivery_provider')->sendData($response, $this->dataCompiler->compile($context, $item));
     return $response;
   }
 
   /**
    * Generates an ajax response for delivering a duplicated paragraph.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be duplicated in the response.
    * @param string $editor_widget_id
    *   The editor widget id to target for receiving the duplicated item.
@@ -160,7 +167,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
     $response = new AjaxResponse();
     $context->addAdditionalContext('widgetId', $editor_widget_id);
-    $data = $this->markupCompiler->compile($context, $item);
+    $data = $this->dataCompiler->compile($context, $item);
     $context->getPlugin('delivery_provider')->sendData($response, $data);
     return $response;
   }
@@ -168,7 +175,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for closing a form.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
@@ -183,7 +190,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a bundle select form object to deliver the user.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return array
@@ -197,21 +204,21 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a paragraph edit form object to deliver the user.
    *
-   * @param Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return array
    *   A render array for the paragraph edit form.
    */
   protected function getParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item) {
-    $form = new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager, $this->markupCompiler);
+    $form = new ParagraphEntityForm($context, $item, $this->moduleHandler, $this->entityTypeManager, $this->entityManager, $this->dataCompiler);
     return $this->formBuilder->getForm($form);
   }
 
   /**
    * Gets the dialog title for paragraph editor command dialogs.
    *
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is exuting in.
    *
    * @return string

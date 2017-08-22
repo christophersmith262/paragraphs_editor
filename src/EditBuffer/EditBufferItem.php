@@ -13,7 +13,7 @@ class EditBufferItem implements EditBufferItemInterface {
   protected $buffer;
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function __construct(ParagraphInterface $entity, EditBufferInterface $buffer) {
     $this->entity = $entity;
@@ -21,21 +21,21 @@ class EditBufferItem implements EditBufferItemInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getEntity() {
     return $this->entity;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function overwrite(ParagraphInterface $entity) {
     $this->entity = $entity;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function save() {
     $this->buffer->setItem($this)->save();

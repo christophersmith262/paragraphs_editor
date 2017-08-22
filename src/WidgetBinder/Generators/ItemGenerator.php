@@ -42,6 +42,7 @@ class ItemGenerator extends GeneratorBase {
         'type' => 'widget',
         'uuid' => $paragraph->uuid(),
       ]);
+      $this->savePath($state);
     }
   }
 

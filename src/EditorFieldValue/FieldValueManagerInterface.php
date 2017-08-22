@@ -23,7 +23,7 @@ interface FieldValueManagerInterface {
   /**
    *
    */
-  public function updateItems(FieldItemListInterface $items, array $entities, $new_revision, $langcode);
+  public function setItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL);
 
   /**
    *

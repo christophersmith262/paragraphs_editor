@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Supports CKEDITOR integration for the paragraphs module.
+ * Supports editor integration for the paragraphs module.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -73,7 +73,7 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
 }
 
 /**
- *
+ * Form validator for paragraphs editor settings form.
  */
 function paragraphs_editor_field_config_edit_form_validate(&$element, $form_state) {
   $parents = $element['#parents'];

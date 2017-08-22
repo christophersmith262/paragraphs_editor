@@ -149,12 +149,35 @@ class FieldValueManagerKernelTest extends KernelTestBase {
     $this->assertEquals('en', $paragraph->get('langcode')->value);
   }
 
-  public function testUpdateItems() {
-    throw new \Exception('Needs test.');
-  }
-
   public function testSetItems() {
-    throw new \Exception('Needs test.');
+    $field_value_manager = $this->createFieldValueManager();
+    $storage = $this->container->get('entity_type.manager')->getStorage('paragraph');
+
+    $embedded_paragraphs = [
+      $this->generateTabs($storage, 0),
+      $this->generateTabs($storage, 0),
+    ];
+    $target_paragraph = $this->generateTab($storage);
+    $field_value_manager->setItems($target_paragraph->field_content, $embedded_paragraphs);
+    $this->assertEquals($embedded_paragraphs, $target_paragraph->field_content->referencedEntities());
+
+    $target_paragraph->save();
+    foreach ($target_paragraph->field_content->referencedEntities() as $delta => $entity) {
+      $this->assertEquals($embedded_paragraphs[$delta]->uuid(), $entity->uuid());
+    }
+
+    $storage->resetCache([$target_paragraph->id()]);
+    $target_paragraph = $storage->load($target_paragraph->id());
+    $embedded_paragraphs = [$this->generateTabs($storage, 0)];
+    $field_value_manager->setItems($target_paragraph->field_content, $embedded_paragraphs);
+    $this->assertEquals($embedded_paragraphs, $target_paragraph->field_content->referencedEntities());
+
+    $target_paragraph->save();
+    $storage->resetCache([$target_paragraph->id()]);
+    $target_paragraph = $storage->load($target_paragraph->id());
+    foreach ($target_paragraph->field_content->referencedEntities() as $delta => $entity) {
+      $this->assertEquals($embedded_paragraphs[$delta]->uuid(), $entity->uuid());
+    }
   }
 
   public function testGetTextBundles() {

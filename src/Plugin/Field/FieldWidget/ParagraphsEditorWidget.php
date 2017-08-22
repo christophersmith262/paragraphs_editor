@@ -29,21 +29,38 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphsEditorWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
 
   /**
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface*/
+   * The editor field value manager for wrapping items.
+   *
+   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
+   */
   protected $fieldValueManager;
 
   /**
-   * @var \Drupal\dom_processor\DomProcessor\DomProcessorInterface*/
+   * The dom processor for preparing and extracting editor content.
+   *
+   * @var \Drupal\dom_processor\DomProcessor\DomProcessorInterface
+   */
   protected $domProcessor;
 
   /**
-   * @var \Drupal\Component\Plugin\PluginManagerInterface*/
+   * The plugin manager for bundle selector plugins.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   */
   protected $bundleSelectorManager;
 
   /**
-   * @var \Drupal\Component\Plugin\PluginManagerInterface*/
+   * The plugin manager for delivery plugins.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   */
   protected $deliveryProviderManager;
 
+  /**
+   * The entity display repository service for getting view modes.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   */
   protected $entityDisplayRepository;
 
   /**
@@ -196,7 +213,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     $elements['prerender_count'] = [
       '#type' => 'select',
       '#title' => 'Maximum Pre-Render Items',
-      '#description' => $this->t('The maximum number of embedded paragraphs to render before an editor is initialized. Additional entities will be rendered via ajax on demand, and won\'t be available to edit until their respective ajax calls finish.'),
+      '#description' => $this->t("The maximum number of embedded paragraphs to render before an editor is initialized. Additional entities will be rendered via ajax on demand, and won't be available to edit until their respective ajax calls finish."),
       '#options' => $options,
       '#default_value' => $this->getSetting('prerender_count'),
       '#required' => TRUE,
@@ -259,9 +276,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
   /**
    * Passes markup through the paragraphs_editor DOM processor.
    *
-   * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorDecorator
-   * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor
-   *
    * @param string $variant
    *   The DOM Processor plugin variant to run:
    *     - 'load' is used to take saved markup and make it editable.
@@ -269,14 +283,19 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * @param \Drupal\Core\Field\FieldItemListInterface $items
    *   The field items that will receive savable entities, or serve loadable
    *   entities. Note that neither of these operations perform entity saves.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state for the form that the field widget belongs to.
    * @param string $format
-   *   The Drupal text format to use for storing items.
+   *   The default filter format name to apply to created text entities.
    * @param string $markup
-   *   Markup to be processed. If you are 'load'ing, then this is reduced, saved
-   *   markup that will be expanded. If you are 'update'ing, then this is
-   *   expanded markup that needs to be reduced and written to items.
+   *   The markup to be processed. Defaults to the markup inside the text
+   *   entity.
    * @param string $context_id
    *   The id of the root editing context to pull edits from.
+   *
+   * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer
+   * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorDecorator
+   * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor
    *
    * @return \Drupal\dom_processor\DomProcessor\DomProcessorResultInterface
    *   See the ParagraphsEditorDecorator and ParagraphsEditorExtractor DOM

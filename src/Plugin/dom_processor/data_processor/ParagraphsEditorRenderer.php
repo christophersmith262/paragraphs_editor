@@ -2,8 +2,6 @@
 
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\data_processor;
 
-$recursion_count = 0;
-
 use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
 use Drupal\dom_processor\Plugin\dom_processor\DataProcessorInterface;

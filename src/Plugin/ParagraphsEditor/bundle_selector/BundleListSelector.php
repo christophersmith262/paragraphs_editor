@@ -151,9 +151,17 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   }
 
   /**
+   * Callback for handling the search box updates over ajax.
    *
+   * @param array $form
+   *   The regenerated form.
+   * @param \Drupal\Core\FOrm\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The portion of the form to deliver.
    */
-  public static function ajaxSearch($form, FormStateInterface $form_state) {
+  public static function ajaxSearch(array $form, FormStateInterface $form_state) {
     return $form['options'];
   }
 
@@ -162,7 +170,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    */
   public function buildHeader() {
     $header['label'] = t('Type');
-    $header['operations'] = t('');
+    $header['operations'] = '';
     return $header;
   }
 

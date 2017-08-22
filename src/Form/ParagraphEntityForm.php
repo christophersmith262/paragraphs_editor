@@ -10,6 +10,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface;
 
 /**
  * The form that is shown for editing paragraph entities in ckeditor.
@@ -23,37 +24,46 @@ class ParagraphEntityForm extends ContentEntityForm {
   /**
    * The context the editor command is being executed in.
    *
-   * @var Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
    */
   protected $context;
 
   /**
    * The buffer item being edited by this form.
    *
-   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
+   * @var \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
    */
   protected $bufferItem;
 
   /**
+   * The widget binder data compiler service.
+   *
+   * @var \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface
+   */
+  protected $dataCompiler;
+
+  /**
    * Creates a ParagraphEntityForm object.
    *
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context of the command that is invoking this form.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   An editor item (wrapped paragraph entity) to show the edit form for.
-   * @param Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface $data_compiler
+   *   The widget binder data compiler service.
    */
   public function __construct(CommandContextInterface $context,
-  EditBufferItemInterface $item,
+    EditBufferItemInterface $item,
     ModuleHandlerInterface $module_handler,
-  EntityTypeManagerInterface $entity_type_manager,
-  EntityManagerInterface $entity_manager,
-  $markup_compiler) {
+    EntityTypeManagerInterface $entity_type_manager,
+    EntityManagerInterface $entity_manager,
+    WidgetBinderDataMarkupCompilerInterface $data_compiler) {
 
     // The ContentEntityForm class actually has a whole bunch of hidden
     // dependendencies. They are injected by core via setters, however we
@@ -71,13 +81,19 @@ class ParagraphEntityForm extends ContentEntityForm {
     // Set dependencies for this class.
     $this->context = $context;
     $this->bufferItem = $item;
-    $this->markupCompiler = $markup_compiler;
+    $this->dataCompiler = $data_compiler;
   }
 
   /**
+   * Rebuilds the additional temporary context key value pairs in the context.
    *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state to bootstrap the additional context from.
+   *
+   * @return \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
+   *   The bootstrapped context.
    */
-  protected function bootstrapContext($form_state) {
+  protected function bootstrapContext(FormStateInterface $form_state) {
     $saved = $form_state->getValue('paragraphs_editor_additional_context');
     if ($saved) {
       $saved = unserialize($saved);
@@ -91,21 +107,14 @@ class ParagraphEntityForm extends ContentEntityForm {
   }
 
   /**
-   *
-   */
-  protected function persistAdditionalContext(array &$form, FormStateInterface $form_state) {
-    $form['paragraphs_editor_additional_context'] = [
-      '#type' => 'hidden',
-      '#default_value' => serialize($this->bootstrapContext($form_state)->getAdditionalContext()),
-    ];
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $this->persistAdditionalContext($form, $form_state);
+    $form['paragraphs_editor_additional_context'] = [
+      '#type' => 'hidden',
+      '#default_value' => serialize($this->bootstrapContext($form_state)->getAdditionalContext()),
+    ];
     return $form;
   }
 
@@ -120,7 +129,7 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->bufferItem->save();
 
     // Make properties available to the static ajax handler.
-    $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->markupCompiler->compile($context, $this->bufferItem));
+    $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->dataCompiler->compile($context, $this->bufferItem));
     $form_state->setTemporaryValue(['paragraphs_editor', 'context'], $this->context);
   }
 
@@ -157,7 +166,7 @@ class ParagraphEntityForm extends ContentEntityForm {
    *
    * @param array $form
    *   The complete form render array.
-   * @param Drupal\Core\Form\FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The associated form state.
    *
    * @return Drupal\Core\Ajax\AjaxResponse
