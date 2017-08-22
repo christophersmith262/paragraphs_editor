@@ -10,7 +10,15 @@ namespace Drupal\paragraphs_editor\EditorCommand;
  */
 interface CommandContextFactoryInterface {
 
+  /**
+   *
+   */
   public function get($context_id);
+
+  /**
+   *
+   */
+  public function regenerate(CommandContextInterface $from);
 
   /**
    * Creates a command context object.
@@ -30,7 +38,7 @@ interface CommandContextFactoryInterface {
    *   A command context object representing the context a command was executed
    *   in.
    */
-  public function create($field_config_id, $entity_id, array $settings, $widget_build_id);
+  public function create($field_config_id, $entity_id, array $settings = [], $widget_build_id = NULL);
 
   /**
    * Frees the context from persistent storage.
@@ -51,4 +59,5 @@ interface CommandContextFactoryInterface {
    *   manager exists.
    */
   public function getPluginManager($type);
+
 }

@@ -5,66 +5,66 @@
  * Supports CKEDITOR integration for the paragraphs module.
  */
 
-use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Component\Utility\Html;
+use Drupal\paragraphs_editor\Utility\RenderUtility;
 
 /**
  * Implements hook_help().
  */
 function paragraphs_editor_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-  }
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state) {
   $field_definition = $form_state->getBuildInfo()['callback_object']->getEntity();
   if ($field_definition->getType() == 'entity_reference_revisions') {
     $target_type = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
     if ($target_type == 'paragraph') {
-      $form['third_party_settings']['paragraphs_editor'] = array(
+      $form['third_party_settings']['paragraphs_editor'] = [
         '#type' => 'fieldset',
         '#title' => t('Paragraphs Editor'),
-      );
+      ];
 
       $options = \Drupal::service('paragraphs_editor.field_value.manager')->getTextBundles();
       foreach ($options as &$option) {
         $option = $option['label'];
       }
       if ($options) {
-        $form['third_party_settings']['paragraphs_editor'] += array(
+        $form['third_party_settings']['paragraphs_editor'] += [
           '#type' => 'fieldset',
           '#title' => t('Paragraphs Editor'),
-          'enabled' => array(
+          'enabled' => [
             '#type' => 'checkbox',
             '#title' => t('Editor Enabled'),
             '#description' => 'Enables Editor integration for this field.',
             '#default_value' => $field_definition->getThirdPartySetting('paragraphs_editor', 'enabled'),
-          ),
-          'text_bundle' => array(
+          ],
+          'text_bundle' => [
             '#type' => 'select',
             '#title' => t('Text Bundle'),
             '#description' => t('The bundle to use as text (markup) input.'),
             '#options' => $options,
             '#default_value' => $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle'),
-            '#element_validate' => array(
+            '#element_validate' => [
               'paragraphs_editor_field_config_edit_form_validate',
-            ),
-            '#states' => array(
-              'visible' => array(
-              ':input[name="third_party_settings[paragraphs_editor][enabled]"]' => array('checked' => TRUE),
-              ),
-            ),
-          ),
-        );
+            ],
+            '#states' => [
+              'visible' => [
+                ':input[name="third_party_settings[paragraphs_editor][enabled]"]' => ['checked' => TRUE],
+              ],
+            ],
+          ],
+        ];
       }
       else {
-        $form['third_party_settings']['paragraphs_editor'] += array(
-          'message' => array(
+        $form['third_party_settings']['paragraphs_editor'] += [
+          'message' => [
             '#markup' => '<p>' . t('You must create a paragraph type that includes a single field of type "Text (formatted, long)", and make it available to this field in order to use Editor integration with this field.') . '</p>' .
             '<p>' . t('This type will be used to save plaintext content entered in the wysiwyg.') . '</p>',
-          ),
-        );
+          ],
+        ];
       }
 
       $form['#entity_builders'][] = 'paragraphs_editor_field_config_edit_form_builder';
@@ -72,6 +72,9 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
   }
 }
 
+/**
+ *
+ */
 function paragraphs_editor_field_config_edit_form_validate(&$element, $form_state) {
   $parents = $element['#parents'];
   array_pop($parents);
@@ -82,7 +85,11 @@ function paragraphs_editor_field_config_edit_form_validate(&$element, $form_stat
   }
 
   $text_bundle = $settings['text_bundle'];
-  $target_bundles = $form_state->getValue(['settings', 'handler_settings', 'target_bundles']);
+  $target_bundles = $form_state->getValue([
+    'settings',
+    'handler_settings',
+    'target_bundles',
+  ]);
   if (!$target_bundles || !empty($target_bundles[$text_bundle])) {
     $text_fields = \Drupal::service('paragraphs_editor.field_value.manager')->getTextFields($text_bundle);
     $text_field = reset($text_fields);
@@ -97,6 +104,9 @@ function paragraphs_editor_field_config_edit_form_validate(&$element, $form_stat
   $form_state->setError($element, t('Selected text bundle is not allowed.'));
 }
 
+/**
+ * Entity form builder for paragraphs forms.
+ */
 function paragraphs_editor_field_config_edit_form_builder($entity_type, $entity, &$form, $form_state) {
   $settings = $form_state->getValue(['third_party_settings', 'paragraphs_editor']);
   if (empty($settings['enabled'])) {
@@ -106,6 +116,9 @@ function paragraphs_editor_field_config_edit_form_builder($entity_type, $entity,
   }
 }
 
+/**
+ * Implements hook_preprocess_field().
+ */
 function paragraphs_editor_preprocess_field(&$variables) {
-  \Drupal::service('paragraphs_editor.edit_buffer.markup_compiler')->preprocessField($variables);
+  RenderUtility::preprocessField($variables);
 }

@@ -9,6 +9,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\Routing\Route;
 
+/**
+ * An access check handler for checking user access to an editor context.
+ */
 class ContextAccessCheck implements AccessInterface {
 
   /**
@@ -25,6 +28,9 @@ class ContextAccessCheck implements AccessInterface {
    */
   protected $requirementsKey = '_paragraphs_editor_access_context';
 
+  /**
+   *
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -39,8 +45,12 @@ class ContextAccessCheck implements AccessInterface {
    * This method will also filter out "invalid" context objects before the
    * actual controller method that executes the request is called.
    *
-   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
-   *   The context for the editor instance.
+   * @param Symfony\Component\Routing\Route $route
+   *   The route the user is attempting to access.
+   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match for the route the user is attempting to access.
+   * @param Drupal\Core\Session\AccountInterface $account
+   *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result for the user.
@@ -49,7 +59,7 @@ class ContextAccessCheck implements AccessInterface {
     // Load the context from the parameters.
     $requirement = $route->getRequirement($this->requirementsKey);
     $ands = explode('+', $requirement);
-    $chain = array();
+    $chain = [];
     foreach ($ands as $requirement) {
       if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
         $context = $route_match->getParameter($matches[1]);
@@ -58,8 +68,8 @@ class ContextAccessCheck implements AccessInterface {
         return AccessResult::forbidden();
       }
 
-      // If no field config could be loaded for the context, we treat this as the
-      // user not being able to access the endpoint.
+      // If no field config could be loaded for the context, we treat this as
+      // the user not being able to access the endpoint.
       $field_config = $context->getFieldConfig();
       if (!$field_config) {
         $access = AccessResult::forbidden();
@@ -70,14 +80,14 @@ class ContextAccessCheck implements AccessInterface {
         $entity = $context->getEntity();
 
         // If the operation pertains to an existing entity, the user must have
-        // edit access to perform editor commands. If it is a new entity, the user
-        // must have create access.
+        // edit access to perform editor commands. If it is a new entity, the
+        // user must have create access.
         if ($entity) {
           $chain[] = $entity->access('edit', $account, TRUE);
         }
         else {
           $chain[] = $this->entityTypeManager->getAccessControlHandler($entity_type)
-            ->createAccess($entity_bundle, $account, array(), TRUE);
+            ->createAccess($entity_bundle, $account, [], TRUE);
         }
       }
     }
@@ -94,4 +104,5 @@ class ContextAccessCheck implements AccessInterface {
 
     return $access;
   }
+
 }

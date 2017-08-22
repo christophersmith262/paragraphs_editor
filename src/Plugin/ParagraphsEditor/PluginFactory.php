@@ -15,7 +15,7 @@ class PluginFactory extends DefaultFactory {
   /**
    * {@inheritdoc}
    */
-  public function createInstance($plugin_id, array $configuration = array()) {
+  public function createInstance($plugin_id, array $configuration = []) {
     $plugin_definition = $this->discovery->getDefinition($plugin_id);
     $plugin_class = static::getPluginClass($plugin_id, $plugin_definition, $this->interface);
 
@@ -27,4 +27,5 @@ class PluginFactory extends DefaultFactory {
     // Otherwise, create the plugin directly.
     return new $plugin_class($plugin_id, $plugin_definition, $configuration['context']);
   }
+
 }

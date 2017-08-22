@@ -9,6 +9,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface;
 use Symfony\Component\Routing\Route;
 
+/**
+ * An access check handler for checking access to an editor paragraph.
+ */
 class ParagraphAccessCheck implements AccessInterface {
 
   protected $itemFactory;
@@ -20,6 +23,14 @@ class ParagraphAccessCheck implements AccessInterface {
    */
   protected $requirementsKey = '_paragraphs_editor_access_paragraph';
 
+  /**
+   * Creates a paragraph access check object.
+   *
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory
+   *   The factory to use for looking up edit buffer items.
+   *
+   * @constructor
+   */
   public function __construct(EditBufferItemFactoryInterface $item_factory) {
     $this->itemFactory = $item_factory;
   }
@@ -31,15 +42,17 @@ class ParagraphAccessCheck implements AccessInterface {
    * located within the editor context and the user has access to the editor
    * context.
    *
-   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
-   *   The context for the editor instance.
-   * @param string $paragraph_uuid
-   *   The uuid of the paragraph to check access for.
+   * @param Symfony\Component\Routing\Route $route
+   *   The route the user is attempting to access.
+   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match for the route the user is attempting to access.
+   * @param Drupal\Core\Session\AccountInterface $account
+   *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result for the user.
    */
-  public function Access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
+  public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     list($context_param_name, $paragraph_param_name) = explode(':', $route->getRequirement($this->requirementsKey) . ':');
 
     // Load the context from the parameters.
@@ -62,4 +75,5 @@ class ParagraphAccessCheck implements AccessInterface {
     $paragraph = $this->itemFactory->getBufferItem($context, $paragraph_uuid);
     return AccessResult::allowedIf($paragraph);
   }
+
 }

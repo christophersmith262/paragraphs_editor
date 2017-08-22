@@ -1,0 +1,28 @@
+uuid: 140f1eb1-61c8-4cba-a7ce-ba78058605c7
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.page.field_body
+    - node.type.page
+  module:
+    - paragraphs_editor
+    - user
+_core:
+  default_config_hash: oZ-7vpIJxjxL2up9B5KrJGD0lazQ9aN0P-fIPo6OrSU
+id: node.page.default
+targetEntityType: node
+bundle: page
+mode: default
+content:
+  field_body:
+    type: entity_reference_revisions_entity_view
+    weight: 102
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+  links:
+    weight: 101
+    settings: {  }
+    third_party_settings: {  }
+hidden: {  }

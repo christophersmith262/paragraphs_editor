@@ -3,7 +3,6 @@
 namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 /**
  * Delivers ajax responses for editor commands.
@@ -89,8 +88,10 @@ interface ResponseHandlerInterface {
    *
    * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
+   *
    * @return Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverCloseForm(CommandContextInterface $context);
+
 }

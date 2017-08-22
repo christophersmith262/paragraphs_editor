@@ -8,10 +8,26 @@ use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * Provides an endpoint for serving paragraphs editor schema definitions.
+ */
 class SchemaController implements ContainerInjectionInterface {
 
+  /**
+   * Context factory containing the bundle lookup information.
+   *
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
+   */
   protected $contextFactory;
 
+  /**
+   * Creates a SchemaController object.
+   *
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
+   *   The context factory to lookup schemas with.
+   *
+   * @constructor
+   */
   public function __construct(CommandContextFactoryInterface $context_factory) {
     $this->contextFactory = $context_factory;
   }
@@ -25,6 +41,15 @@ class SchemaController implements ContainerInjectionInterface {
     );
   }
 
+  /**
+   * Endpoint for retrieving paragraphs editor schema information.
+   *
+   * @param \Drupal\Core\Field\FieldConfigInterface $field_config
+   *   The field configuration to lookup the schema for.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   A JSON response containing a widget binder schema model.
+   */
   public function get(FieldConfigInterface $field_config) {
     $bundle_filter = $this->contextFactory->createBundleFilter($field_config);
     return new JsonResponse([
@@ -37,4 +62,5 @@ class SchemaController implements ContainerInjectionInterface {
       ],
     ]);
   }
+
 }

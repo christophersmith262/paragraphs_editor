@@ -35,15 +35,17 @@ class PluginManager extends DefaultPluginManager {
   protected function getPluginTypeInfo($type) {
     switch ($type) {
       case 'delivery_provider':
-        return array(
+        return [
           'Drupal\paragraphs_editor\Plugin\ParagraphsEditor\DeliveryProviderInterface',
-          'Drupal\paragraphs_editor\Annotation\ParagraphsEditorDeliveryProvider'
-        );
+          'Drupal\paragraphs_editor\Annotation\ParagraphsEditorDeliveryProvider',
+        ];
+
       case 'bundle_selector':
-        return array(
+        return [
           'Drupal\paragraphs_editor\Plugin\ParagraphsEditor\BundleSelectorInterface',
-          'Drupal\paragraphs_editor\Annotation\ParagraphsEditorBundleSelector'
-        );
+          'Drupal\paragraphs_editor\Annotation\ParagraphsEditorBundleSelector',
+        ];
+
       default:
         throw new \Exception("Invalid plugin type '$type'");
     }

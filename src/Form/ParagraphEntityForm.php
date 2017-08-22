@@ -48,14 +48,17 @@ class ParagraphEntityForm extends ContentEntityForm {
    * @param Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
    */
-  public function __construct(CommandContextInterface $context, EditBufferItemInterface $item,
-    ModuleHandlerInterface $module_handler, EntityTypeManagerInterface $entity_type_manager, EntityManagerInterface $entity_manager, $markup_compiler) {
+  public function __construct(CommandContextInterface $context,
+  EditBufferItemInterface $item,
+    ModuleHandlerInterface $module_handler,
+  EntityTypeManagerInterface $entity_type_manager,
+  EntityManagerInterface $entity_manager,
+  $markup_compiler) {
 
     // The ContentEntityForm class actually has a whole bunch of hidden
     // dependendencies. They are injected by core via setters, however we
     // explicitly use constructor injection here to make them clear. I realize
     // this is ugly, but at least its clear (I hope).
-
     // The code we rely on still uses the old (deprecated) EntityManager. We
     // will rely on the standard EntityTypeManager within this class.
     parent::__construct($entity_manager);
@@ -71,6 +74,9 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->markupCompiler = $markup_compiler;
   }
 
+  /**
+   *
+   */
   protected function bootstrapContext($form_state) {
     $saved = $form_state->getValue('paragraphs_editor_additional_context');
     if ($saved) {
@@ -84,6 +90,9 @@ class ParagraphEntityForm extends ContentEntityForm {
     return $this->context;
   }
 
+  /**
+   *
+   */
   protected function persistAdditionalContext(array &$form, FormStateInterface $form_state) {
     $form['paragraphs_editor_additional_context'] = [
       '#type' => 'hidden',
@@ -110,11 +119,6 @@ class ParagraphEntityForm extends ContentEntityForm {
     $this->bufferItem->overwrite($this->entity);
     $this->bufferItem->save();
 
-    $editable_contexts = $context->getAdditionalContext('editable_contexts');
-    if ($editable_contexts) {
-      $this->bufferItem->setParagraphContexts($editable_contexts);
-    }
-
     // Make properties available to the static ajax handler.
     $form_state->setTemporaryValue(['paragraphs_editor', 'data'], $this->markupCompiler->compile($context, $this->bufferItem));
     $form_state->setTemporaryValue(['paragraphs_editor', 'context'], $this->context);
@@ -127,21 +131,21 @@ class ParagraphEntityForm extends ContentEntityForm {
     $actions = parent::actions($form, $form_state);
 
     // Make the default entity save button submit via ajax.
-    $actions['submit']['#ajax'] = array(
-      'callback' => array(get_class($this), 'ajaxSubmit'),
-    );
+    $actions['submit']['#ajax'] = [
+      'callback' => [get_class($this), 'ajaxSubmit'],
+    ];
 
     // Provide a cancel link for users to cancel the edit operation.
     $url = $this->context->createCommandUrl('cancel');
-    $actions['cancel'] = array(
+    $actions['cancel'] = [
       '#type' => 'button',
       '#value' => $this->t('Cancel'),
       '#weight' => 10,
-      '#ajax' => array(
+      '#ajax' => [
         'url' => $url,
         'options' => $url->getOptions(),
-      ),
-    );
+      ],
+    ];
 
     unset($actions['delete']);
 
@@ -159,7 +163,7 @@ class ParagraphEntityForm extends ContentEntityForm {
    * @return Drupal\Core\Ajax\AjaxResponse
    *   An ajax response object that delivers a rendered paragraph.
    */
-  static public function ajaxSubmit(array $form, FormStateInterface $form_state) {
+  public static function ajaxSubmit(array $form, FormStateInterface $form_state) {
     // Retrieve class mambers needed to build a response.
     $data = $form_state->getTemporaryValue(['paragraphs_editor', 'data']);
     $delivery = $form_state->getTemporaryValue(['paragraphs_editor', 'context'])->getPlugin('delivery_provider');
@@ -172,4 +176,5 @@ class ParagraphEntityForm extends ContentEntityForm {
 
     return $response;
   }
+
 }

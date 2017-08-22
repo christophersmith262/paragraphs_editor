@@ -9,7 +9,6 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
-use Drupal\dom_processor\DomProcessor\DomProcessorResult;
 use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,16 +28,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ParagraphsEditorWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
 
-  /** @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface */
+  /**
+   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface*/
   protected $fieldValueManager;
 
-  /** @var \Drupal\dom_processor\DomProcessor\DomProcessorInterface */
+  /**
+   * @var \Drupal\dom_processor\DomProcessor\DomProcessorInterface*/
   protected $domProcessor;
 
-  /** @var \Drupal\Component\Plugin\PluginManagerInterface */
+  /**
+   * @var \Drupal\Component\Plugin\PluginManagerInterface*/
   protected $bundleSelectorManager;
 
-  /** @var \Drupal\Component\Plugin\PluginManagerInterface */
+  /**
+   * @var \Drupal\Component\Plugin\PluginManagerInterface*/
   protected $deliveryProviderManager;
 
   protected $entityDisplayRepository;
@@ -110,7 +113,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
           'library' => $editable_data->get('libraries'),
           'drupalSettings' => $editable_data->get('drupalSettings'),
         ],
-        '#allowed_formats' => [ $editable_data->get('filter_format') ],
+        '#allowed_formats' => [$editable_data->get('filter_format')],
       ],
       'context_id' => [
         '#type' => 'hidden',
@@ -123,81 +126,81 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    $elements = array();
+    $elements = [];
 
-    $elements['title'] = array(
+    $elements['title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Paragraph Title'),
       '#description' => $this->t('Label to appear as title on the button "Insert [title]. This label is translatable.'),
       '#default_value' => $this->getSetting('title'),
       '#required' => TRUE,
-    );
+    ];
 
-    $options = array();
+    $options = [];
     foreach ($this->bundleSelectorManager->getDefinitions() as $plugin) {
       $options[$plugin['id']] = $plugin['title'];
     }
 
-    $elements['bundle_selector'] = array(
+    $elements['bundle_selector'] = [
       '#type' => 'select',
       '#title' => $this->t('Bundle Selection Handler'),
       '#description' => $this->t('The bundle selector form plugin that will be used to allow users to insert paragraph items.'),
       '#options' => $options,
       '#default_value' => $this->getSetting('bundle_selector'),
       '#required' => TRUE,
-    );
+    ];
 
-    $options = array();
+    $options = [];
     foreach ($this->deliveryProviderManager->getDefinitions() as $plugin) {
       $options[$plugin['id']] = $plugin['title'];
     }
 
-    $elements['delivery_provider'] = array(
+    $elements['delivery_provider'] = [
       '#type' => 'select',
       '#title' => $this->t('Delivery Handler'),
       '#description' => $this->t('The delivery plugin that controls the user experience for how forms are delivered.'),
       '#options' => $options,
       '#default_value' => $this->getSetting('delivery_provider'),
       '#required' => TRUE,
-    );
+    ];
 
-    $options = array();
+    $options = [];
     foreach (filter_formats() as $filter_format) {
       $options[$filter_format->id()] = $filter_format->label();
     }
 
-    $elements['filter_format'] = array(
+    $elements['filter_format'] = [
       '#type' => 'select',
       '#title' => 'Default Filter Format',
       '#description' => $this->t('The default filter format to use for the Editor instance.'),
       '#options' => $options,
       '#default_value' => $this->getSetting('filter_format'),
       '#required' => TRUE,
-    );
+    ];
 
     $options = [];
-    $elements['view_mode'] = array(
+    $elements['view_mode'] = [
       '#type' => 'select',
       '#title' => 'Editor View Mode',
       '#description' => $this->t('The view mode that will be used to render embedded entities.'),
       '#options' => $this->entityDisplayRepository->getViewModeOptions('paragraph'),
       '#default_value' => $this->getSetting('prerender_count'),
       '#required' => TRUE,
-    );
+    ];
 
-    $options = [ 0 => $this->t('None') ];
+    $options = [0 => $this->t('None')];
     for ($i = 5; $i <= 50; $i += 5) {
       $options[$i] = $i;
     }
     $options[-1] = $this->t('All');
-    $elements['prerender_count'] = array(
+    $elements['prerender_count'] = [
       '#type' => 'select',
       '#title' => 'Maximum Pre-Render Items',
       '#description' => $this->t('The maximum number of embedded paragraphs to render before an editor is initialized. Additional entities will be rendered via ajax on demand, and won\'t be available to edit until their respective ajax calls finish.'),
       '#options' => $options,
       '#default_value' => $this->getSetting('prerender_count'),
       '#required' => TRUE,
-    );
+    ];
 
     return $elements;
   }
@@ -213,17 +216,17 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     if ($prerender_count == '-1') {
       $prerender_count = 'All';
     }
-    else if ($prerender_count == '0') {
+    elseif ($prerender_count == '0') {
       $prerender_count = 'None';
     }
-    $summary = array();
-    $summary[] = $this->t('Title: @title', array('@title' => $this->getSetting('title')));
-    $summary[] = $this->t('Bundle Selector: @bundle_selector', array('@bundle_selector' => $bundle_selector['title']));
-    $summary[] = $this->t('Delivery Provider: @delivery_provider', array('@delivery_provider' => $delivery_provider['title']));
-    $summary[] = $this->t('Default Format: @filter_format', array('@filter_format' => $this->getSetting('filter_format')));
+    $summary = [];
+    $summary[] = $this->t('Title: @title', ['@title' => $this->getSetting('title')]);
+    $summary[] = $this->t('Bundle Selector: @bundle_selector', ['@bundle_selector' => $bundle_selector['title']]);
+    $summary[] = $this->t('Delivery Provider: @delivery_provider', ['@delivery_provider' => $delivery_provider['title']]);
+    $summary[] = $this->t('Default Format: @filter_format', ['@filter_format' => $this->getSetting('filter_format')]);
     $view_mode = $this->getSetting('view_mode');
     $summary[] = t('View Mode: @mode', ['@mode' => $this->getSetting('view_mode')]);
-    $summary[] = $this->t('Maximum Pre-Render Items: @prerender_count', array('@prerender_count' => $prerender_count));
+    $summary[] = $this->t('Maximum Pre-Render Items: @prerender_count', ['@prerender_count' => $prerender_count]);
     return $summary;
   }
 
@@ -301,7 +304,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       if ($entity->isNewRevision()) {
         $new_revision = TRUE;
       }
-      else if ($entity->getEntityType()->hasKey('revision') && $form_state->getValue('revision')) {
+      elseif ($entity->getEntityType()->hasKey('revision') && $form_state->getValue('revision')) {
         $new_revision = TRUE;
       }
     }
@@ -322,4 +325,5 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       'filter_format' => $format,
     ]);
   }
+
 }

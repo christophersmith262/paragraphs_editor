@@ -35,8 +35,9 @@ class EditorCommandController implements ContainerInjectionInterface {
   /**
    * Constructs an editor command controller.
    *
-   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory $entity_type_manager
-   *   The Drupal entity type manager.
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory
+   *   The edit buffer item factory for loading, updating and creating edit
+   *   buffer items.
    * @param \Drupal\paragraphs_editor\EditorCommand\ResponseHandlerInterface $response_handler
    *   The handler obejct that will serve the command responses.
    */
@@ -166,4 +167,5 @@ class EditorCommandController implements ContainerInjectionInterface {
   public function cancel(CommandContextInterface $context) {
     return $this->responseHandler->deliverCloseForm($context);
   }
+
 }

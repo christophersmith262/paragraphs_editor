@@ -20,8 +20,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFactoryPluginInterface {
   use ParagraphsEditorDomProcessorPluginTrait;
 
-  public function __construct($field_value_manager, array $elements, $entity_type_manager, $renderer) {
-    $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager, $elements);
+  /**
+   *
+   */
+  public function __construct($field_value_manager, $entity_type_manager, $renderer) {
+    $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager);
     $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');
     $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->renderer = $renderer;
@@ -30,10 +33,9 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
   /**
    * {@inheritdoc}
    */
-  static public function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $container->get('paragraphs_editor.field_value.manager'),
-      $container->getParameter('paragraphs_editor.field_value.elements'),
       $container->get('entity_type.manager'),
       $container->get('renderer')
     );
@@ -56,6 +58,9 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
     }
   }
 
+  /**
+   *
+   */
   protected function render($data, $entity) {
     $view_mode = $data->get('settings.view_mode');
     $langcode = $data->get('langcode');
@@ -75,14 +80,12 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
             if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
               $wrapper = $this->fieldValueManager->wrapItems($items);
               foreach ($wrapper->getReferencedEntities() as $child_entity) {
-                if (preg_match('/' . $child_entity->uuid() . '/', $wrapper->getMarkup())) {
                   array_push($to_render, $child_entity);
                   $to_process[] = $child_entity;
-                }
               }
             }
             else {
-              foreach ($this->getReferencedEntities($data, $items) as $child_entity) {
+              foreach ($this->fieldValueManager->getReferencedEntities($items) as $child_entity) {
                 $to_process[] = $child_entity;
               }
             }
@@ -98,4 +101,5 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
 
     return $render_cache[$uuid];
   }
+
 }

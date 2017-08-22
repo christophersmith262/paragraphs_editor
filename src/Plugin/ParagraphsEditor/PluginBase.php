@@ -53,4 +53,5 @@ abstract class PluginBase {
     $this->pluginDefinition = $plugin_definition;
     $this->context = $context;
   }
+
 }

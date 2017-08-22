@@ -6,9 +6,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\paragraphs_editor\Ajax\CloseModalCommand;
 use Drupal\paragraphs_editor\Ajax\DeliverWidgetBinderData;
 use Drupal\paragraphs_editor\Ajax\OpenModalCommand;
-use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
-use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_editor\EditorCommand\WidgetBinderData;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\Plugin\ParagraphsEditor\DeliveryProviderInterface;
 use Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginBase;
 
@@ -27,11 +25,11 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
    * {@inheritdoc}
    */
   public function navigate(AjaxResponse $response, $title, $contents) {
-    $response->setAttachments(array(
-      'library' => array(
+    $response->setAttachments([
+      'library' => [
         'core/drupal.dialog.ajax',
-      ),
-    ));
+      ],
+    ]);
     $response->addCommand(new OpenModalCommand($title, $contents, $this->context));
   }
 
@@ -48,4 +46,5 @@ class ModalDeliveryProvider extends PluginBase implements DeliveryProviderInterf
   public function sendData(AjaxResponse $response, WidgetBinderData $data) {
     $response->addCommand(new DeliverWidgetBinderData($this->context->getAdditionalContext('module'), $data));
   }
+
 }

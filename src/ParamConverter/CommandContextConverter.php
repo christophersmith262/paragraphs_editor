@@ -57,14 +57,27 @@ class CommandContextConverter implements ParamConverterInterface {
     // back the settings from just the context.
     $settings = $this->request->get('settings');
     if (!is_array($settings)) {
-      $settings = array();
+      $settings = [];
     }
 
     $context = $this->contextFactory->create($field_config_id, $entity_id, $settings, $widget_build_id);
 
-    $editor_context = $this->request->get('editorContext');
+    $request_whitelist = [
+      'editorContext',
+      'editableContexts',
+      'edits',
+      'module',
+    ];
+
+    foreach ($request_whitelist as $name) {
+      $value = $this->request->get($name);
+      if (isset($value)) {
+        $context->addAdditionalContext($name, $value);
+      }
+    }
+
+    $editor_context = $context->getAdditionalContext('editorContext');
     if ($editor_context) {
-      $context->addAdditionalContext('editor_context', $editor_context);
       $context->getEditBuffer()->tagParentBuffer($editor_context);
     }
 
@@ -84,21 +97,6 @@ class CommandContextConverter implements ParamConverterInterface {
       }
     }
 
-    $editable_contexts = $this->request->get('editableContexts');
-    if ($editable_contexts) {
-      $context->addAdditionalContext('editable_contexts', $editable_contexts);
-    }
-
-    $edits = $this->request->get('edits');
-    if ($edits) {
-      $context->addAdditionalContext('edits', $edits);
-    }
-
-    $module = $this->request->get('module');
-    if ($module) {
-      $context->addAdditionalContext('module', $module);
-    }
-
     return $context;
   }
 
@@ -108,4 +106,5 @@ class CommandContextConverter implements ParamConverterInterface {
   public function applies($definition, $name, Route $route) {
     return (!empty($definition['type']) && $definition['type'] == 'paragraphs_editor_command_context');
   }
+
 }

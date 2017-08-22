@@ -21,4 +21,5 @@ class InvalidCommandContext extends CommandContext {
   public function isValid() {
     return FALSE;
   }
+
 }

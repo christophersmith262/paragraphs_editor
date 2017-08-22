@@ -3,11 +3,9 @@
 namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
 
 /**
@@ -48,7 +46,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * The entity bundle info service.
    *
-   * @var Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+   * @var Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
   protected $bundleInfo;
 
@@ -75,23 +73,29 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     $this->bundleInfo = $bundle_info;
   }
 
+  /**
+   *
+   */
   public function parseContextString($context_string) {
     $context_params = explode(':', $context_string);
     $field_config_id = array_shift($context_params);
     $widget_build_id = array_shift($context_params);
     $entity_id = array_shift($context_params);
-    return array($field_config_id, $widget_build_id, $entity_id);
+    return [$field_config_id, $widget_build_id, $entity_id];
   }
 
+  /**
+   *
+   */
   public function get($context_id) {
-    list($field_config_id,  $widget_build_id, $entity_id) = $this->parseContextString($context_id);
+    list($field_config_id, $widget_build_id, $entity_id) = $this->parseContextString($context_id);
     return $this->create($field_config_id, $entity_id, [], $widget_build_id);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function create($field_config_id, $entity_id, array $settings = array(), $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
+  public function create($field_config_id, $entity_id, array $settings = [], $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
 
     // If a widget build id isn't specified, we create a new one.
     if (!$widget_build_id) {
@@ -104,7 +108,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     // bubbling the exception so that the controller access handler can deal
     // with it instead of the core exception handling.
     try {
-      $context_keys = array($field_config_id, $widget_build_id);
+      $context_keys = [$field_config_id, $widget_build_id];
       $field_config = $this->fieldConfigStorage->load($field_config_id);
       $entity_type = $field_config->getTargetEntityTypeId();
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
@@ -135,6 +139,9 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     return $context;
   }
 
+  /**
+   *
+   */
   public function regenerate(CommandContextInterface $from) {
     $field_config_id = $from->getFieldConfig()->id();
     $entity_id = $from->getEntity() ? $from->getEntity()->id() : NULL;
@@ -186,14 +193,18 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
     $plugin_name = isset($settings[$type]) ? $settings[$type] : '';
     if ($plugin_name) {
-      $plugin = $this->getPluginManager($type)->createInstance($plugin_name, array(
+      $plugin = $this->getPluginManager($type)->createInstance($plugin_name, [
         'context' => $context,
-      ));
+      ]);
       $context->setPlugin($type, $plugin);
     }
   }
 
+  /**
+   *
+   */
   protected function generateBuildId() {
     return Crypt::randomBytesBase64();
   }
+
 }

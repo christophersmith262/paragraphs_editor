@@ -24,7 +24,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
-  /** @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface */
+  /**
+   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface*/
   protected $fieldValueManager;
 
   protected $entityDisplayRepository;
@@ -81,6 +82,11 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
     $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
     if (!$this->domProcessor->prepared()) {
       $this->domProcessor->prepare([
+        'field' => [
+          'items' => $items,
+          'wrapper' => $field_value_wrapper,
+          'is_mutable' => TRUE,
+        ],
         'settings' => $this->getSettings(),
       ]);
     }
@@ -135,4 +141,5 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
     $this->settings += static::defaultSettings();
     $this->defaultSettingsMerged = TRUE;
   }
+
 }

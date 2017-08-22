@@ -3,9 +3,11 @@
 namespace Drupal\paragraphs_editor\EditBuffer;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\paragraphs_editor\EditBuffer\EditBufferItemDuplicatorInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
+/**
+ *
+ */
 class EditBufferItemFactory implements EditBufferItemFactoryInterface {
 
   /**
@@ -15,6 +17,9 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    */
   protected $storage;
 
+  /**
+   *
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, $field_value_manager) {
     $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->fieldValueManager = $field_value_manager;
@@ -84,15 +89,21 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
     return $item;
   }
 
+  /**
+   *
+   */
   public function duplicateBufferItem(CommandContextInterface $context, EditBufferItemInterface $item) {
     $new_item = $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
 
     $entity_map = [];
     $this->createEntityMap($item->getEntity(), $new_item->getEntity(), $entity_map);
-    $context->addAdditionalContext('entity_map', $entity_map);
+    $context->addAdditionalContext('entityMap', $entity_map);
     return $new_item;
   }
 
+  /**
+   *
+   */
   protected function createEntityMap($entity1, $entity2, array &$map) {
     $map[$entity1->uuid()] = $entity2->uuid();
 
@@ -133,9 +144,9 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    *   The newly created paragraph.
    */
   protected function createParagraph($bundle_name) {
-    $paragraph = $this->storage->create(array(
+    $paragraph = $this->storage->create([
       'type' => $bundle_name,
-    ));
+    ]);
     return $paragraph;
   }
 
@@ -149,12 +160,13 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    *   The retrieved paragraph, or NULL if no such paragraph could be found.
    */
   protected function getParagraph($paragraph_uuid) {
-    $entities = $this->storage->loadByProperties(array('uuid' => $paragraph_uuid));
-    if($entities) {
+    $entities = $this->storage->loadByProperties(['uuid' => $paragraph_uuid]);
+    if ($entities) {
       return reset($entities);
     }
     else {
       return NULL;
     }
   }
+
 }
