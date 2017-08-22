@@ -26,7 +26,7 @@ class FieldValueManagerKernelTest extends KernelTestBase {
     ],
   ];
 
-  static protected $modules = [
+  static public $modules = [
     'system',
     'user',
     'entity_reference_revisions',

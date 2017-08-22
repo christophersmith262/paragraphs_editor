@@ -19,7 +19,7 @@ class WidgetBinderDataCompilerKernelTest extends KernelTestBase {
   use MockFieldValueManagerTrait;
   use TestContentGenerationTrait;
 
-  static protected $modules = [
+  static public $modules = [
     'system',
     'user',
     'entity_reference_revisions',

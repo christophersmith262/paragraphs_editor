@@ -8,7 +8,7 @@ namespace Drupal\Tests\paragraphs_editor\Kernel\WidgetBinder;
  */
 class WidgetBinderCoreGeneratorKernelTest extends WidgetBinderDataCompilerKernelTest {
 
-  static protected $modules = [
+  static public $modules = [
     'system',
     'user',
     'entity_reference_revisions',
