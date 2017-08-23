@@ -29,7 +29,7 @@ while also allowing them to create paragraphs in-context and on the fly.
 
 ## Resources
 
- * [Documentation](http://paragraphs-editor.readthedocs.io/en/latest): Contains documentation for extending and
+ * [Documentation](http://paragraphs-editor.readthedocs.io/en/latest): Containsdocumentation for extending and
    updating paragraphs_editor.
  * [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor): Provides integration with the core CKEditor
    implementation.

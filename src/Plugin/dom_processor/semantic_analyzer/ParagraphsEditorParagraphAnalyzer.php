@@ -2,29 +2,65 @@
 
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer;
 
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
-use Drupal\dom_processor\Plugin\dom_processor\SemanticAnalyzerInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\ParagraphsEditorDomProcessorPluginTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
+use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\Plugin\dom_processor\SemanticAnalyzerInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
+use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\EditorFieldValue\ParagraphsEditorElementTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * An analyzer plugin for extracting paragraphs editor data from a DOM tree.
+ *
+ * The paragraph analyzer will first look to see if there is an edit context for
+ * a paragraph, and will try to load the paragraph from that context's edit
+ * buffer if available.
+ *
+ * If no edits exist in the edit buffer for the context, the analyzer will
+ * attempt to load the paragraph from the field items that the paragraph is
+ * nested within.
+ *
+ * If the entity cannot be found in either of those locations, it is loaded from
+ * through the entity storage system.
+ *
  * @DomProcessorSemanticAnalyzer(
  *   id = "paragraphs_editor_paragraph_analyzer",
  *   label = "Paragraphs Editor Paragraph Analyzer"
  * )
  */
 class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, ContainerFactoryPluginInterface {
-  use ParagraphsEditorDomProcessorPluginTrait;
+  use ParagraphsEditorElementTrait;
 
+  /**
+   * The paragraph storage handler.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
   protected $storage;
+
+  /**
+   * The context factory to get contexts for loading unsaved edits.
+   *
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
+   */
   protected $contextFactory;
 
   /**
+   * Creates a paragraph analyzer plugin.
    *
+   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
+   *   The field value manager service to initialize the element trait.
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The paragraph storage handler for loading otherwise unresolvable
+   *   entities.
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
+   *   The context factory to use for looking up unsaved entity edits.
    */
-  public function __construct($field_value_manager, $storage, $context_factory) {
-    $this->initializeParagraphsEditorDomProcessorPlugin($field_value_manager);
+  public function __construct(FieldValueManagerInterface $field_value_manager, EntityStorageInterface $storage, CommandContextFactoryInterface $context_factory) {
+    $this->initializeParagraphsEditorElementTrait($field_value_manager);
     $this->storage = $storage;
     $this->contextFactory = $context_factory;
   }
@@ -44,10 +80,10 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
    * {@inheritdoc}
    */
   public function analyze(SemanticDataInterface $data) {
-    if ($this->is($data, 'widget')) {
+    if ($data->is($this->getSelector('widget'))) {
       return $this->analyzeWidget($data);
     }
-    elseif ($this->is($data, 'field')) {
+    elseif ($data->is($this->getSelector('field'))) {
       return $this->analyzeField($data);
     }
     else {
@@ -56,7 +92,14 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
   }
 
   /**
+   * Analyzes a widget DOM element to produce semantic data.
    *
+   * @param \Drupal\dom_processor\DomProcessor\SemanticDataInterface $data
+   *   The current data state for the analyzer.
+   *
+   * @return \Drupal\dom_processor\DomProcessor\SemanticDataInterface
+   *   The updated data state for the processor decorated with information about
+   *   the referenced paragraph.
    */
   protected function analyzeWidget(SemanticDataInterface $data) {
     $entity = NULL;
@@ -79,18 +122,20 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
         $item = $edit_buffer->getItem($uuid);
         if ($item) {
           $entity = $item->getEntity();
-          $entity->setNeedsSave(TRUE);
+        }
+        else {
+          $context_id = NULL;
         }
       }
       catch (\Exception $e) {
-        throw new DomProcessorError("Could not load entity from context.");
       }
     }
 
     // If there is a field, try to load the entity revision from the field.
     if (!$entity && $data->has('field.items')) {
-      foreach ($this->fieldValueManager->getReferencedEntities($data->get('field.items')) as $entity) {
-        if ($entity->uuid() == $uuid) {
+      foreach ($this->fieldValueManager->getReferencedEntities($data->get('field.items')) as $candidate) {
+        if ($candidate->uuid() == $uuid) {
+          $entity = $candidate;
           break;
         }
       }
@@ -118,7 +163,29 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
   }
 
   /**
+   * Analyzes a field DOM element to produce semantic data.
    *
+   * @param \Drupal\dom_processor\DomProcessor\SemanticDataInterface $data
+   *   The current data state for the analyzer.
+   *
+   * @return \Drupal\dom_processor\DomProcessor\SemanticDataInterface
+   *   The updated data state for the processor decorated with information about
+   *   the referenced field.
+   *
+   *   bool:has paragraph entity
+   *   bool:field exists on entity
+   *   bool:is paragraphs field
+   *   bool:is paragraphs editor field
+   *
+   *   in markup:
+     *   string: name
+     *   string: context id
+     *   bool:field name exists
+     *   bool: editable
+     *
+     * expected:
+     *   items
+     *   context_id
    */
   protected function analyzeField(SemanticDataInterface $data) {
     $field_name = $this->getAttribute($data->node(), 'field', '<name>');
@@ -146,6 +213,10 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     if ($is_mutable && !$this->fieldValueManager->isParagraphsEditorField($field_definition)) {
       throw new DomProcessorError("Edits defined for a non-editable field.");
+    }
+
+    if ($context_id && !$is_mutable) {
+      $context_id = NULL;
     }
 
     $field_value_wrapper = $is_mutable ? $this->fieldValueManager->wrapItems($items) : NULL;

@@ -22,7 +22,7 @@ trait MockFieldValueManagerTrait {
     ];
   }
 
-  protected function createFieldValueManager(array $options = []) {
+  protected function createFieldValueManager(array $options = [], $return_prophecy = FALSE) {
     $options += $this->fieldValueManagerDefaults();
     $prophecy = $this->prophesize(FieldValueManagerInterface::CLASS);
 
@@ -78,7 +78,7 @@ trait MockFieldValueManagerTrait {
       }
     });
 
-    return $prophecy->reveal();
+    return $return_prophecy ? $prophecy : $prophecy->reveal();
   }
 
   protected function createFieldValueWrapper(array $options = []) {
