@@ -25,9 +25,10 @@ class WidgetBinderDataCompilerKernelTest extends KernelTestBase {
     'entity_reference_revisions',
     'paragraphs',
     'field',
+    'file',
     'text',
     'node',
-    'paragraphs_editor_test'
+    'paragraphs_editor_test',
   ];
 
   protected $strictConfigSchema = FALSE;
