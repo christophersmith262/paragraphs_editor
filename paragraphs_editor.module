@@ -5,8 +5,30 @@
  * Supports editor integration for the paragraphs module.
  */
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\paragraphs_editor\Utility\RenderUtility;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function paragraphs_editor_entity_insert(EntityInterface $entity) {
+  \Drupal::service('paragraphs_editor.edit_buffer.cache')->processDeletionQueue($entity);
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function paragraphs_editor_entity_update(EntityInterface $entity) {
+  \Drupal::service('paragraphs_editor.edit_buffer.cache')->processDeletionQueue($entity);
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function paragraphs_editor_entity_delete(EntityInterface $entity) {
+  \Drupal::service('paragraphs_editor.edit_buffer.cache')->processDeletionQueue($entity);
+}
 
 /**
  * Implements hook_help().

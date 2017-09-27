@@ -90,6 +90,7 @@ trait MockContextTrait {
   protected function createContextFactory(array $options = [], $return_prophecy = FALSE) {
     $prophecy_factory = $this;
     $prophecy = $this->prophesize(CommandContextFactoryInterface::CLASS);
+
     $prophecy->get(Argument::any())->will(function ($args) use ($options, $prophecy_factory) {
       if (!empty($options['contexts'][$args[0]])) {
         return $prophecy_factory->createContext($options['contexts'][$args[0]]);

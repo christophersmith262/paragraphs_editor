@@ -10,7 +10,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 
 /**
  * The form that is shown for editing paragraph entities in ckeditor.
@@ -38,7 +38,7 @@ class ParagraphEntityForm extends ContentEntityForm {
   /**
    * The widget binder data compiler service.
    *
-   * @var \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface
+   * @var \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface
    */
   protected $dataCompiler;
 
@@ -55,7 +55,7 @@ class ParagraphEntityForm extends ContentEntityForm {
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager service.
-   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataMarkupCompilerInterface $data_compiler
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface $data_compiler
    *   The widget binder data compiler service.
    */
   public function __construct(CommandContextInterface $context,
@@ -63,7 +63,7 @@ class ParagraphEntityForm extends ContentEntityForm {
     ModuleHandlerInterface $module_handler,
     EntityTypeManagerInterface $entity_type_manager,
     EntityManagerInterface $entity_manager,
-    WidgetBinderDataMarkupCompilerInterface $data_compiler) {
+    WidgetBinderDataCompilerInterface $data_compiler) {
 
     // The ContentEntityForm class actually has a whole bunch of hidden
     // dependendencies. They are injected by core via setters, however we

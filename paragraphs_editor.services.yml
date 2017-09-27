@@ -60,7 +60,7 @@ services:
     class: Drupal\paragraphs_editor\WidgetBinder\Generators\AssetGenerator
     arguments: ['@editor_assets.processor']
     tags:
-      - { name: paragraphs_editor_data_generator }
+      - { name: paragraphs_editor_data_generator, priority: 100 }
 
   paragraphs_editor.widget_binder.data_compiler.generators.context:
     class: Drupal\paragraphs_editor\WidgetBinder\Generators\ContextGenerator

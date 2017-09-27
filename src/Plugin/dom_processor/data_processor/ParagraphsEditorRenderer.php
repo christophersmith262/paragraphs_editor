@@ -3,6 +3,7 @@
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Entity\EntityViewBuilderInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
@@ -78,9 +79,7 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
         return $result;
       }
     }
-    else {
-      return $result;
-    }
+    return $result;
   }
 
   /**
@@ -106,44 +105,63 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
    *   The rendered markup for the entity.
    */
   protected function render(SemanticDataInterface $data, ParagraphInterface $entity) {
-    $view_mode = $data->get('settings.view_mode');
-    $langcode = $data->get('langcode');
-    $to_process = [];
-    $to_render = [];
-    $uuid = $entity->uuid();
     $render_cache = &drupal_static(__CLASS__ . '::' . __FUNCTION__, []);
+    $langcode = $data->get('langcode');
+    $cache_key = $this->getCacheKey($entity, $langcode);
 
-    if (empty($render_cache[$uuid])) {
+    if (empty($render_cache[$cache_key])) {
+      $to_process = [];
+      $to_render = [];
+
       array_push($to_process, $entity);
       array_push($to_render, $entity);
       while ($entity = array_shift($to_process)) {
+
         foreach ($entity->getFields() as $items) {
           $field_definition = $items->getFieldDefinition();
 
-          if ($this->fieldValueManager->isParagraphsField($field_definition)) {
-            if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
-              $wrapper = $this->fieldValueManager->wrapItems($items);
-              foreach ($wrapper->getReferencedEntities() as $child_entity) {
-                array_push($to_render, $child_entity);
-                $to_process[] = $child_entity;
-              }
+          if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
+            $wrapper = $this->fieldValueManager->wrapItems($items);
+            foreach ($wrapper->getReferencedEntities() as $child_entity) {
+              $to_render[] = $child_entity;
+              $to_process[] = $child_entity;
             }
-            else {
-              foreach ($this->fieldValueManager->getReferencedEntities($items) as $child_entity) {
-                $to_process[] = $child_entity;
-              }
+          }
+          elseif ($this->fieldValueManager->isParagraphsField($field_definition)) {
+            foreach ($this->fieldValueManager->getReferencedEntities($items) as $child_entity) {
+              $to_process[] = $child_entity;
             }
           }
         }
       }
 
+      $view_mode = $data->get('settings.view_mode');
       while ($entity = array_pop($to_render)) {
         $view = $this->viewBuilder->view($entity, $view_mode, $langcode);
-        $render_cache[$entity->uuid()] = $this->renderer->render($view);
+        $render_cache[$this->getCacheKey($entity, $langcode)] = $this->renderer->render($view);
       }
     }
 
-    return $render_cache[$uuid];
+    return $render_cache[$cache_key];
+  }
+
+  /**
+   * Gets a static cache key for en entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to get the static cache key for.
+   * @param string $langcode
+   *   The language code for additional cache context.
+   *
+   * @return string
+   *   The static cache key.
+   */
+  protected function getCacheKey(EntityInterface $entity, $langcode) {
+    $keys = [$entity->uuid(), $entity->getRevisionId()];
+    if ($langcode) {
+      $keys[] = $langcode;
+    }
+    return implode(':', $keys);
   }
 
 }

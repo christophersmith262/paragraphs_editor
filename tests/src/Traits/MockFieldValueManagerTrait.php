@@ -82,6 +82,9 @@ trait MockFieldValueManagerTrait {
   }
 
   protected function createFieldValueWrapper(array $options = []) {
+    $options += [
+      'markup' => '',
+    ];
     $prophecy = $this->prophesize(FieldValueWrapperInterface::CLASS);
     $prophecy->getMarkup()->willReturn($options['markup']);
     return $prophecy->reveal();

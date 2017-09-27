@@ -42,7 +42,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *
    * @var int
    */
-  protected $count = 1;
+  protected $count = 0;
 
   /**
    * The context factory for creating new edit contexts.
@@ -90,21 +90,21 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function process(SemanticDataInterface $data, DomProcessorResultInterface $result) {
-    if (!$data->has('preparer.ready')) {
-      if ($data->isRoot()) {
-        return $this->generateOwnerInfo($data, $result);
-      }
-    }
-    else {
+    if ($data->has('preparer.ready')) {
       if ($data->is($this->getSelector('widget'))) {
         $paragraph = $data->get('paragraph.entity');
         $field_context_id = $data->get('field.context_id');
         $this->expandParagraph($data, $data->node(), $paragraph, $field_context_id);
+        return $result;
       }
       elseif ($data->isRoot()) {
         return $this->finishResult($data, $result);
       }
     }
+    elseif ($data->isRoot()) {
+      return $this->generateOwnerInfo($data, $result);
+    }
+
     return $result;
   }
 
@@ -125,38 +125,34 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ], TRUE);
 
     $field_value_wrapper = $data->get('field.wrapper');
-    if ($field_value_wrapper) {
 
-      // Apply the default format if none is already provided.
-      $filter_format = $field_value_wrapper->getFormat();
+    // Apply the default format if none is already provided.
+    $filter_format = $field_value_wrapper->getFormat();
 
-      // Create a new editing context for the field.
-      $field_definition = $data->get('field.items')->getFieldDefinition();
-      $owner_entity = $data->get('owner.entity');
-      if ($field_definition && $owner_entity) {
-        $settings = $data->get('settings');
-        $context = $this->contextFactory->create($field_definition->id(), $owner_entity->id(), $settings);
+    // Create a new editing context for the field.
+    $field_definition = $data->get('field.items')->getFieldDefinition();
+    $owner_entity = $data->get('owner.entity');
+    $settings = $data->get('settings');
+    $context = $this->contextFactory->create($field_definition->id(), $owner_entity->id(), $settings);
 
-        $widget_data = new WidgetBinderData();
-        $widget_data->addModel('context', $context->getContextString(), [
-          'id' => $context->getContextString(),
-          'schemaId' => $field_definition->id(),
-          'settings' => $settings,
-          'bufferItems' => [],
-        ]);
-        $widget_data->addModel('schema', $field_definition->id(), [
-          'id' => $field_definition->id(),
-          'allowed' => [
-            'paragraphs_editor_text' => TRUE,
-            'tabs' => TRUE,
-          ],
-        ]);
-        $this->widgetData = $widget_data;
-        $data = $data->tag('field', [
-          'context_id' => $context->getContextString(),
-        ], TRUE);
-      }
-    }
+    $widget_data = new WidgetBinderData();
+    $widget_data->addModel('context', $context->getContextString(), [
+      'id' => $context->getContextString(),
+      'schemaId' => $field_definition->id(),
+      'settings' => $settings,
+      'bufferItems' => [],
+    ]);
+    $widget_data->addModel('schema', $field_definition->id(), [
+      'id' => $field_definition->id(),
+      'allowed' => [
+        'paragraphs_editor_text' => TRUE,
+        'tabs' => TRUE,
+      ],
+    ]);
+    $this->widgetData = $widget_data;
+    $data = $data->tag('field', [
+      'context_id' => $context->getContextString(),
+    ], TRUE);
 
     return $result->reprocess($data);
   }

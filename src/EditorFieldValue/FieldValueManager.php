@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 
 /**
- *
+ * Test class.
  */
 class FieldValueManager implements FieldValueManagerInterface {
 
@@ -38,7 +38,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * Test method.
    */
   public function getReferencedEntities(FieldItemListInterface $items) {
     $entities = [];

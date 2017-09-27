@@ -204,8 +204,10 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a paragraph edit form object to deliver the user.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
+   *   The edit buffer item to get the form for.
    *
    * @return array
    *   A render array for the paragraph edit form.

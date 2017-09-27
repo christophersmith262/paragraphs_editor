@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
@@ -21,16 +22,28 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
   use MockFieldValueManagerTrait;
   use DomProcessorTestTrait;
 
+  public function testAnalyzePassThrough() {
+    $field_value_manager = $this->createFieldValueManagerProphecy()->reveal();
+    $storage = $this->prophesize(EntityStorageInterface::CLASS)->reveal();
+    $context_factory = $this->createContextFactory();
+    $data = $this->createDomProcessorData('<div></div>', 'div');
+    $analyzer = new ParagraphsEditorParagraphAnalyzer($field_value_manager, $storage, $context_factory);
+    $data = $analyzer->analyze($data);
+    $this->assertInstanceOf(SemanticDataInterface::CLASS, $data);
+    $this->assertEmpty($data->get('paragraph'));
+    $this->assertEmpty($data->get('field'));
+  }
+
   /**
    * @dataProvider widgetProvider
    */
-  public function testAnalyzeWidget($markup, $in_field, $in_storage, $context_id, $expected_uuid) {
+  public function testAnalyzeWidget($markup, $has_field, $in_field, $in_storage, $context_id, $expected_uuid) {
     if (!isset($expected_uuid)) {
       $this->setExpectedException(DomProcessorError::CLASS);
   }
 
     $prophecy = $this->createFieldValueManagerProphecy();
-    if ($in_field) {
+    if ($has_field) {
       $items = $this->prophesize(FieldItemListInterface::CLASS)->reveal();
       $prophecy = $this->createFieldValueManagerProphecy();
       $data = $this->createDomProcessorData($markup, 'widget', [
@@ -38,13 +51,18 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
           'items' => $items,
         ],
       ]);
-      $r1 = rand();
-      $r2 = rand();
-      $prophecy->getReferencedEntities($items)->willReturn([
-        $r1 => $this->createMockParagraph(['uuid' => $r1]),
-        $expected_uuid => $this->createMockParagraph(['uuid' => $expected_uuid]),
-        $r2 => $this->createMockParagraph(['uuid' => $r2]),
-      ]);
+      if ($in_field) {
+        $r1 = rand();
+        $r2 = rand();
+        $prophecy->getReferencedEntities($items)->willReturn([
+          $r1 => $this->createMockParagraph(['uuid' => $r1]),
+          $expected_uuid => $this->createMockParagraph(['uuid' => $expected_uuid]),
+          $r2 => $this->createMockParagraph(['uuid' => $r2]),
+        ]);
+      }
+      else {
+        $prophecy->getReferencedEntities($items)->willReturn([]);
+      }
     }
     else {
       $data = $this->createDomProcessorData($markup, 'widget');
@@ -93,7 +111,7 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
    *
    * @dataProvider fieldProvider
    */
-  public function testAnalyzeField($markup, $field_name, $level, $expect_exception, $expect_context_id, $expect_is_mutable, $expect_wrapper) {
+  public function testAnalyzeField($markup, $field_name, $level, $expect_exception, $expect_context_id, $expect_wrapper) {
     if ($expect_exception) {
       $this->setExpectedException(DomProcessorError::CLASS);
     }
@@ -134,47 +152,38 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
     if (!$expect_exception) {
       $this->assertEquals($paragraph->$field_name, $data->get('field.items'));
       $this->assertEquals($expect_context_id, $data->get('field.context_id'));
-      $this->assertEquals($expect_is_mutable, $data->get('field.is_mutable'));
       $this->assertEquals($expect_wrapper, $data->get('field.wrapper'));
     }
   }
 
   public function widgetProvider() {
     return [
-      ['<widget></widget>', 0, 0, NULL, NULL],
-      ['<widget data-uuid="uuid0" data-context="context0">', 0, 0, 'context0', 'uuid0'],
-      ['<widget data-uuid="uuid1" data-context="context1">', 1, 0, NULL, 'uuid1'],
-      ['<widget data-uuid="uuid2" data-context="context2">', 0, 1, NULL, 'uuid2'],
-      ['<widget data-uuid="uuid3" data-context="context3">', 0, 0, NULL, NULL],
-      ['<widget data-uuid="uuid4">', 0, 1, NULL, 'uuid4'],
-      ['<widget data-uuid="uuid5">', 1, 0, NULL, 'uuid5'],
-      ['<widget data-uuid="uuid6">', 0, 0, NULL, NULL],
+      ['<widget></widget>', 0, 0, 0, NULL, NULL],
+      ['<widget data-uuid="uuid0" data-context="context0">', 0, 0, 0, 'context0', 'uuid0'],
+      ['<widget data-uuid="uuid1" data-context="context1">', 1, 1, 0, NULL, 'uuid1'],
+      ['<widget data-uuid="uuid2" data-context="context2">', 0, 0, 1, NULL, 'uuid2'],
+      ['<widget data-uuid="uuid3" data-context="context3">', 0, 0, 0, NULL, NULL],
+      ['<widget data-uuid="uuid4">', 0, 0, 1, NULL, 'uuid4'],
+      ['<widget data-uuid="uuid5">', 1, 1, 0, NULL, 'uuid5'],
+      ['<widget data-uuid="uuid6">', 1, 0, 1, NULL, 'uuid6'],
+      ['<widget data-uuid="uuid7">', 1, 0, 0, NULL, NULL],
+      ['<widget data-uuid="uuid8">', 0, 0, 0, NULL, NULL],
     ];
   }
 
   public function fieldProvider() {
     return [
-      ['<field data-name="field1">', 'field1', 0, 1, NULL, 0, 0],
-      ['<field data-name="field1">', 'field1', 1, 1, NULL, 0, 0],
-      ['<field data-name="field1">', 'field1', 2, 1, NULL, 0, 0],
-      ['<field data-name="field1">', 'field1', 3, 0, NULL, 0, 0],
-      ['<field data-name="field1">', 'field1', 4, 0, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1">', 'field1', 0, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1">', 'field1', 1, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1">', 'field1', 2, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1">', 'field1', 3, 0, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1">', 'field1', 4, 0, NULL, 0, 0],
-      ['<field data-name="field1" data-editable="true">', 'field1', 0, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-editable="true">', 'field1', 1, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-editable="true">', 'field1', 2, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-editable="true">', 'field1', 3, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-editable="true">', 'field1', 4, 0, NULL, 1, 1],
-      ['<field data-name="field1" data-context="context1" data-editable="true">', 'field1', 0, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1" data-editable="true">', 'field1', 1, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1" data-editable="true">', 'field1', 2, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1" data-editable="true">', 'field1', 3, 1, NULL, 0, 0],
-      ['<field data-name="field1" data-context="context1" data-editable="true">', 'field1', 4, 0, 'context1', 1, 1],
-      ['<field>', 'field1', 4, 1, NULL, 0, 0],
+      ['<field data-name="field1">', 'field1', 0, 1, NULL, 0],
+      ['<field data-name="field1">', 'field1', 1, 1, NULL, 0],
+      ['<field data-name="field1">', 'field1', 2, 1, NULL, 0],
+      ['<field data-name="field1">', 'field1', 3, 0, NULL, 0],
+      ['<field data-name="field1">', 'field1', 4, 0, NULL, 1],
+      ['<field data-name="field1" data-context="context1">', 'field1', 0, 1, NULL, 0],
+      ['<field data-name="field1" data-context="context1">', 'field1', 1, 1, NULL, 0],
+      ['<field data-name="field1" data-context="context1">', 'field1', 2, 1, NULL, 0],
+      ['<field data-name="field1" data-context="context1">', 'field1', 3, 0, NULL, 0],
+      ['<field data-name="field1" data-context="context1">', 'field1', 4, 0, 'context1', 1],
+      ['<field>', 'field1', 4, 1, NULL, 0],
     ];
   }
 
