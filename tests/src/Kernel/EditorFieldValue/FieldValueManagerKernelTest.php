@@ -32,13 +32,14 @@ class FieldValueManagerKernelTest extends KernelTestBase {
     'entity_reference_revisions',
     'paragraphs',
     'field',
+    'file',
     'filter',
     'text',
     'node',
     'editor_assets',
     'dom_processor',
     'paragraphs_editor',
-    'paragraphs_editor_test'
+    'paragraphs_editor_test',
   ];
 
   public function setUp() {
