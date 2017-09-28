@@ -17,3 +17,5 @@ cd "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH"
 # Manually clone the dependencies
 git clone --depth 1 https://github.com/christophersmith262/dom_processor.git
 git clone --depth 1 https://github.com/christophersmith262/editor_assets.git
+
+cd "$DRUPAL_TI_DRUPAL_DIR"

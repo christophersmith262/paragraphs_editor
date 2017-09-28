@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/christophersmith262/paragraphs_editor.svg?branch=8.x)](https://travis-ci.org/christophersmith262/paragraphs_editor)
+[![Coverage Status](https://coveralls.io/repos/github/christophersmith262/paragraphs_editor/badge.svg?branch=8.x)](https://coveralls.io/github/christophersmith262/paragraphs_editor?branch=8.x)
 
 ## Synopsis
 
@@ -29,7 +30,7 @@ while also allowing them to create paragraphs in-context and on the fly.
 
 ## Resources
 
- * [Documentation](http://paragraphs-editor.readthedocs.io/en/latest): Containsdocumentation for extending and
+ * [Documentation](http://paragraphs-editor.readthedocs.io/en/latest): Contains documentation for extending and
    updating paragraphs_editor.
  * [paragraphs_ckeditor](https://github.com/christophersmith262/paragraphs_ckeditor): Provides integration with the core CKEditor
    implementation.
