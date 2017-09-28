@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ */
+
+use Drupal\Component\Utility\Html;
+use Drupal\paragraphs_editor\Utility\RenderUtility;
+
+/**
+ * Implements hook_theme().
+ */
+function paragraphs_editor_examples_theme($existing) {
+  $theme = [];
+  $template_path = drupal_get_path('module', 'paragraphs_editor_examples') . '/templates';
+  $theme['paragraph__tabs'] = $existing['paragraph'];
+  $theme['paragraph__tabs']['template'] = 'paragraph--tabs';
+  $theme['paragraph__tabs']['path'] = $template_path;
+  return $theme;
+}
+
+/**
+ * Implements hook_preprocess_paragraph__tabs().
+ */
+function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables) {
+  $variables['#attached']['library'][] = 'paragraphs_editor_examples/tabs';
+  $tabs = $variables['elements']['#paragraph'];
+
+  $variables['content'] = [];
+  foreach ($tabs->field_tabs as $delta => $tab) {
+    $variables['content']['field_tabs'][$delta] = [
+      'id' => Html::getId('tabs-' . $delta),
+      'link' => [
+        'title' => $tab->entity->field_title->value,
+      ],
+    ];
+    RenderUtility::getEditableData($variables, $tab->entity->field_content)
+      ->preprocessField($variables['content']['field_tabs'][$delta]);
+  }
+}

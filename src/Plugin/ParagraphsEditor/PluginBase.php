@@ -34,7 +34,7 @@ abstract class PluginBase {
   /**
    * The command context the plugin is executing within.
    *
-   * @var Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
    */
   protected $context;
 
@@ -45,7 +45,7 @@ abstract class PluginBase {
    *   The drupal plugin id as defined in the annotation.
    * @param object $plugin_definition
    *   The plugin definition object.
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The command context which the plugin will be executed within.
    */
   public function __construct($plugin_id, $plugin_definition, CommandContextInterface $context) {

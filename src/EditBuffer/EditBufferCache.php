@@ -2,8 +2,9 @@
 
 namespace Drupal\paragraphs_editor\EditBuffer;
 
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  *
@@ -13,6 +14,7 @@ class EditBufferCache implements EditBufferCacheInterface {
   protected $storage;
   protected $expiry;
   protected $user;
+  protected $deleteQueue = [];
 
   /**
    *
@@ -72,6 +74,21 @@ class EditBufferCache implements EditBufferCacheInterface {
       $parent_buffer->addChildBufferTag($buffer->getContextString());
       $this->save($parent_buffer);
     }
+  }
+
+  public function processDeletionQueue(EntityInterface $entity) {
+    $key = $this->deletionQueueKey($entity);
+    if (!empty($this->deleteQueue[$key])) {
+      $this->delete($this->deleteQueue[$key]);
+    }
+  }
+
+  public function queueDeletion(EntityInterface $entity, EditBufferInterface $buffer) {
+    $this->deleteQueue[$this->deletionQueueKey($entity)] = $buffer->getContextString();
+  }
+
+  protected function deletionQueueKey(EntityInterface $entity) {
+    return $entity->getEntityTypeId() . ':' . $entity->uuid();
   }
 
 }

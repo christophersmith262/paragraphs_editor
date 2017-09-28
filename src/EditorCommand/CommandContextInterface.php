@@ -68,6 +68,14 @@ interface CommandContextInterface {
   public function getContextString();
 
   /**
+   * Gets the random build id for this context.
+   *
+   * @return string
+   *   The random build id associated with the context.
+   */
+  public function getBuildId();
+
+  /**
    * Set a temporary value for the duration of command execution.
    *
    * @param string $name

@@ -25,9 +25,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface*/
+   * The field value manager for wrapping editor field items.
+   *
+   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
+   */
   protected $fieldValueManager;
 
+  /**
+   * The entity display repository service for getting view modes.
+   *
+   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
+   */
   protected $entityDisplayRepository;
 
   /**

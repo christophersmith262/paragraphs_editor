@@ -87,9 +87,19 @@ trait MockContextTrait {
     return $prophecy->reveal();
   }
 
-  protected function createContextFactory(array $options = []) {
+  protected function createContextFactory(array $options = [], $return_prophecy = FALSE) {
+    $prophecy_factory = $this;
     $prophecy = $this->prophesize(CommandContextFactoryInterface::CLASS);
-    return $prophecy->reveal();
+
+    $prophecy->get(Argument::any())->will(function ($args) use ($options, $prophecy_factory) {
+      if (!empty($options['contexts'][$args[0]])) {
+        return $prophecy_factory->createContext($options['contexts'][$args[0]]);
+      }
+      else {
+        return $prophecy_factory->createContext();
+      }
+    });
+    return $return_prophecy ? $prophecy : $prophecy->reveal();
   }
 
   protected function createEditBuffer(array $options = []) {
@@ -97,6 +107,8 @@ trait MockContextTrait {
     $prophecy = $this->prophesize(EditBufferInterface::CLASS);
     $prophecy->getUser()->willReturn($options['uid']);
     $prophecy->getContextString()->willReturn($options['context_id']);
+
+    $prophecy->getItem(Argument::any())->willReturn(NULL);
 
     $prophecy->setItem(Argument::any())->will(function ($args, $prophecy) {
       $prophecy->getItem($item->getEntity()->uuid())->willReturn($item->getEntity());
@@ -117,7 +129,15 @@ trait MockContextTrait {
       return $item;
     });
 
-    return $prophecy->reveal();
+    $edit_buffer = $prophecy->reveal();
+
+    if (!empty($options['default_items'])) {
+      foreach ($options['default_items'] as $entity) {
+        $edit_buffer->createItem($entity);
+      }
+    }
+
+    return $edit_buffer;
   }
 
   protected function createMockParagraph(array $options = []) {

@@ -25,7 +25,7 @@ class PluginManager extends DefaultPluginManager {
   /**
    * Helper method to map plugin types to interfaces / annotations.
    *
-   * @param string type
+   * @param string $type
    *   The paragraphs_editor plugin type.
    *
    * @return array

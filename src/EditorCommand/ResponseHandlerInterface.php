@@ -30,8 +30,6 @@ interface ResponseHandlerInterface {
    *
    * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
-   *   The buffer item to be rendered and delivered.
    *
    * @return Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.

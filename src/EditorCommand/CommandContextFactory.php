@@ -89,7 +89,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    */
   public function get($context_id) {
     list($field_config_id, $widget_build_id, $entity_id) = $this->parseContextString($context_id);
-    return $this->create($field_config_id, $entity_id, [], $widget_build_id);
+    return $field_config_id && $widget_build_id ? $this->create($field_config_id, $entity_id, [], $widget_build_id) : NULL;
   }
 
   /**

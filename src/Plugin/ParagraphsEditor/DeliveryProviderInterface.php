@@ -23,8 +23,10 @@ interface DeliveryProviderInterface {
   /**
    * Navigates the user to a form.
    *
-   * @param Drupal\Core\Ajax\AjaxResponse
+   * @param \Drupal\Core\Ajax\AjaxResponse $response
    *   The response object to add commands to.
+   * @param string $title
+   *   The form title.
    * @param mixed $contents
    *   The contents to be delivered to the user. This could be rendered markup
    *   or a render array.
@@ -32,14 +34,19 @@ interface DeliveryProviderInterface {
   public function navigate(AjaxResponse $response, $title, $contents);
 
   /**
+   * Delivers widget binder data to the client.
    *
+   * @param \Drupal\Core\Ajax\AjaxResponse $response
+   *   The response object to add commands to.
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData $data
+   *   The data to be delivered.
    */
   public function sendData(AjaxResponse $response, WidgetBinderData $data);
 
   /**
    * Closes a form for the user.
    *
-   * @param Drupal\Core\Ajax\AjaxResponse
+   * @param \Drupal\Core\Ajax\AjaxResponse $response
    *   The response object to add commands to.
    */
   public function close(AjaxResponse $response);

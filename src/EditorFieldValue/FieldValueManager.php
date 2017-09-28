@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 
 /**
- *
+ * Test class.
  */
 class FieldValueManager implements FieldValueManagerInterface {
 
@@ -38,7 +38,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * Test method.
    */
   public function getReferencedEntities(FieldItemListInterface $items) {
     $entities = [];
@@ -118,20 +118,6 @@ class FieldValueManager implements FieldValueManagerInterface {
     $entity->setNeedsSave(TRUE);
 
     return $entity;
-  }
-
-  /**
-   *
-   */
-  public function updateItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
-    $updated = [];
-    foreach ($this->getReferencedEntities($items) as $entity) {
-      $updated[$entity->uuid()] = $entity;
-    }
-    foreach ($entities as $entity) {
-      $updated[$entity->uuid()] = $entity;
-    }
-    return $this->setItems($items, $updated, $new_revision, $langcode);
   }
 
   /**

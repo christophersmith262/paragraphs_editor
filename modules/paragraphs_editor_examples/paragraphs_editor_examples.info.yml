@@ -1,0 +1,7 @@
+name: Paragraphs Editor Examples
+type: module
+description: 'Contains example paragraph types for Paragraphs Editor Integration.'
+package: Componentize
+core: '8.x'
+dependencies:
+  - paragraphs_editor

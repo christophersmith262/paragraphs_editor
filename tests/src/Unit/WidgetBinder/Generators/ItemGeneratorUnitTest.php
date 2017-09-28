@@ -66,19 +66,19 @@ class ItemGeneratorUnitTest extends UnitTestCase {
     }
 
     $generator->complete($data, $state, $render_context, 'test_markup');
-    $this->assertEquals($data->getModels('editBufferItem'), [
+    $this->assertEquals([
       'root_uuid' => [
         'contextId' => 'root_context',
         'markup' => 'test_markup',
         'type' => 'default',
         'fields' => $expected_map,
       ]
-    ]);
+    ], $data->getModels('editBufferItem'));
   }
 
   public function mapProvider() {
     return [
-      // Test case 0: don't create a path unless an editable is encountered.
+      // Test case 0: No editables in input.
       [
         [
           [ 'type' => 'paragraph_begin', 'uuid' => 'root_uuid' ],
@@ -88,7 +88,19 @@ class ItemGeneratorUnitTest extends UnitTestCase {
             [ 'type' => 'field_begin', 'id' => 'field_parent', 'editor' => FALSE, 'uuid' => 'root_uuid' ],
           [ 'type' => 'paragraph_end', 'uuid' => 'root_uuid' ],
         ],
-        []
+        [
+          'field_parent' => [
+            'type' => 'field',
+            'name' => 'field_parent',
+            'children' => [
+              'uuid1' => [
+                'type' => 'widget',
+                'uuid' => 'uuid1',
+                'children' => [],
+              ],
+            ],
+          ],
+        ]
       ],
 
       // Test case 1: create path to editable
@@ -207,6 +219,11 @@ class ItemGeneratorUnitTest extends UnitTestCase {
             'type' => 'field',
             'name' => 'field_parent2',
             'children' => [
+              'uuid1' => [
+                'type' => 'widget',
+                'uuid' => 'uuid1',
+                'children' => [],
+              ],
               'uuid2' => [
                 'type' => 'widget',
                 'uuid' => 'uuid2',

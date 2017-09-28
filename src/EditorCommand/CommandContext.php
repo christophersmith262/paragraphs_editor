@@ -137,7 +137,7 @@ class CommandContext implements CommandContextInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getBuildId() {
     return $this->buildId;
