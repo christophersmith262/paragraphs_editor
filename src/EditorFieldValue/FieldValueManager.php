@@ -7,21 +7,57 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 
 /**
- * Test class.
+ * Manages the paragraphs editor field values.
  */
 class FieldValueManager implements FieldValueManagerInterface {
 
-  protected $bundleStorage;
-  protected $entityFieldManager;
+  /**
+   * The storage plugin for the paragraph entity type.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
   protected $storage;
-  protected $revisionCache = [];
+
+  /**
+   * The storage plugin for the paragraph type config entity type.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $bundleStorage;
+
+  /**
+   * The field value manager service for collecting field information.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * Element definitions for custom elements that can occur in an editor field.
+   *
+   * @var array
+   */
   protected $elements;
 
   /**
+   * A static cache of paragraph revisions.
    *
+   * @var \Drupal\paragraphs\ParagraphInterface
+   */
+  protected $revisionCache = [];
+
+  /**
+   * Creates a field value manager object.
+   *
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The field manager service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param array $elements
+   *   An array of widget binder element definitions.
    */
   public function __construct(EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager, array $elements) {
     $this->entityFieldManager = $entity_field_manager;
@@ -31,16 +67,9 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
-  public function updateCache(array $revision_cache) {
-    $this->revisionCache += $revision_cache;
-  }
-
-  /**
-   * Test method.
-   */
-  public function getReferencedEntities(FieldItemListInterface $items) {
+  public function getReferencedEntities(EntityReferenceRevisionsFieldItemList $items) {
     $entities = [];
     foreach ($items as $item) {
       $value = $item->getValue();
@@ -62,9 +91,9 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
-  public function wrapItems(FieldItemListInterface $items) {
+  public function wrapItems(EntityReferenceRevisionsFieldItemList $items) {
     $field_definition = $items->getFieldDefinition();
     $settings = $field_definition->getThirdPartySettings('paragraphs_editor');
     $markup = '';
@@ -101,7 +130,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function prepareEntityForSave($entity, $new_revision, $langcode) {
     $entity->setNewRevision($new_revision);
@@ -121,9 +150,9 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
-  public function setItems(FieldItemListInterface $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
+  public function setItems(EntityReferenceRevisionsFieldItemList $items, array $entities, $new_revision = FALSE, $langcode = NULL) {
     $values = [];
     $delta = 0;
     foreach ($entities as $entity) {
@@ -140,7 +169,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getTextBundles(array $allowed_bundles = []) {
 
@@ -166,10 +195,14 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function isParagraphsField(FieldDefinitionInterface $field_definition) {
     if ($field_definition->getType() != 'entity_reference_revisions') {
+      return FALSE;
+    }
+
+    if ($field_definition->getFieldStorageDefinition()->getSetting('target_type') != 'paragraph') {
       return FALSE;
     }
 
@@ -177,7 +210,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function isParagraphsEditorField(FieldDefinitionInterface $field_definition) {
     if (!static::isParagraphsField($field_definition)) {
@@ -206,14 +239,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
-   */
-  protected function isTextField(FieldDefinitionInterface $field_config) {
-    return $field_config->getType() == 'text_long';
-  }
-
-  /**
-   *
+   * {@inheritdoc}
    */
   public function getTextFields($bundle_name) {
     $matches = [];
@@ -227,14 +253,14 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getElement($element_name) {
     return isset($this->elements[$element_name]) ? $this->elements[$element_name] : NULL;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getAttributeName($element_name, $attribute_name) {
     $element = $this->getElement($element_name);
@@ -249,7 +275,7 @@ class FieldValueManager implements FieldValueManagerInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getSelector($element_name) {
     $element = $this->getElement($element_name);
@@ -259,6 +285,19 @@ class FieldValueManager implements FieldValueManagerInterface {
       $selector .= '.' . implode('.', $classes);
     }
     return $selector;
+  }
+
+  /**
+   * Helper function to check if a field is a text field.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_config
+   *   The field to check.
+   *
+   * @return bool
+   *   TRUE if it's a paragraphs editor approved text field, FALSE otherwise.
+   */
+  protected function isTextField(FieldDefinitionInterface $field_config) {
+    return $field_config->getType() == 'text_long';
   }
 
 }

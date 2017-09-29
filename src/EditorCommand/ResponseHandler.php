@@ -125,7 +125,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param mixed $contents
    *   A render array or markup string containing the contents to be delivered.
    *
-   * @return Drupal\Core\Ajax\AjaxResponse
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
   protected function navigate(CommandContextInterface $context, $contents) {
@@ -142,7 +142,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be rendered in the response.
    *
-   * @return Drupal\Core\Ajax\AjaxResponse
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
   protected function render(CommandContextInterface $context, EditBufferItemInterface $item) {
@@ -161,7 +161,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param string $editor_widget_id
    *   The editor widget id to target for receiving the duplicated item.
    *
-   * @return Drupal\Core\Ajax\AjaxResponse
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
   protected function duplicate(CommandContextInterface $context, EditBufferItemInterface $item, $editor_widget_id) {
@@ -178,7 +178,7 @@ class ResponseHandler implements ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\CommandContextInterface $context
    *   The context the command is executing within.
    *
-   * @return Drupal\Core\Ajax\AjaxResponse
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response to deliver.
    */
   protected function close(CommandContextInterface $context) {

@@ -28,8 +28,6 @@ class ParagraphAccessCheck implements AccessInterface {
    *
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory
    *   The factory to use for looking up edit buffer items.
-   *
-   * @constructor
    */
   public function __construct(EditBufferItemFactoryInterface $item_factory) {
     $this->itemFactory = $item_factory;

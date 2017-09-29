@@ -62,8 +62,6 @@ class WidgetBinderDataCompilerState {
    *   The context containing the edit buffer item being compiled.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The edit buffer item being compiled.
-   *
-   * @constructor
    */
   public function __construct(array $generators, WidgetBinderData $data, CommandContextInterface $context, EditBufferItemInterface $item) {
     $this->compiledData = $data;

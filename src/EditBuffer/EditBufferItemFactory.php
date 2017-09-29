@@ -4,9 +4,10 @@ namespace Drupal\paragraphs_editor\EditBuffer;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 
 /**
- *
+ * A factory for creating edit buffer items.
  */
 class EditBufferItemFactory implements EditBufferItemFactoryInterface {
 
@@ -18,26 +19,27 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   protected $storage;
 
   /**
+   * The field value manager service.
    *
+   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, $field_value_manager) {
+  protected $fieldValueManager;
+
+  /**
+   * Creates an edit buffer item factory.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
+   *   The service for determining whether a field is a paragraphs field.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, FieldValueManagerInterface $field_value_manager) {
     $this->storage = $entity_type_manager->getStorage('paragraph');
     $this->fieldValueManager = $field_value_manager;
   }
 
   /**
-   * Creates a buffer item within a context.
-   *
-   * This should never be called inside an access check. Only call this after
-   * context validation has completed successfully.
-   *
-   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
-   *   The context for the editor instance.
-   * @param string $bundle_name
-   *   The bundle name for the paragraph to be created.
-   *
-   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
-   *   The newly created edit buffer item.
+   * {@inheritdoc}
    */
   public function createBufferItem(CommandContextInterface $context, $bundle_name) {
     // We don't have to verify that getBuffer doesn't return NULL here since
@@ -46,19 +48,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   }
 
   /**
-   * Retrieves a paragraph item from within a context buffer.
-   *
-   * This is safe to call within access checks since we verify that the buffer
-   * is set before using it. This will create the paragraph item in the buffer
-   * it does not already exist.
-   *
-   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
-   *   The context for the editor instance.
-   * @param string $bundle_name
-   *   The bundle name for the paragraph to be created.
-   *
-   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface
-   *   The newly created edit buffer item.
+   * {@inheritdoc}
    */
   public function getBufferItem(CommandContextInterface $context, $paragraph_uuid) {
     // Since this could be called before the context is validated, we need to
@@ -90,7 +80,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function duplicateBufferItem(CommandContextInterface $context, EditBufferItemInterface $item) {
     $new_item = $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
@@ -102,9 +92,16 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   }
 
   /**
+   * Maps all entities in a duplicated content tree to their originals.
    *
+   * @param \Drupal\paragraphs\ParagraphInterface $entity1
+   *   The original entity.
+   * @param \Drupal\paragraphs\ParagraphInterface $entity2
+   *   The duplicate entity.
+   * @param array &$map
+   *   The map to be built.
    */
-  protected function createEntityMap($entity1, $entity2, array &$map) {
+  protected function createEntityMap(ParagraphInterface $entity1, ParagraphInterface $entity2, array &$map) {
     $map[$entity1->uuid()] = $entity2->uuid();
 
     if ($entity1->bundle() != $entity2->bundle()) {

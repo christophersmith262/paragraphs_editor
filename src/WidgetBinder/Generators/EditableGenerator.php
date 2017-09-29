@@ -40,8 +40,6 @@ class EditableGenerator extends GeneratorBase {
    *   The field value manager service for managing elements.
    * @param \Drupal\dom_processor\DomProcessor\DomProcessorInterface $dom_processor
    *   The Dom processor for generating inline markup.
-   *
-   * @constructor
    */
   public function __construct(FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor) {
     $this->fieldValueManager = $field_value_manager;

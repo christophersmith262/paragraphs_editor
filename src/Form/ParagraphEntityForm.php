@@ -169,7 +169,7 @@ class ParagraphEntityForm extends ContentEntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The associated form state.
    *
-   * @return Drupal\Core\Ajax\AjaxResponse
+   * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response object that delivers a rendered paragraph.
    */
   public static function ajaxSubmit(array $form, FormStateInterface $form_state) {

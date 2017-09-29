@@ -30,8 +30,6 @@ class ContextGenerator extends GeneratorBase {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory for generating contexts.
-   *
-   * @constructor
    */
   public function __construct(CommandContextFactoryInterface $context_factory) {
     $this->contextFactory = $context_factory;

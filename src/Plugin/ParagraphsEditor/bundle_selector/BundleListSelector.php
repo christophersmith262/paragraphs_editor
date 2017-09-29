@@ -39,7 +39,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   /**
    * The command context the plugin is executing within.
    *
-   * @var Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface
    */
   protected $context;
 

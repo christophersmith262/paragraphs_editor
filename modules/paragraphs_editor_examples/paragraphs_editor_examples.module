@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Provides preprocess logic for example paragraph types.
  */
 
 use Drupal\Component\Utility\Html;
@@ -11,6 +12,8 @@ use Drupal\paragraphs_editor\Utility\RenderUtility;
  * Implements hook_theme().
  */
 function paragraphs_editor_examples_theme($existing) {
+  // This hook would not be necessary if the preprocess hooks were implemented
+  // in the theme layer.
   $theme = [];
   $template_path = drupal_get_path('module', 'paragraphs_editor_examples') . '/templates';
   $theme['paragraph__tabs'] = $existing['paragraph'];
@@ -23,9 +26,11 @@ function paragraphs_editor_examples_theme($existing) {
  * Implements hook_preprocess_paragraph__tabs().
  */
 function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables) {
+  // Attach the tab javascript.
   $variables['#attached']['library'][] = 'paragraphs_editor_examples/tabs';
-  $tabs = $variables['elements']['#paragraph'];
 
+  // Use the tabs entity to build the content to be rendered.
+  $tabs = $variables['elements']['#paragraph'];
   $variables['content'] = [];
   foreach ($tabs->field_tabs as $delta => $tab) {
     $variables['content']['field_tabs'][$delta] = [
@@ -34,6 +39,9 @@ function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables
         'title' => $tab->entity->field_title->value,
       ],
     ];
+
+    // Attach inline editing data to the tab. We have to do this since we aren't
+    // going to directly render the 'field_content' field in the twig template.
     RenderUtility::getEditableData($variables, $tab->entity->field_content)
       ->preprocessField($variables['content']['field_tabs'][$delta]);
   }

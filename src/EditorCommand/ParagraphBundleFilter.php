@@ -7,15 +7,31 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
- *
+ * A class for filtering which paragraph types can be nested in other types.
  */
 class ParagraphBundleFilter implements ParagraphBundleFilterInterface {
 
+  /**
+   * The text bundle for the field this filter is for.
+   *
+   * @var string
+   */
   protected $textBundle;
+
+  /**
+   * The list of allowed nested bundles in the field this filter is for.
+   *
+   * @var string[]
+   */
   protected $allowedBundles;
 
   /**
+   * Creates a bundle filter object.
    *
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   *   The bundle manager service.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition for the field this filter is for.
    */
   public function __construct(EntityTypeBundleInfoInterface $bundle_info, FieldDefinitionInterface $field_definition) {
     $this->textBundle = $this->extractTextBundle($field_definition);
@@ -23,7 +39,7 @@ class ParagraphBundleFilter implements ParagraphBundleFilterInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function filterQuery(QueryInterface $query) {
     $query->condition('id', array_keys($this->getAllowedBundles()), 'IN')
@@ -31,21 +47,30 @@ class ParagraphBundleFilter implements ParagraphBundleFilterInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getTextBundle() {
     return $this->textBundle;
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function getAllowedBundles() {
     return $this->allowedBundles;
   }
 
   /**
+   * Builds the list of allowed bundles for a given field definition.
    *
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   *   The bundle manager to read bundle information from.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field to build the list for.
+   *
+   * @return string[]
+   *   A list of allowed bundle names that can be nested inside field instances
+   *   of the field_definition type.
    */
   protected function extractAllowedBundles(EntityTypeBundleInfoInterface $bundle_info, FieldDefinitionInterface $field_definition) {
     $return_bundles = [];
@@ -101,14 +126,25 @@ class ParagraphBundleFilter implements ParagraphBundleFilterInterface {
   }
 
   /**
+   * Reads the text bundle name from a field definition.
    *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition to read from.
+   *
+   * @return string
+   *   The text bundle name.
    */
   protected function extractTextBundle(FieldDefinitionInterface $field_definition) {
     return $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle');
   }
 
   /**
+   * Reads a setting entry from the field's handler plugin.
    *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition to read from.
+   * @param string $setting_name
+   *   The setting to read.
    */
   protected function getSelectionHandlerSetting(FieldDefinitionInterface $field_definition, $setting_name) {
     $settings = $field_definition->getSetting('handler_settings');

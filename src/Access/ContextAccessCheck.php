@@ -29,7 +29,10 @@ class ContextAccessCheck implements AccessInterface {
   protected $requirementsKey = '_paragraphs_editor_access_context';
 
   /**
+   * Creates a context access check object.
    *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;

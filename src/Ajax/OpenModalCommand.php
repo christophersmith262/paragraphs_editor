@@ -27,8 +27,6 @@ class OpenModalCommand extends OpenModalDialogCommand {
    *   (optional) Custom settings that will be passed to the Drupal behaviors
    *   on the content of the dialog. If left empty, the settings will be
    *   populated automatically from the current request.
-   *
-   * @constructor
    */
   public function __construct($title, $content, CommandContextInterface $context, array $dialog_options = [], $settings = NULL) {
     if (empty($dialog_options['width'])) {

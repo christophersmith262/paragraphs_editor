@@ -30,8 +30,6 @@ class AssetGenerator extends GeneratorBase {
    * @param \Drupal\editor_assets\EditorAssetProcessorInterface $asset_processor
    *   The processor to use to convert bubbled libraries to importable asset
    *   models.
-   *
-   * @constructor
    */
   public function __construct(EditorAssetProcessorInterface $asset_processor) {
     $this->assetProcessor = $asset_processor;

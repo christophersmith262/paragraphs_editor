@@ -20,7 +20,7 @@ interface CommandContextInterface {
   /**
    * Gets the entity that the field belongs to.
    *
-   * @return Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\Core\Entity\EntityInterface
    *   The entity that contains the field being edited.
    */
   public function getEntity();
@@ -28,7 +28,7 @@ interface CommandContextInterface {
   /**
    * Gets the field configuration for the field being edited.
    *
-   * @return Drupal\field\FieldConfigInterface
+   * @return \Drupal\field\FieldConfigInterface
    *   The field configuration object for the field being edited.
    */
   public function getFieldConfig();
@@ -44,7 +44,7 @@ interface CommandContextInterface {
   /**
    * Gets a filter object for determining allowed paragraph bundles.
    *
-   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
+   * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
    *   A filter object for getting information about allowed bundles.
    */
   public function getBundleFilter();
@@ -52,7 +52,7 @@ interface CommandContextInterface {
   /**
    * Gets the edit buffer for the editor instance.
    *
-   * @return Drupal\paragraphs_editor\EditorCommand\EditBufferInterface
+   * @return \Drupal\paragraphs_editor\EditorCommand\EditBufferInterface
    *   The edit buffer associated with the editor instance that command pertains
    *   to.
    */
@@ -151,7 +151,7 @@ interface CommandContextInterface {
    * @param array $params
    *   An optional array of query parameters to add to the Url object.
    *
-   * @return Drupal\Core\Url
+   * @return \Drupal\Core\Url
    *   The Drupal url object pertaining to the command.
    */
   public function createCommandUrl($command, array $params = []);
