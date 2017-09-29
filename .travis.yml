@@ -1,3 +1,4 @@
+#
 # @file
 # .travis.yml - Drupal for Travis CI Integration
 #
@@ -67,17 +68,17 @@ env:
     - DRUPAL_TI_BEHAT_DRIVER="phantomjs"
     - DRUPAL_TI_BEHAT_BROWSER="firefox"
 
+    # Code coverage via coveralls.io
+    - DRUPAL_TI_COVERAGE="satooshi/php-coveralls:0.6.*"
+    # This needs to match your .coveralls.yml file.
+    - DRUPAL_TI_COVERAGE_FILE="$TRAVIS_BUILD_DIR/tests/build/logs/clover.xml"
+
     # PHPUnit specific commandline arguments.
     - DRUPAL_TI_PHPUNIT_ARGS=""
     # Specifying the phpunit-core src/ directory is useful when e.g. a vendor/
     # directory is present in the module directory, which phpunit would then
     # try to find tests in. This option is relative to $TRAVIS_BUILD_DIR.
     #- DRUPAL_TI_PHPUNIT_CORE_SRC_DIRECTORY="./tests/src"
-
-    # Code coverage via coveralls.io
-    - DRUPAL_TI_COVERAGE="satooshi/php-coveralls:0.6.*"
-    # This needs to match your .coveralls.yml file.
-    - DRUPAL_TI_COVERAGE_FILE="build/logs/clover.xml"
 
     # Debug options
     #- DRUPAL_TI_DEBUG="-x -v"
@@ -103,6 +104,7 @@ before_install:
   - composer self-update
   - cd ./tests
   - composer global require "lionsad/drupal_ti:1.*"
+  - export DRUPAL_TI_PHPUNIT_ARGS=$(./drupal_ti/before/get-coverage.sh)
   - drupal-ti --include drupal_ti/before/before_script.sh
   - drupal-ti before_install
 
@@ -116,6 +118,7 @@ script:
   - drupal-ti script
 
 after_script:
+  - drupal-ti --include drupal_ti/after/after_script.sh
   - drupal-ti after_script
 
 notifications:
