@@ -40,11 +40,11 @@ class ParagraphAccessCheck implements AccessInterface {
    * located within the editor context and the user has access to the editor
    * context.
    *
-   * @param Symfony\Component\Routing\Route $route
+   * @param \Symfony\Component\Routing\Route $route
    *   The route the user is attempting to access.
-   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match for the route the user is attempting to access.
-   * @param Drupal\Core\Session\AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -70,8 +70,8 @@ class ParagraphAccessCheck implements AccessInterface {
     }
 
     // If the paragraph item cannot be located we treat it as an access denied.
-    $paragraph = $this->itemFactory->getBufferItem($context, $paragraph_uuid);
-    return AccessResult::allowedIf($paragraph);
+    $exists = !!$this->itemFactory->getBufferItem($context, $paragraph_uuid);
+    return AccessResult::allowedIf($exists);
   }
 
 }

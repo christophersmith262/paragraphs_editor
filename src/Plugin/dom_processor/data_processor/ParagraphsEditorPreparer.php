@@ -3,14 +3,15 @@
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\ParagraphsEditorElementTrait;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -126,8 +127,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
 
     $field_value_wrapper = $data->get('field.wrapper');
 
-    // Apply the default format if none is already provided.
-    $filter_format = $field_value_wrapper->getFormat();
+    $data = $data->tag($field_value_wrapper->getFormat();
 
     // Create a new editing context for the field.
     $field_definition = $data->get('field.items')->getFieldDefinition();
@@ -176,7 +176,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   protected function expandParagraph(SemanticDataInterface $data, \DOMElement $paragraph_node, ParagraphInterface $entity, $field_context_id = NULL) {
 
-    if ($field_context_id) {
+    if (empty($field_context_id)) {
       $this->setAttribute($paragraph_node, 'widget', '<context>', $field_context_id);
 
       $prerender_count = $data->get('settings.prerender_count');
@@ -189,6 +189,8 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
       $field_definition = $items->getFieldDefinition();
 
       if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+        $items = TypeUtility::ensureEntityReferenceRevisions($items);
+
         $field_node = $this->createElement($paragraph_node->ownerDocument, 'field', [
           '<name>' => $field_definition->getName(),
         ]);
@@ -253,6 +255,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *   editor field widget.
    */
   protected function finishResult(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $field_value_wrapper = $data->get('field.wrapper');
 
     // Add the core paragraphs editor library.
     $result = $result->merge([
@@ -282,7 +285,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ]);
 
     $result = $result->merge([
-      'filter_format' => 'paragraphs_ckeditor',
+      'filter_format' => $field_value_wrapper->getFormat(),
     ]);
 
     return $result;

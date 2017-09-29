@@ -3,13 +3,13 @@
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor;
+use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
-use Drupal\Tests\UnitTestCase;
+use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
+use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor

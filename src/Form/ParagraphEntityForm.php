@@ -98,7 +98,6 @@ class ParagraphEntityForm extends ContentEntityForm {
     if ($saved) {
       $saved = unserialize($saved);
       foreach ($saved as $key => $value) {
-        $value = $value;
         $this->context->addAdditionalContext($key, $value);
       }
     }

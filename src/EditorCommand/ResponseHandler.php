@@ -120,7 +120,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for opening a form.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
    * @param mixed $contents
    *   A render array or markup string containing the contents to be delivered.
@@ -137,7 +137,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for delivering a paragraph.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be rendered in the response.
@@ -154,7 +154,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for delivering a duplicated paragraph.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to be duplicated in the response.
@@ -175,7 +175,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Generates an ajax response for closing a form.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
@@ -190,7 +190,7 @@ class ResponseHandler implements ResponseHandlerInterface {
   /**
    * Gets a bundle select form object to deliver the user.
    *
-   * @param \Drupal\paragraphs_editor\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is executing within.
    *
    * @return array

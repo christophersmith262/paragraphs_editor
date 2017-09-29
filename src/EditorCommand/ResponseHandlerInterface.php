@@ -31,7 +31,7 @@ interface ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
    *
-   * @return Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverBundleSelectForm(CommandContextInterface $context);
@@ -44,7 +44,7 @@ interface ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to show the edit form for.
    *
-   * @return Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverParagraphEditForm(CommandContextInterface $context, EditBufferItemInterface $item);
@@ -61,7 +61,7 @@ interface ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The buffer item to show the edit form for.
    *
-   * @return Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverRenderedParagraph(CommandContextInterface $context, EditBufferItemInterface $item);
@@ -76,7 +76,7 @@ interface ResponseHandlerInterface {
    * @param string $ckeditor_widget_id
    *   The Editor widget instance id that the duplicate will be copied to.
    *
-   * @return Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverDuplicate(CommandContextInterface $context, EditBufferItemInterface $item, $ckeditor_widget_id);
@@ -87,7 +87,7 @@ interface ResponseHandlerInterface {
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context the command is being executed in.
    *
-   * @return Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response
    *   A symfony response object to return to the user.
    */
   public function deliverCloseForm(CommandContextInterface $context);

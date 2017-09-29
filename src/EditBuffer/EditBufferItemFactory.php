@@ -3,6 +3,7 @@
 namespace Drupal\paragraphs_editor\EditBuffer;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 
@@ -64,10 +65,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
       if (!$item) {
         $paragraph = $this->getParagraph($paragraph_uuid);
         if ($paragraph) {
-          if ($paragraph->getParentEntity() != $context->getEntity()) {
-            $paragraph = NULL;
-          }
-          else {
+          if ($paragraph->getParentEntity() == $context->getEntity()) {
             $item = $buffer->createItem($paragraph);
           }
         }
@@ -153,12 +151,12 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    * @param string $paragraph_uuid
    *   The uuid of the paragraph to be retrieved.
    *
-   * @return \Drupal\paragraphs\ParagraphInterface
+   * @return \Drupal\paragraphs\ParagraphInterface|null
    *   The retrieved paragraph, or NULL if no such paragraph could be found.
    */
   protected function getParagraph($paragraph_uuid) {
     $entities = $this->storage->loadByProperties(['uuid' => $paragraph_uuid]);
-    if ($entities) {
+    if (!empty($entities)) {
       return reset($entities);
     }
     else {

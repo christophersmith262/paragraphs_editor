@@ -75,7 +75,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *   The ajax response for the command.
    */
   public function insert(CommandContextInterface $context, $bundle_name = NULL) {
-    if (!$bundle_name) {
+    if (empty($bundle_name)) {
       $response = $this->responseHandler->deliverBundleSelectForm($context);
     }
     else {

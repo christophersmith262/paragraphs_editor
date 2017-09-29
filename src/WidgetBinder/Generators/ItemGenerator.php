@@ -37,7 +37,7 @@ class ItemGenerator extends GeneratorBase {
    */
   public function processParagraph(WidgetBinderData $data, WidgetBinderDataCompilerState $state, ParagraphInterface $paragraph) {
     $top = $this->topPath($state);
-    if ($top) {
+    if (!empty($top)) {
       $this->pushPath($state, [
         'type' => 'widget',
         'uuid' => $paragraph->uuid(),
@@ -57,7 +57,6 @@ class ItemGenerator extends GeneratorBase {
    * {@inheritdoc}
    */
   public function processField(WidgetBinderData $data, WidgetBinderDataCompilerState $state, EntityReferenceFieldItemListInterface $items, $is_editor_field) {
-    $paragraph = $items->getEntity();
     $field_definition = $items->getFieldDefinition();
     $path = [
       'type' => 'field',

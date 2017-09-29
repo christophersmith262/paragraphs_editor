@@ -3,11 +3,12 @@
 namespace Drupal\paragraphs_editor\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -39,9 +40,16 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
   protected $entityDisplayRepository;
 
   /**
+   * The dom processor for processing embed codes.
+   *
+   * @var \Drupal\dom_processor\DomProcessor\DomProcessorInterface
+   */
+  protected $domProcessor;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, FieldValueManagerInterface $field_value_manager, EntityDisplayRepositoryInterface $entity_display_repository, $dom_processor) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, FieldValueManagerInterface $field_value_manager, EntityDisplayRepositoryInterface $entity_display_repository, DomProcessorInterface $dom_processor) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->fieldValueManager = $field_value_manager;
     $this->entityDisplayRepository = $entity_display_repository;
@@ -113,6 +121,7 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    $elements = [];
     $elements['view_mode'] = [
       '#type' => 'select',
       '#options' => $this->entityDisplayRepository->getViewModeOptions('paragraph'),

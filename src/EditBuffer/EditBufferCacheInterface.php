@@ -15,8 +15,8 @@ interface EditBufferCacheInterface {
    * @param string $context_string
    *   The id of the context the buffer is associated with.
    *
-   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface
-   *   The retrieved cache.
+   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
+   *   The retrieved edit buffer.
    */
   public function get($context_string);
 

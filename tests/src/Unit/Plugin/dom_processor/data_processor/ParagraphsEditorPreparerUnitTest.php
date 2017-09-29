@@ -2,21 +2,21 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\data_processor;
 
-use Prophecy\Argument;
-use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
-use Drupal\paragraphs\ParagraphInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer;
-use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
-use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
-use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
 use Drupal\Tests\UnitTestCase;
-use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
-use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
+use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
+use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
+use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
+use Drupal\paragraphs\ParagraphInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
+use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
+use Prophecy\Argument;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer

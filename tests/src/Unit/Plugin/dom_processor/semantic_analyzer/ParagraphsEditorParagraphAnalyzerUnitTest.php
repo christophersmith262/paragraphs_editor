@@ -2,16 +2,16 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\semantic_analyzer;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\dom_processor\DomProcessor\DomProcessorError;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer;
+use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
-use Drupal\Tests\UnitTestCase;
+use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
+use Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer

@@ -5,11 +5,11 @@ namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
-use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
-use Drupal\Tests\UnitTestCase;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator

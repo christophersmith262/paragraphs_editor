@@ -2,8 +2,8 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder;
 
-use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 /**
  * Holds the state of the widget binder data compiler.

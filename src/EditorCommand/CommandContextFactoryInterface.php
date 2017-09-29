@@ -2,6 +2,8 @@
 
 namespace Drupal\paragraphs_editor\EditorCommand;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+
 /**
  * Provides an interface for a command context factory.
  *
@@ -57,7 +59,7 @@ interface CommandContextFactoryInterface {
   /**
    * Frees the context from persistent storage.
    *
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context whose related storage will be freed.
    */
   public function free(CommandContextInterface $context);
@@ -81,5 +83,16 @@ interface CommandContextFactoryInterface {
    *   An array in the form: [field_id, builid_id, entity_id].
    */
   public function parseContextString($context_string);
+
+  /**
+   * Creates a bundle filter object.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to create the filter for.
+   *
+   * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
+   *   A filter object for the field definition.
+   */
+  public function createBundleFilter(FieldDefinitionInterface $field_definition);
 
 }

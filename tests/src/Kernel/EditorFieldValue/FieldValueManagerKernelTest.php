@@ -5,9 +5,9 @@ namespace Drupal\Tests\paragraphs_editor\Kernel\EditorFieldValue;
 use Drupal\Core\Entity\ContentEntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\paragraphs_editor\Traits\TestContentGenerationTrait;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager;
-use Drupal\Tests\paragraphs_editor\Traits\TestContentGenerationTrait;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager

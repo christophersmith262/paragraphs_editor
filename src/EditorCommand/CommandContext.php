@@ -47,7 +47,7 @@ class CommandContext implements CommandContextInterface {
    *
    * If this is empty, we allow all paragraph items.
    *
-   * @var \Drupal\paragraphs_editor\EditorCommand\BundleFilterInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
    */
   protected $bundleFilter;
 
@@ -221,7 +221,7 @@ class CommandContext implements CommandContextInterface {
    * {@inheritdoc}
    */
   public function getAdditionalContext($key = NULL) {
-    if ($key) {
+    if (!empty($key)) {
       return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
     }
     else {

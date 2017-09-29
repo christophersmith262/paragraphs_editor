@@ -3,8 +3,8 @@
 namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
 
@@ -97,7 +97,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   public function create($field_config_id, $entity_id, array $settings = [], $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
 
     // If a widget build id isn't specified, we create a new one.
-    if (!$widget_build_id) {
+    if (!empty($widget_build_id)) {
       $widget_build_id = $this->generateBuildId();
     }
 
@@ -113,7 +113,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
       if ($entity_id) {
-        $entity = $entity_storage->load($entity_id, $context_keys);
+        $entity = $entity_storage->load($entity_id);
         $context_keys[] = $entity_id;
       }
       else {
@@ -167,13 +167,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
-   * Creates a bundle filter object.
-   *
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The field definition to create the filter for.
-   *
-   * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   *   A filter object for the field definition.
+   * {@inheritdoc}
    */
   public function createBundleFilter(FieldDefinitionInterface $field_definition) {
     return new ParagraphBundleFilter($this->bundleInfo, $field_definition);

@@ -2,8 +2,8 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder;
 
-use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Render\RenderContext;
 use Drupal\paragraphs\ParagraphInterface;
 
 /**

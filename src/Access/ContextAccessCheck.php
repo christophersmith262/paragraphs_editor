@@ -48,11 +48,11 @@ class ContextAccessCheck implements AccessInterface {
    * This method will also filter out "invalid" context objects before the
    * actual controller method that executes the request is called.
    *
-   * @param Symfony\Component\Routing\Route $route
+   * @param \Symfony\Component\Routing\Route $route
    *   The route the user is attempting to access.
-   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match for the route the user is attempting to access.
-   * @param Drupal\Core\Session\AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -74,10 +74,7 @@ class ContextAccessCheck implements AccessInterface {
       // If no field config could be loaded for the context, we treat this as
       // the user not being able to access the endpoint.
       $field_config = $context->getFieldConfig();
-      if (!$field_config) {
-        $access = AccessResult::forbidden();
-      }
-      else {
+      if ($field_config) {
         $entity_type = $field_config->getTargetEntityTypeId();
         $entity_bundle = $field_config->getTargetBundle();
         $entity = $context->getEntity();
@@ -93,9 +90,12 @@ class ContextAccessCheck implements AccessInterface {
             ->createAccess($entity_bundle, $account, [], TRUE);
         }
       }
+      else {
+        return AccessResult::forbidden();
+      }
     }
 
-    if ($chain) {
+    if (!empty($chain)) {
       $access = AccessResult::allowed();
       foreach ($chain as $next_access) {
         $access = $access->andIf($next_access);

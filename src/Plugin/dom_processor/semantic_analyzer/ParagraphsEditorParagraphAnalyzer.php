@@ -4,8 +4,8 @@ namespace Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\Plugin\dom_processor\SemanticAnalyzerInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
@@ -126,7 +126,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
       ],
     ];
 
-    while ($attempts) {
+    while (!empty($attempts)) {
       $attempt = array_shift($attempts);
       try {
         if ($attempt['type'] == 'context') {
@@ -153,7 +153,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
           $matches = $this->storage->loadByProperties([
             'uuid' => $uuid,
           ]);
-          if ($matches) {
+          if (!empty($matches)) {
             return $data->tag('paragraph', [
               'entity' => reset($matches),
             ]);
@@ -161,6 +161,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
         }
       }
       catch (\Exception $e) {
+        throw new DomProcessorError("Unkown load type.");
       }
     }
 

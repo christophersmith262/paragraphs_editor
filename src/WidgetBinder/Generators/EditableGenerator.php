@@ -83,7 +83,7 @@ class EditableGenerator extends GeneratorBase {
       // Save the editable in a field mapped state entry.
       $editables = $state->get('editables');
       $editables[$items->getEntity()->uuid()][$items->getFieldDefinition()->id()] = $editable;
-      $editables = $state->set('editables', $editables);
+      $state->set('editables', $editables);
     }
   }
 

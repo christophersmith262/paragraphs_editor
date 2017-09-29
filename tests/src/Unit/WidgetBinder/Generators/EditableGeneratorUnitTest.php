@@ -4,15 +4,15 @@ namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
+use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
+use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\ContextGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\EditableGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
-use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
-use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
-use Drupal\Tests\UnitTestCase;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\WidgetBinder\Generators\EditableGenerator

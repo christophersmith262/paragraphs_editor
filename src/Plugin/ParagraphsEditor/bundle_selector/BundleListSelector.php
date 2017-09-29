@@ -2,8 +2,8 @@
 
 namespace Drupal\paragraphs_editor\Plugin\ParagraphsEditor\bundle_selector;
 
-use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -44,7 +44,16 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   protected $context;
 
   /**
-   * {@inheritdoc}
+   * Creates a bundle selector form object.
+   *
+   * @param string $plugin_id
+   *   The bundle selector plugin id.
+   * @param mixed $plugin_definition
+   *   The bundle selector plugin definition.
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   *   The editor command context to build the bundle form for.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct($plugin_id, $plugin_definition, CommandContextInterface $context, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($entity_type_manager->getDefinition('paragraphs_type'), $entity_type_manager->getStorage('paragraphs_type'));
@@ -169,6 +178,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function buildHeader() {
+    $header = [];
     $header['label'] = t('Type');
     $header['operations'] = '';
     return $header;
@@ -178,6 +188,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    $row = [];
     $row['label'] = $entity->label;
     return $row + parent::buildRow($entity);
   }
@@ -188,6 +199,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   public function buildOperations(EntityInterface $entity) {
     // Create an ajax link that will take the user to an 'insert' endpoint for
     // the bundle the operation relates to.
+    $build = [];
     $build['add'] = [
       '#type' => 'link',
       '#title' => t('Add'),

@@ -14,7 +14,7 @@ class EditBufferCache implements EditBufferCacheInterface {
   /**
    * The back end storage mechanism for storing edit buffers.
    *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
+   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
    */
   protected $storage;
 
@@ -42,7 +42,7 @@ class EditBufferCache implements EditBufferCacheInterface {
   /**
    * Creates an edit buffer cache object.
    *
-   * @param Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $keyvalue_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $keyvalue_factory
    *   The key value factory service for creating a persistent cache.
    * @param int $expiry
    *   The amount of time to allow buffers to live without being automatically
@@ -97,7 +97,7 @@ class EditBufferCache implements EditBufferCacheInterface {
    * {@inheritdoc}
    */
   public function save(EditBufferInterface $buffer) {
-    $this->storage->set($buffer->getContextString(), $buffer, $this->expiry);
+    $this->storage->setWithExpire($buffer->getContextString(), $buffer, $this->expiry);
 
     $parent_cache_key = $buffer->getParentBufferTag();
     if ($parent_cache_key) {

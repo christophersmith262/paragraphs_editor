@@ -2,16 +2,16 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\data_processor {
 
-use Drupal\paragraphs\ParagraphInterface;
-use Drupal\Core\Field\FieldConfigInterface;
+use Drupal\Core\Entity\EntityViewBuilderInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorRenderer;
+use Drupal\Core\Field\FieldConfigInterface;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
-use Drupal\Tests\UnitTestCase;
-use Drupal\Core\Entity\EntityViewBuilderInterface;
-use Drupal\Core\Render\RendererInterface;
+use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
+use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorRenderer;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorRenderer

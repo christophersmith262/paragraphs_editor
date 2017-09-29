@@ -33,7 +33,7 @@ class CommandContextConverter implements ParamConverterInterface {
   /**
    * Creates a paragraphs ckeditor command context route parameter converter.
    *
-   * @param Symfony\Component\HttpFoundation\RequestStack $request_stack
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The symfony request stack service that is managing page requests.
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory to use for creating command contexts.

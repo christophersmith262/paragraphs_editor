@@ -21,7 +21,7 @@ interface FieldValueManagerInterface {
    * function should be deprecated when https://www.drupal.org/node/2620980
    * is released.
    *
-   * @param \Drupal\Core\Field\EntityReferenceRevisionsFieldItemList $items
+   * @param \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList $items
    *   The paragraph field items to iterate over.
    *
    * @return \Drupal\paragraphs\ParagraphInterface[]
@@ -32,7 +32,7 @@ interface FieldValueManagerInterface {
   /**
    * Wraps a paragraphs editor field.
    *
-   * @param \Drupal\Core\Field\EntityReferenceRevisionsFieldItemList $items
+   * @param \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList $items
    *   The paragraph field items to wrap.
    *
    * @return \Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface
@@ -43,7 +43,7 @@ interface FieldValueManagerInterface {
   /**
    * Sets the referenced entities on a paragraphs field.
    *
-   * @param \Drupal\Core\Field\EntityReferenceRevisionsFieldItemList $items
+   * @param \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList $items
    *   The field items to be updated.
    * @param array $entities
    *   The entity values to set on the field items.
@@ -52,7 +52,7 @@ interface FieldValueManagerInterface {
    * @param string $langcode
    *   Overrides the language the paragraph will be saved in.
    *
-   * @return \Drupal\Core\Field\EntityReferenceRevisionsFieldItemList
+   * @return \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList
    *   The updated items object.
    */
   public function setItems(EntityReferenceRevisionsFieldItemList $items, array $entities, $new_revision = FALSE, $langcode = NULL);
@@ -109,6 +109,9 @@ interface FieldValueManagerInterface {
   /**
    * Gets the an element definition by name.
    *
+   * @param string $element_name
+   *   The element name to get the definition for.
+   *
    * @return array
    *   The element definition as defined in services.yml.
    */
@@ -126,6 +129,11 @@ interface FieldValueManagerInterface {
    * $field_value_manager->getAttributeName('widget', '<context>');
    * @endcode
    *
+   * @param string $element_name
+   *   The element name to get the attribute name for.
+   * @param string $attribute_name
+   *   The name of the attribute to get the html name for.
+   *
    * @return string
    *   The attribute name.
    */
@@ -141,6 +149,9 @@ interface FieldValueManagerInterface {
    *
    * Instead, the selector here is built soley from the element tag and
    * attribute names it requires.
+   *
+   * @param string $element_name
+   *   The element name to get the selector for.
    *
    * @return string
    *   The generated selector.

@@ -52,7 +52,7 @@ interface CommandContextInterface {
   /**
    * Gets the edit buffer for the editor instance.
    *
-   * @return \Drupal\paragraphs_editor\EditorCommand\EditBufferInterface
+   * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
    *   The edit buffer associated with the editor instance that command pertains
    *   to.
    */
@@ -172,6 +172,6 @@ interface CommandContextInterface {
    * @param string $key
    *   The name of the context to get.
    */
-  public function getAdditionalContext($key);
+  public function getAdditionalContext($key = NULL);
 
 }

@@ -14,4 +14,6 @@ if [ $(php -r "echo PHP_VERSION_ID;") -ge 70000 ] ; then
   composer require --no-interaction "symfony/yaml:2.*"
   composer update --lock
   ./vendor/bin/coveralls -v
+  wget https://scrutinizer-ci.com/ocular.phar
+  php ocular.phar code-coverage:upload --format=php-clover $DRUPAL_TI_COVERAGE_FILE
 fi
