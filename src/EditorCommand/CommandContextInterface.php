@@ -169,8 +169,11 @@ interface CommandContextInterface {
   /**
    * Gets additional context about the command.
    *
-   * @param string $key
+   * @param string|null $key
    *   The name of the context to get.
+   *
+   * @return mixed
+   *   The value associated with $key or an array of all values if $key is NULL.
    */
   public function getAdditionalContext($key = NULL);
 

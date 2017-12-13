@@ -156,12 +156,8 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    */
   protected function getParagraph($paragraph_uuid) {
     $entities = $this->storage->loadByProperties(['uuid' => $paragraph_uuid]);
-    if (!empty($entities)) {
-      return reset($entities);
-    }
-    else {
-      return NULL;
-    }
+    $entity = reset($entities);
+    return $entity ? $entity : NULL;
   }
 
 }

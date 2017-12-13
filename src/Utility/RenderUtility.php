@@ -81,7 +81,7 @@ class RenderUtility {
    *
    * @param array $variables
    *   An array of variables passed to a preprocess function.
-   * @param \Drupal\Core\Field\FieldItemListInterface $items
+   * @param \Drupal\Core\Field\FieldItemListInterface|null $items
    *   An optional field object to get the information for. If this is not
    *   passed the field items will be extracted from the render array. Passing
    *   NULL is only supported when this is called from hook_preprocess_field().

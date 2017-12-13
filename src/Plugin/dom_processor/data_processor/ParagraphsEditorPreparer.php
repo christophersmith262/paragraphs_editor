@@ -126,8 +126,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ], TRUE);
 
     $field_value_wrapper = $data->get('field.wrapper');
-
-    $data = $data->tag($field_value_wrapper->getFormat();
+    $data = $data->tag($field_value_wrapper->getFormat());
 
     // Create a new editing context for the field.
     $field_definition = $data->get('field.items')->getFieldDefinition();

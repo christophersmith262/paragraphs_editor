@@ -75,13 +75,13 @@ class CommandContext implements CommandContextInterface {
   /**
    * Creates a command context object.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface|null $entity
    *   The entity that the field being edited belongs to.
-   * @param \Drupal\field\FieldConfigInterface $field_config
+   * @param \Drupal\field\FieldConfigInterface|null $field_config
    *   The field configuration object for the field being edited.
-   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface $edit_buffer
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface|null $edit_buffer
    *   The edit buffer associated with the editor instance.
-   * @param \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface $bundle_filter
+   * @param \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface|null $bundle_filter
    *   The bundle filter for determining which paragraph bundles can be children
    *   of this context.
    * @param array $settings

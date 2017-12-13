@@ -33,7 +33,7 @@ interface WidgetBinderDataCompilerInterface {
    * @param string $view_mode
    *   The Drupal view mode name to render the entity using. Defaults to
    *   'default'.
-   * @param string $langcode
+   * @param string|null $langcode
    *   The language to render the entity using (optional).
    *
    * @return \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData

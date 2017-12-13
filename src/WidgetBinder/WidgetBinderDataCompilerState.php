@@ -103,7 +103,7 @@ class WidgetBinderDataCompilerState {
   /**
    * Gets a generator by its generator id.
    *
-   * @return \Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface
+   * @return \Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface|null
    *   The generator service implementation assocaited with a generator id, or
    *   NULL if no such generator exists.
    */
@@ -114,7 +114,7 @@ class WidgetBinderDataCompilerState {
   /**
    * Gets a key from the temporary state store.
    *
-   * @param string $key
+   * @param string|null $key
    *   A key entry to get the value for, or NULL to return an array of all
    *   values.
    *

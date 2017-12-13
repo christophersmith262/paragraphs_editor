@@ -49,7 +49,7 @@ interface FieldValueManagerInterface {
    *   The entity values to set on the field items.
    * @param bool $new_revision
    *   Set to true to create a new revision when the items are saved.
-   * @param string $langcode
+   * @param string|null $langcode
    *   Overrides the language the paragraph will be saved in.
    *
    * @return \Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList

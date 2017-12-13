@@ -67,7 +67,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
-   * @param string $bundle_name
+   * @param string|null $bundle_name
    *   The name of a paragraph bundle to be inserted or NULL to display the
    *   bundle selection form.
    *

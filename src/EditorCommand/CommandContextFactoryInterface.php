@@ -21,7 +21,7 @@ interface CommandContextFactoryInterface {
    *   The entity id of the entity that owns the field being edited.
    * @param array $settings
    *   The field widget settings for the editor.
-   * @param string $widget_build_id
+   * @param string|null $widget_build_id
    *   A unique random string to identify an editor instance.
    *
    * @return \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface

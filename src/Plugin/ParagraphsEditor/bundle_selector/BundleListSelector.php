@@ -44,6 +44,13 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
   protected $context;
 
   /**
+   * The number of bundles to show on a page.
+   *
+   * @var int
+   */
+  protected $limit = 10;
+
+  /**
    * Creates a bundle selector form object.
    *
    * @param string $plugin_id
