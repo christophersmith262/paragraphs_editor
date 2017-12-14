@@ -64,10 +64,8 @@ class ContextAccessCheck implements AccessInterface {
     $ands = explode('+', $requirement);
     $chain = [];
     foreach ($ands as $requirement) {
-      if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
-        $context = $route_match->getParameter($matches[1]);
-      }
-      else {
+      $context = static::extractContext($route_match, $requirement);
+      if (!$context) {
         return AccessResult::forbidden();
       }
 
@@ -106,6 +104,26 @@ class ContextAccessCheck implements AccessInterface {
     }
 
     return $access;
+  }
+
+  /**
+   * Extracts the context from a route match, given a requirement.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match for the route the user is attempting to access.
+   * @param string $requirement
+   *   The requirement string to get the parameter name from.
+   *
+   * @return string|null
+   *   The extracted context id or NULL if none could be extracted.
+   */
+  public static function extractContext(RouteMatchInterface $route_match, $requirement) {
+    if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
+      return $route_match->getParameter($matches[1]);
+    }
+    else {
+      return NULL;
+    }
   }
 
 }

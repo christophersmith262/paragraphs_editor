@@ -5,6 +5,7 @@ namespace Drupal\paragraphs_editor\Plugin\Field\FieldWidget;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -270,7 +272,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
-    $field_name = $this->fieldDefinition->getName();
+    $field_name = $this->getFieldConfig()->getName();
     $path = array_merge($form['#parents'], [$field_name]);
     $values = NestedArray::getValue($form_state->getValues(), $path);
     $this->process('update', $items, $form_state, $values['markup']['format'], $values['markup']['value'], $values['context_id']);
@@ -287,7 +289,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   protected function mergeDefaults() {
-    $this->settings += $this->fieldDefinition->getThirdPartySettings('paragraphs_editor');
+    $this->settings += $this->getFieldConfig()->getThirdPartySettings('paragraphs_editor');
     $this->settings += static::defaultSettings();
     $this->defaultSettingsMerged = TRUE;
   }
@@ -335,6 +337,12 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       $format = $this->getSetting('text_format');
     }
 
+    // Ensure that we can get an entity to savethe updates to.
+    $form_object = $form_state->getFormObject();
+    if (!$form_object instanceof EntityFormInterface) {
+      throw new \Exception('Could not locate entity to save changes to in paragraphs editor widget.');
+    }
+
     // Check revisioning status.
     $entity = $form_state->getFormObject()->getEntity();
     $new_revision = FALSE;
@@ -362,6 +370,16 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       'settings' => $this->getSettings(),
       'filter_format' => $format,
     ]);
+  }
+
+  /**
+   * Safely gets the field config associated with this widget.
+   *
+   * @return \Drupal\Core\Field\FieldConfigInterface
+   *   The field config object.
+   */
+  protected function getFieldConfig() {
+    return TypeUtility::ensureFieldConfig($this->fieldDefinition);
   }
 
 }

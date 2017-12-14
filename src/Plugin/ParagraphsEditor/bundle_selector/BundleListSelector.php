@@ -48,7 +48,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    *
    * @var int
    */
-  protected $limit = 10;
+  protected $limit = 15;
 
   /**
    * Creates a bundle selector form object.
@@ -142,8 +142,8 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
     $input = $form_state->getUserInput();
     $search = isset($input['search']) ? $input['search'] : '';
     $search = trim(preg_replace('/\(.*\)$/', '', $search));
-    $this->entities = $this->load($search);
-    foreach ($this->entities as $entity) {
+    $entities = $this->load($search);
+    foreach ($entities as $entity) {
       $row = $this->buildRow($entity);
       if (isset($row['label'])) {
         $row['label'] = ['#markup' => $row['label']];
@@ -196,7 +196,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    */
   public function buildRow(EntityInterface $entity) {
     $row = [];
-    $row['label'] = $entity->label;
+    $row['label'] = $entity->label();
     return $row + parent::buildRow($entity);
   }
 
@@ -211,7 +211,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
       '#type' => 'link',
       '#title' => t('Add'),
       '#url' => $this->context->createCommandUrl('insert', [
-        'bundle_name' => $entity->id,
+        'bundle_name' => $entity->id(),
       ]),
       '#attributes' => [
         'class' => [
@@ -242,7 +242,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
    */
   public function load($search = NULL) {
     $entity_ids = $this->getEntityIds($search);
-    $entities = $this->storage->loadMultipleOverrideFree($entity_ids);
+    $entities = $this->storage->loadMultiple($entity_ids);
 
     // Sort the entities using the entity class's sort() method.
     // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
@@ -267,7 +267,8 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
     if ($this->limit) {
       $query->pager($this->limit);
     }
-    return $query->execute();
+    $results = $query->execute();
+    return is_array($results) ? $results : [];
   }
 
 }

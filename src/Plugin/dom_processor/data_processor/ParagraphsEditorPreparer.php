@@ -189,6 +189,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
 
       if ($this->fieldValueManager->isParagraphsField($field_definition)) {
         $items = TypeUtility::ensureEntityReferenceRevisions($items);
+        $field_definition = TypeUtility::ensureFieldConfig($field_definition);
 
         $field_node = $this->createElement($paragraph_node->ownerDocument, 'field', [
           '<name>' => $field_definition->getName(),

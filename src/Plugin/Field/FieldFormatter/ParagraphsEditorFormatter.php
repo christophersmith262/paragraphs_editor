@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

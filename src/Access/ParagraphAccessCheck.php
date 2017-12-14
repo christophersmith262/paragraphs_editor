@@ -54,10 +54,8 @@ class ParagraphAccessCheck implements AccessInterface {
     list($context_param_name, $paragraph_param_name) = explode(':', $route->getRequirement($this->requirementsKey) . ':');
 
     // Load the context from the parameters.
-    if (preg_match('/\{(.*)\}$/', $context_param_name, $matches)) {
-      $context = $route_match->getParameter($matches[1]);
-    }
-    else {
+    $context = ContextAccessCheck::extractContext($route_match, $context_param_name);
+    if (!$context) {
       return AccessResult::forbidden();
     }
 

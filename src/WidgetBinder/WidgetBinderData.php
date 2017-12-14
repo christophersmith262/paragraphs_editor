@@ -123,10 +123,10 @@ class WidgetBinderData {
   /**
    * Maerges the models of another data object into this object.
    *
-   * @param \Drupal\paragaraphs_editor\WidgetBinder\WidgetBinderData $data
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData $data
    *   The data to be merged.
    *
-   * @return \Drupal\paragaraphs_editor\WidgetBinder\WidgetBinderData
+   * @return \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData
    *   Returns the mreged $this object.
    */
   public function merge(WidgetBinderData $data) {
