@@ -26,7 +26,7 @@ class CommandContextConverter implements ParamConverterInterface {
   /**
    * The current page request to pull widget field settings from.
    *
-   * @var Symfony\Component\Routing\Route
+   * @var \Symfony\Component\HttpFoundation\Request
    */
   protected $request;
 

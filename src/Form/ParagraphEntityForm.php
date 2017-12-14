@@ -10,6 +10,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 
 /**
@@ -124,7 +125,7 @@ class ParagraphEntityForm extends ContentEntityForm {
     $context = $this->bootstrapContext($form_state);
 
     // Save the changes to the editor buffer.
-    $this->bufferItem->overwrite($this->entity);
+    $this->bufferItem->overwrite(TypeUtility::ensureParagraph($this->entity));
     $this->bufferItem->save();
 
     // Make properties available to the static ajax handler.

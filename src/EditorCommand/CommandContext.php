@@ -73,6 +73,13 @@ class CommandContext implements CommandContextInterface {
   protected $additionalContext = [];
 
   /**
+   * The random build id identifying this context instance.
+   *
+   * @var string|null
+   */
+  protected $buildId = NULL;
+
+  /**
    * Creates a command context object.
    *
    * @param \Drupal\Core\Entity\EntityInterface|null $entity
@@ -93,8 +100,10 @@ class CommandContext implements CommandContextInterface {
     $this->editBuffer = $edit_buffer;
     $this->bundleFilter = $bundle_filter;
     $this->settings = $settings;
-    $context_parts = explode(':', $edit_buffer->getContextString());
-    $this->buildId = end($context_parts);
+    if ($edit_buffer) {
+      $context_parts = explode(':', $edit_buffer->getContextString());
+      $this->buildId = end($context_parts);
+    }
   }
 
   /**
@@ -109,13 +118,6 @@ class CommandContext implements CommandContextInterface {
    */
   public function getFieldConfig() {
     return $this->fieldDefinition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isValidBundle($bundle_name) {
-    return !empty($this->allowedBundles[$bundle_name]) || empty($this->allowedBundles);
   }
 
   /**

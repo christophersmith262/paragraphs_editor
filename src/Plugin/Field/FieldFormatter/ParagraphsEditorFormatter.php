@@ -154,7 +154,8 @@ class ParagraphsEditorFormatter extends FormatterBase implements ContainerFactor
    * {@inheritdoc}
    */
   protected function mergeDefaults() {
-    $this->settings += $this->fieldDefinition->getThirdPartySettings('paragraphs_editor');
+    $field_config = TypeUtility::ensureFieldConfig($this->fieldDefinition);
+    $this->settings += $field_config->getThirdPartySettings('paragraphs_editor');
     $this->settings += static::defaultSettings();
     $this->defaultSettingsMerged = TRUE;
   }

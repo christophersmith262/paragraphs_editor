@@ -165,7 +165,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *   The dom element to be expanded.
    * @param \Drupal\paragraphs\ParagraphInterface $entity
    *   The paragraph entity associated with the dom element.
-   * @param string $field_context_id
+   * @param string|null $field_context_id
    *   The id of the editing context to which the entity belongs.
    *
    * @note This function should not get contextual data from the $data variable.

@@ -5,7 +5,7 @@ namespace Drupal\paragraphs_editor\EditorCommand;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
 
 /**
@@ -109,7 +109,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     try {
       $context_keys = [$field_config_id, $widget_build_id];
       $field_config = $this->fieldConfigStorage->load($field_config_id);
-      $entity_type = $field_config->getTargetEntityTypeId();
+      $entity_type = $field_config->getEntityTypeId();
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
       if ($entity_id) {
@@ -169,8 +169,8 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function createBundleFilter(FieldDefinitionInterface $field_definition) {
-    return new ParagraphBundleFilter($this->bundleInfo, $field_definition);
+  public function createBundleFilter(FieldConfigInterface $field_config) {
+    return new ParagraphBundleFilter($this->bundleInfo, $field_config);
   }
 
   /**

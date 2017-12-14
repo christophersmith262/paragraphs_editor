@@ -96,7 +96,7 @@ class FieldValueManager implements FieldValueManagerInterface {
    * {@inheritdoc}
    */
   public function wrapItems(EntityReferenceRevisionsFieldItemList $items) {
-    $field_definition = $items->getFieldDefinition();
+    $field_definition = TypeUtility::ensureFieldConfig($items->getFieldDefinition());
     if (!$this->isParagraphsEditorField($field_definition)) {
       throw new \Exception('Attempt to wrap non-paragraphs editor field.');
     }
@@ -207,11 +207,10 @@ class FieldValueManager implements FieldValueManagerInterface {
    * {@inheritdoc}
    */
   public function isParagraphsField(FieldDefinitionInterface $field_definition) {
-    $field_definition = TypeUtility::ensureFieldConfig($field_definition);
-
     if ($field_definition->getType() != 'entity_reference_revisions') {
       return FALSE;
     }
+    $field_definition = TypeUtility::ensureFieldConfig($field_definition);
 
     $target_type = $field_definition->getFieldStorageDefinition()->getSetting('target_type');
     return $target_type == 'paragraph';
@@ -221,11 +220,10 @@ class FieldValueManager implements FieldValueManagerInterface {
    * {@inheritdoc}
    */
   public function isParagraphsEditorField(FieldDefinitionInterface $field_definition) {
-    $field_definition = TypeUtility::ensureFieldConfig($field_definition);
-
     if (!$this->isParagraphsField($field_definition)) {
       return FALSE;
     }
+    $field_definition = TypeUtility::ensureFieldConfig($field_definition);
 
     // We only every allow this widget to be applied to fields that have
     // unlimited cardinality. Otherwise we'd have to deal with keeping track of
@@ -292,14 +290,14 @@ class FieldValueManager implements FieldValueManagerInterface {
   /**
    * Helper function to check if a field is a text field.
    *
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_config
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
    *   The field to check.
    *
    * @return bool
    *   TRUE if it's a paragraphs editor approved text field, FALSE otherwise.
    */
-  protected function isTextField(FieldDefinitionInterface $field_config) {
-    return $field_config->getType() == 'text_long';
+  protected function isTextField(FieldDefinitionInterface $field_definition) {
+    return $field_definition->getType() == 'text_long';
   }
 
 }

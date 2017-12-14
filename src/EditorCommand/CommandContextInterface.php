@@ -34,14 +34,6 @@ interface CommandContextInterface {
   public function getFieldConfig();
 
   /**
-   * Returns whether or not a bundle can be a member of the field being edited.
-   *
-   * @return bool
-   *   TRUE if the bundle is supported, FALSE otherwise.
-   */
-  public function isValidBundle($bundle_name);
-
-  /**
    * Gets a filter object for determining allowed paragraph bundles.
    *
    * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface

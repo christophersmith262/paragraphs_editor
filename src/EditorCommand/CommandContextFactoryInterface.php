@@ -2,7 +2,7 @@
 
 namespace Drupal\paragraphs_editor\EditorCommand;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldConfigInterface;
 
 /**
  * Provides an interface for a command context factory.
@@ -93,6 +93,6 @@ interface CommandContextFactoryInterface {
    * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
    *   A filter object for the field definition.
    */
-  public function createBundleFilter(FieldDefinitionInterface $field_definition);
+  public function createBundleFilter(FieldConfigInterface $field_config);
 
 }
