@@ -131,13 +131,15 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
       try {
         if ($attempt['type'] == 'context') {
           $context = $this->contextFactory->get($attempt['context_id']);
-          $edit_buffer = $context->getEditBuffer();
-          $item = $edit_buffer->getItem($uuid);
-          if ($item) {
-            return $data->tag('paragraph', [
-              'entity' => $item->getEntity(),
-              'context_id' => $attempt['context_id'],
-            ]);
+          if (!empty($context)) {
+            $edit_buffer = $context->getEditBuffer();
+            $item = $edit_buffer->getItem($uuid);
+            if ($item) {
+              return $data->tag('paragraph', [
+                'entity' => $item->getEntity(),
+                'context_id' => $attempt['context_id'],
+              ]);
+            }
           }
         }
         elseif ($attempt['type'] == 'items' && $attempt['items']) {

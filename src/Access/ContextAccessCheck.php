@@ -65,7 +65,7 @@ class ContextAccessCheck implements AccessInterface {
     $chain = [];
     foreach ($ands as $requirement) {
       $context = static::extractContext($route_match, $requirement);
-      if (!$context) {
+      if (empty($context)) {
         return AccessResult::forbidden();
       }
 
@@ -114,7 +114,7 @@ class ContextAccessCheck implements AccessInterface {
    * @param string $requirement
    *   The requirement string to get the parameter name from.
    *
-   * @return string|null
+   * @return \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface|null
    *   The extracted context id or NULL if none could be extracted.
    */
   public static function extractContext(RouteMatchInterface $route_match, $requirement) {

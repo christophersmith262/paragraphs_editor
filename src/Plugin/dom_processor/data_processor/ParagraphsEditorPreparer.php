@@ -126,7 +126,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ], TRUE);
 
     $field_value_wrapper = $data->get('field.wrapper');
-    $data = $data->tag($field_value_wrapper->getFormat());
+    $data = $data->tag('filter_format', $field_value_wrapper->getFormat());
 
     // Create a new editing context for the field.
     $field_definition = $data->get('field.items')->getFieldDefinition();
@@ -152,6 +152,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     $data = $data->tag('field', [
       'context_id' => $context->getContextString(),
     ], TRUE);
+    $data = $data->tag('root_context', $context->getContextString());
 
     return $result->reprocess($data);
   }
@@ -175,7 +176,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   protected function expandParagraph(SemanticDataInterface $data, \DOMElement $paragraph_node, ParagraphInterface $entity, $field_context_id = NULL) {
 
-    if (empty($field_context_id)) {
+    if (!empty($field_context_id)) {
       $this->setAttribute($paragraph_node, 'widget', '<context>', $field_context_id);
 
       $prerender_count = $data->get('settings.prerender_count');
@@ -235,6 +236,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   protected function compileParagraph(SemanticDataInterface $data, ParagraphInterface $entity, $field_context_id) {
     $context = $this->contextFactory->get($field_context_id);
+    $context->addAdditionalContext('editorContext', $data->get('root_context'));
     $item = $context->getEditBuffer()->createItem($entity);
     $view_mode = $data->get('settings.view_mode');
     $langcode = $data->get('langcode');

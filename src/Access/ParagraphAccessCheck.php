@@ -55,7 +55,7 @@ class ParagraphAccessCheck implements AccessInterface {
 
     // Load the context from the parameters.
     $context = ContextAccessCheck::extractContext($route_match, $context_param_name);
-    if (!$context) {
+    if (empty($context)) {
       return AccessResult::forbidden();
     }
 

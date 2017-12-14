@@ -179,7 +179,7 @@ class FieldValueManager implements FieldValueManagerInterface {
    */
   public function getTextBundles(array $allowed_bundles = []) {
 
-    if (!empty($allowed_bundles)) {
+    if (empty($allowed_bundles)) {
       $results = $this->bundleStorage->getQuery()->execute();
       if (is_array($results)) {
         foreach ($results as $name) {

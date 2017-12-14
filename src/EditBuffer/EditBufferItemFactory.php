@@ -62,7 +62,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
       // it from the database. After loading it, we also have to verify that it
       // belonged to the entity the the editor context belongs to. If that
       // succeeds, we add it to the buffer.
-      if (!$item) {
+      if (empty($item)) {
         $paragraph = $this->getParagraph($paragraph_uuid);
         if ($paragraph) {
           if ($paragraph->getParentEntity() == $context->getEntity()) {

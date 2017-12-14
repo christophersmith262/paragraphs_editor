@@ -127,7 +127,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       'title' => t('Paragraph'),
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
-      'filter_format' => 'paragraphs_ckeditor',
       'view_mode' => 'default',
       'prerender_count' => '10',
     ];
@@ -205,20 +204,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       '#required' => TRUE,
     ];
 
-    $options = [];
-    foreach (filter_formats() as $filter_format) {
-      $options[$filter_format->id()] = $filter_format->label();
-    }
-
-    $elements['filter_format'] = [
-      '#type' => 'select',
-      '#title' => 'Default Filter Format',
-      '#description' => $this->t('The default filter format to use for the Editor instance.'),
-      '#options' => $options,
-      '#default_value' => $this->getSetting('filter_format'),
-      '#required' => TRUE,
-    ];
-
     $elements['view_mode'] = [
       '#type' => 'select',
       '#title' => 'Editor View Mode',
@@ -262,7 +247,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     $summary[] = $this->t('Title: @title', ['@title' => $this->getSetting('title')]);
     $summary[] = $this->t('Bundle Selector: @bundle_selector', ['@bundle_selector' => $bundle_selector['title']]);
     $summary[] = $this->t('Delivery Provider: @delivery_provider', ['@delivery_provider' => $delivery_provider['title']]);
-    $summary[] = $this->t('Default Format: @filter_format', ['@filter_format' => $this->getSetting('filter_format')]);
     $summary[] = $this->t('View Mode: @mode', ['@mode' => $this->getSetting('view_mode')]);
     $summary[] = $this->t('Maximum Pre-Render Items: @prerender_count', ['@prerender_count' => $prerender_count]);
     return $summary;
@@ -333,8 +317,8 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       $format = $field_value_wrapper->getFormat();
     }
 
-    if (!$format) {
-      $format = $this->getSetting('text_format');
+    if (empty($format)) {
+      $format = $this->getFieldConfig()->getThirdPartySetting('paragraphs_editor', 'filter_format');
     }
 
     // Ensure that we can get an entity to savethe updates to.
@@ -344,7 +328,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     }
 
     // Check revisioning status.
-    $entity = $form_state->getFormObject()->getEntity();
+    $entity = $form_object->getEntity();
     $new_revision = FALSE;
     if ($entity instanceof RevisionableInterface) {
       if ($entity->isNewRevision()) {

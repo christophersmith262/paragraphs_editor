@@ -75,7 +75,11 @@ class EditableGenerator extends GeneratorBase {
       $markup = Markup::create($markup);
 
       // Create a EditableField object for this field.
-      $context = $state->getGenerator('context')->getContext($context_id);
+      $context_generator = $state->getGenerator('context');
+      if (!$context_generator instanceof ContextGenerator) {
+        throw new \Exception("Could not locate context generator.");
+      }
+      $context = $context_generator->getContext($context_id);
       $attributes = [
         'class' => [$this->fieldValueManager->getElement('field')['flag']],
         $this->fieldValueManager->getAttributeName('field', '<context>') => $context_id,

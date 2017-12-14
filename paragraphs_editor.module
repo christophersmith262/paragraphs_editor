@@ -49,11 +49,20 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
         '#title' => t('Paragraphs Editor'),
       ];
 
-      $options = \Drupal::service('paragraphs_editor.field_value.manager')->getTextBundles();
-      foreach ($options as &$option) {
-        $option = $option['label'];
+      $filter_format_options = [];
+      foreach (filter_formats() as $filter_format) {
+        $filter_format_options[$filter_format->id()] = $filter_format->label();
       }
-      if ($options) {
+      $default_format = $field_definition->getThirdPartySetting('paragraphs_editor', 'filter_format');
+      if (!$default_format) {
+        $default_format = 'paragraphs_ckeditor';
+      }
+
+      $text_bundle_options = \Drupal::service('paragraphs_editor.field_value.manager')->getTextBundles();
+      foreach ($text_bundle_options as &$text_bundle_option) {
+        $text_bundle_option = $text_bundle_option['label'];
+      }
+      if (!empty($text_bundle_options) && !empty($filter_format_options)) {
         $form['third_party_settings']['paragraphs_editor'] += [
           '#type' => 'fieldset',
           '#title' => t('Paragraphs Editor'),
@@ -67,11 +76,23 @@ function paragraphs_editor_form_field_config_edit_form_alter(&$form, $form_state
             '#type' => 'select',
             '#title' => t('Text Bundle'),
             '#description' => t('The bundle to use as text (markup) input.'),
-            '#options' => $options,
+            '#options' => $text_bundle_options,
             '#default_value' => $field_definition->getThirdPartySetting('paragraphs_editor', 'text_bundle'),
             '#element_validate' => [
               'paragraphs_editor_field_config_edit_form_validate',
             ],
+            '#states' => [
+              'visible' => [
+                ':input[name="third_party_settings[paragraphs_editor][enabled]"]' => ['checked' => TRUE],
+              ],
+            ],
+          ],
+          'filter_format' => [
+            '#type' => 'select',
+            '#title' => 'Default Filter Format',
+            '#description' => t('The default filter format to use for the editor.'),
+            '#options' => $filter_format_options,
+            '#default_value' => $default_format,
             '#states' => [
               'visible' => [
                 ':input[name="third_party_settings[paragraphs_editor][enabled]"]' => ['checked' => TRUE],
@@ -135,6 +156,7 @@ function paragraphs_editor_field_config_edit_form_builder($entity_type, $entity,
     $entity->unsetThirdPartySetting('paragraphs_editor', 'enabled');
     $entity->unsetThirdPartySetting('paragraphs_editor', 'text_bundle');
     $entity->unsetThirdPartySetting('paragraphs_editor', 'text_field');
+    $entity->unsetThirdPartySetting('paragraphs_editor', 'filter_format');
   }
 }
 

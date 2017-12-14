@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 
 /**
  * The default command context factory.
@@ -97,7 +98,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   public function create($field_config_id, $entity_id, array $settings = [], $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
 
     // If a widget build id isn't specified, we create a new one.
-    if (!empty($widget_build_id)) {
+    if (empty($widget_build_id)) {
       $widget_build_id = $this->generateBuildId();
     }
 
@@ -108,8 +109,8 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     // with it instead of the core exception handling.
     try {
       $context_keys = [$field_config_id, $widget_build_id];
-      $field_config = $this->fieldConfigStorage->load($field_config_id);
-      $entity_type = $field_config->getEntityTypeId();
+      $field_config = TypeUtility::ensureFieldConfig($this->fieldConfigStorage->load($field_config_id));
+      $entity_type = $field_config->getTargetEntityTypeId();
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
       if ($entity_id) {
