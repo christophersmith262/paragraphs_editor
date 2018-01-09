@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/christophersmith262/paragraphs_editor.svg?branch=8.x)](https://travis-ci.org/christophersmith262/paragraphs_editor)
-[![Coverage Status](https://coveralls.io/repos/github/christophersmith262/paragraphs_editor/badge.svg?branch=8.x)](https://coveralls.io/github/christophersmith262/paragraphs_editor?branch=8.x)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/christophersmith262/paragraphs_editor/badges/quality-score.png?b=8.x)](https://scrutinizer-ci.com/g/christophersmith262/paragraphs_editor/?branch=8.x)
+[![Code Coverage](https://scrutinizer-ci.com/g/christophersmith262/paragraphs_editor/badges/coverage.png?b=8.x)](https://scrutinizer-ci.com/g/christophersmith262/paragraphs_editor/?branch=8.x)
 
 ## Synopsis
 
