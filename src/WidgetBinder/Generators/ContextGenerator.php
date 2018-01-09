@@ -5,6 +5,7 @@ namespace Drupal\paragraphs_editor\WidgetBinder\Generators;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\GeneratorBase;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
@@ -30,8 +31,6 @@ class ContextGenerator extends GeneratorBase {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory for generating contexts.
-   *
-   * @constructor
    */
   public function __construct(CommandContextFactoryInterface $context_factory) {
     $this->contextFactory = $context_factory;
@@ -64,7 +63,7 @@ class ContextGenerator extends GeneratorBase {
       // edits fro mthe old context to the new one.
       $entity = $items->getEntity();
       $uuid = $entity->uuid();
-      $field_config_id = $items->getFieldDefinition()->id();
+      $field_config_id = TypeUtility::ensureFieldConfig($items->getFieldDefinition())->id();
       if (!empty($regenerate_contexts[$uuid][$field_config_id])) {
         $from_context = $this->contextFactory->get($regenerate_contexts[$uuid][$field_config_id]);
         $context = $this->contextFactory->regenerate($from_context);

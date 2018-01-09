@@ -2,16 +2,16 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\semantic_analyzer;
 
-use Drupal\Core\Field\FieldConfigInterface;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\dom_processor\DomProcessor\DomProcessorError;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
-use Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer;
+use Drupal\Core\Field\FieldConfigInterface;
+use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
-use Drupal\Tests\UnitTestCase;
+use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
+use Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer\ParagraphsEditorParagraphAnalyzer
@@ -44,7 +44,7 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
 
     $prophecy = $this->createFieldValueManagerProphecy();
     if ($has_field) {
-      $items = $this->prophesize(FieldItemListInterface::CLASS)->reveal();
+      $items = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS)->reveal();
       $prophecy = $this->createFieldValueManagerProphecy();
       $data = $this->createDomProcessorData($markup, 'widget', [
         'field' => [
@@ -128,12 +128,12 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
 
       if ($level > 1) {
         $field_config = $this->prophesize(FieldConfigInterface::CLASS)->reveal();
-        $prophecy = $this->prophesize(FieldItemListInterface::CLASS);
+        $prophecy = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS);
         $prophecy->getFieldDefinition()->willReturn($field_config);
         $paragraph->$field_name = $prophecy->reveal();
 
         if ($level > 3) {
-          $wrapper = TRUE;
+          $wrapper = $this->createFieldValueWrapper([]);
         }
         $field_value_manager_prophecy->isParagraphsField($field_config)->willReturn($level > 2);
         $field_value_manager_prophecy->isParagraphsEditorField($field_config)->willReturn($level > 3);
@@ -152,7 +152,12 @@ class ParagraphsEditorParagraphAnalyzerUnitTest extends UnitTestCase {
     if (!$expect_exception) {
       $this->assertEquals($paragraph->$field_name, $data->get('field.items'));
       $this->assertEquals($expect_context_id, $data->get('field.context_id'));
-      $this->assertEquals($expect_wrapper, $data->get('field.wrapper'));
+      if ($expect_wrapper) {
+        $this->assertEquals($wrapper, $data->get('field.wrapper'));
+      }
+      else {
+        $this->assertEquals($expect_wrapper, $data->get('field.wrapper'));
+      }
     }
   }
 

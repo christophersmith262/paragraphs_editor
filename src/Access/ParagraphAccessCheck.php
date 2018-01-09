@@ -28,8 +28,6 @@ class ParagraphAccessCheck implements AccessInterface {
    *
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactoryInterface $item_factory
    *   The factory to use for looking up edit buffer items.
-   *
-   * @constructor
    */
   public function __construct(EditBufferItemFactoryInterface $item_factory) {
     $this->itemFactory = $item_factory;
@@ -42,11 +40,11 @@ class ParagraphAccessCheck implements AccessInterface {
    * located within the editor context and the user has access to the editor
    * context.
    *
-   * @param Symfony\Component\Routing\Route $route
+   * @param \Symfony\Component\Routing\Route $route
    *   The route the user is attempting to access.
-   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match for the route the user is attempting to access.
-   * @param Drupal\Core\Session\AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -56,10 +54,8 @@ class ParagraphAccessCheck implements AccessInterface {
     list($context_param_name, $paragraph_param_name) = explode(':', $route->getRequirement($this->requirementsKey) . ':');
 
     // Load the context from the parameters.
-    if (preg_match('/\{(.*)\}$/', $context_param_name, $matches)) {
-      $context = $route_match->getParameter($matches[1]);
-    }
-    else {
+    $context = ContextAccessCheck::extractContext($route_match, $context_param_name);
+    if (empty($context)) {
       return AccessResult::forbidden();
     }
 
@@ -72,8 +68,8 @@ class ParagraphAccessCheck implements AccessInterface {
     }
 
     // If the paragraph item cannot be located we treat it as an access denied.
-    $paragraph = $this->itemFactory->getBufferItem($context, $paragraph_uuid);
-    return AccessResult::allowedIf($paragraph);
+    $exists = !!$this->itemFactory->getBufferItem($context, $paragraph_uuid);
+    return AccessResult::allowedIf($exists);
   }
 
 }

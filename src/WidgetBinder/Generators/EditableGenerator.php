@@ -9,6 +9,7 @@ use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\EditableField;
 use Drupal\paragraphs_editor\WidgetBinder\GeneratorBase;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
@@ -40,8 +41,6 @@ class EditableGenerator extends GeneratorBase {
    *   The field value manager service for managing elements.
    * @param \Drupal\dom_processor\DomProcessor\DomProcessorInterface $dom_processor
    *   The Dom processor for generating inline markup.
-   *
-   * @constructor
    */
   public function __construct(FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor) {
     $this->fieldValueManager = $field_value_manager;
@@ -67,7 +66,8 @@ class EditableGenerator extends GeneratorBase {
    * {@inheritdoc}
    */
   public function processField(WidgetBinderData $data, WidgetBinderDataCompilerState $state, EntityReferenceFieldItemListInterface $items, $is_editor_field) {
-    $context_id = $data->getContextId($items->getEntity()->uuid(), $items->getFieldDefinition()->id());
+    $field_config = TypeUtility::ensureFieldConfig($items->getFieldDefinition());
+    $context_id = $data->getContextId($items->getEntity()->uuid(), $field_config->id());
     if ($context_id) {
       // Prepare the inline field editable markup.
       $markup = $this->fieldValueManager->wrapItems($items)->getMarkup();
@@ -75,7 +75,11 @@ class EditableGenerator extends GeneratorBase {
       $markup = Markup::create($markup);
 
       // Create a EditableField object for this field.
-      $context = $state->getGenerator('context')->getContext($context_id);
+      $context_generator = $state->getGenerator('context');
+      if (!$context_generator instanceof ContextGenerator) {
+        throw new \Exception("Could not locate context generator.");
+      }
+      $context = $context_generator->getContext($context_id);
       $attributes = [
         'class' => [$this->fieldValueManager->getElement('field')['flag']],
         $this->fieldValueManager->getAttributeName('field', '<context>') => $context_id,
@@ -84,8 +88,8 @@ class EditableGenerator extends GeneratorBase {
 
       // Save the editable in a field mapped state entry.
       $editables = $state->get('editables');
-      $editables[$items->getEntity()->uuid()][$items->getFieldDefinition()->id()] = $editable;
-      $editables = $state->set('editables', $editables);
+      $editables[$items->getEntity()->uuid()][$field_config->id()] = $editable;
+      $state->set('editables', $editables);
     }
   }
 
@@ -105,7 +109,7 @@ class EditableGenerator extends GeneratorBase {
     $field_definition = $items->getFieldDefinition();
     if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
       $uuid = $items->getEntity()->uuid();
-      $field_id = $field_definition->id();
+      $field_id = TypeUtility::ensureFieldConfig($field_definition)->id();
       $editables = $state->get('editables');
       return !empty($editables[$uuid][$field_id]) ? $editables[$uuid][$field_id] : NULL;
     }

@@ -3,11 +3,12 @@
 namespace Drupal\Tests\paragraphs_editor\Kernel\EditorFieldValue;
 
 use Drupal\Core\Entity\ContentEntityStorageInterface;
+use Drupal\paragraphs\ParagraphInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\paragraphs_editor\Traits\TestContentGenerationTrait;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager;
-use Drupal\Tests\paragraphs_editor\Traits\TestContentGenerationTrait;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
@@ -71,7 +72,7 @@ class FieldValueManagerKernelTest extends KernelTestBase {
     $prophecy = $this->prophesize(ContentEntityStorageInterface::CLASS);
     foreach ($paragraph->field_tabs as $item) {
       $prophecy->loadRevision($item->target_revision_id)
-        ->willReturn(new \stdClass())
+        ->willReturn($this->prophesize(ParagraphInterface::CLASS)->reveal())
         ->shouldBeCalledTimes(1);
     }
     $field_value_manager = $this->createFieldValueManager($prophecy->reveal());

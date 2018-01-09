@@ -3,14 +3,15 @@
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\ParagraphsEditorElementTrait;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -125,9 +126,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ], TRUE);
 
     $field_value_wrapper = $data->get('field.wrapper');
-
-    // Apply the default format if none is already provided.
-    $filter_format = $field_value_wrapper->getFormat();
+    $data = $data->tag('filter_format', $field_value_wrapper->getFormat());
 
     // Create a new editing context for the field.
     $field_definition = $data->get('field.items')->getFieldDefinition();
@@ -153,6 +152,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     $data = $data->tag('field', [
       'context_id' => $context->getContextString(),
     ], TRUE);
+    $data = $data->tag('root_context', $context->getContextString());
 
     return $result->reprocess($data);
   }
@@ -166,7 +166,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *   The dom element to be expanded.
    * @param \Drupal\paragraphs\ParagraphInterface $entity
    *   The paragraph entity associated with the dom element.
-   * @param string $field_context_id
+   * @param string|null $field_context_id
    *   The id of the editing context to which the entity belongs.
    *
    * @note This function should not get contextual data from the $data variable.
@@ -176,7 +176,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   protected function expandParagraph(SemanticDataInterface $data, \DOMElement $paragraph_node, ParagraphInterface $entity, $field_context_id = NULL) {
 
-    if ($field_context_id) {
+    if (!empty($field_context_id)) {
       $this->setAttribute($paragraph_node, 'widget', '<context>', $field_context_id);
 
       $prerender_count = $data->get('settings.prerender_count');
@@ -189,6 +189,9 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
       $field_definition = $items->getFieldDefinition();
 
       if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+        $items = TypeUtility::ensureEntityReferenceRevisions($items);
+        $field_definition = TypeUtility::ensureFieldConfig($field_definition);
+
         $field_node = $this->createElement($paragraph_node->ownerDocument, 'field', [
           '<name>' => $field_definition->getName(),
         ]);
@@ -233,6 +236,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   protected function compileParagraph(SemanticDataInterface $data, ParagraphInterface $entity, $field_context_id) {
     $context = $this->contextFactory->get($field_context_id);
+    $context->addAdditionalContext('editorContext', $data->get('root_context'));
     $item = $context->getEditBuffer()->createItem($entity);
     $view_mode = $data->get('settings.view_mode');
     $langcode = $data->get('langcode');
@@ -253,6 +257,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *   editor field widget.
    */
   protected function finishResult(SemanticDataInterface $data, DomProcessorResultInterface $result) {
+    $field_value_wrapper = $data->get('field.wrapper');
 
     // Add the core paragraphs editor library.
     $result = $result->merge([
@@ -282,7 +287,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ]);
 
     $result = $result->merge([
-      'filter_format' => 'paragraphs_ckeditor',
+      'filter_format' => $field_value_wrapper->getFormat(),
     ]);
 
     return $result;

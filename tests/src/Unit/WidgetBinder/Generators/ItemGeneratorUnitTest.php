@@ -2,14 +2,14 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
-use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
-use Drupal\Tests\UnitTestCase;
 
 /**
  * @coversDefaultClass \Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator
@@ -47,7 +47,7 @@ class ItemGeneratorUnitTest extends UnitTestCase {
         }
       }
       else if ($item['type'] == 'field_begin' || $item['type'] == 'field_end') {
-        $prophecy = $this->prophesize(EntityReferenceFieldItemListInterface::CLASS);
+        $prophecy = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS);
         $prophecy->getEntity()->willReturn($this->createMockParagraph([ 'uuid' => $item['uuid']]));
         $prophecy_factory = $this;
         $prophecy->getFieldDefinition()->will(function() use ($prophecy_factory, $item) {

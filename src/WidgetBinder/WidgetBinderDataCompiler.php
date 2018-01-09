@@ -40,7 +40,7 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
   /**
    * The generator objects to run on compile.
    *
-   * @var Drupal\paragraphs_editor\WidgetBinder[]
+   * @var \Drupal\paragraphs_editor\WidgetBinder[]
    */
   protected $generators = [];
 
@@ -54,8 +54,6 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
    * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
    *   The field value manager service for reading paragraphs editor field
    *   information.
-   *
-   * @constructor
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, FieldValueManagerInterface $field_value_manager) {
     $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');

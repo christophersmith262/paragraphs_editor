@@ -17,8 +17,6 @@ class CloseModalCommand extends CloseModalDialogCommand {
    *   The context to close the dialog for.
    * @param bool $persist
    *   (optional) Whether to persist the dialog in the DOM or not.
-   *
-   * @constructor
    */
   public function __construct(CommandContextInterface $context, $persist = FALSE) {
     parent::__construct($persist);

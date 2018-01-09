@@ -17,7 +17,7 @@ interface EditBufferItemInterface {
   /**
    * Gets the paragraph entity that is wrapped by this item.
    *
-   * @return \Drupal\paragraphs\ParagraphEntity
+   * @return \Drupal\paragraphs\ParagraphInterface
    *   The paragraph entity that is wrapped by this item, containing any edits
    *   that have been saved to the buffer.
    */

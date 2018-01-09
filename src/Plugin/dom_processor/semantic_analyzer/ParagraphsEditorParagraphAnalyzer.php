@@ -4,8 +4,8 @@ namespace Drupal\paragraphs_editor\Plugin\dom_processor\semantic_analyzer;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorError;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\Plugin\dom_processor\SemanticAnalyzerInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
@@ -126,18 +126,20 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
       ],
     ];
 
-    while ($attempts) {
+    while (!empty($attempts)) {
       $attempt = array_shift($attempts);
       try {
         if ($attempt['type'] == 'context') {
           $context = $this->contextFactory->get($attempt['context_id']);
-          $edit_buffer = $context->getEditBuffer();
-          $item = $edit_buffer->getItem($uuid);
-          if ($item) {
-            return $data->tag('paragraph', [
-              'entity' => $item->getEntity(),
-              'context_id' => $attempt['context_id'],
-            ]);
+          if (!empty($context)) {
+            $edit_buffer = $context->getEditBuffer();
+            $item = $edit_buffer->getItem($uuid);
+            if ($item) {
+              return $data->tag('paragraph', [
+                'entity' => $item->getEntity(),
+                'context_id' => $attempt['context_id'],
+              ]);
+            }
           }
         }
         elseif ($attempt['type'] == 'items' && $attempt['items']) {
@@ -153,7 +155,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
           $matches = $this->storage->loadByProperties([
             'uuid' => $uuid,
           ]);
-          if ($matches) {
+          if (!empty($matches)) {
             return $data->tag('paragraph', [
               'entity' => reset($matches),
             ]);
@@ -161,6 +163,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
         }
       }
       catch (\Exception $e) {
+        throw new DomProcessorError("Unkown load type.");
       }
     }
 
@@ -192,6 +195,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
       $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
+      $field_value_wrapper->setReferencedEntities([]);
       $context_id = $this->getAttribute($data->node(), 'field', '<context>');
     }
     else {

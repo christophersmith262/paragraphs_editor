@@ -3,11 +3,10 @@
 namespace Drupal\paragraphs_editor\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Entity\EntityViewBuilderInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
+use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\dom_processor\Plugin\dom_processor\DataProcessorInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
@@ -148,7 +147,7 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
   /**
    * Gets a static cache key for en entity.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\paragraphs\ParagraphInterface $entity
    *   The entity to get the static cache key for.
    * @param string $langcode
    *   The language code for additional cache context.
@@ -156,7 +155,7 @@ class ParagraphsEditorRenderer implements DataProcessorInterface, ContainerFacto
    * @return string
    *   The static cache key.
    */
-  protected function getCacheKey(EntityInterface $entity, $langcode) {
+  protected function getCacheKey(ParagraphInterface $entity, $langcode) {
     $keys = [$entity->uuid(), $entity->getRevisionId()];
     if ($langcode) {
       $keys[] = $langcode;

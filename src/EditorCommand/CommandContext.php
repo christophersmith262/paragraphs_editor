@@ -4,7 +4,7 @@ namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
-use Drupal\field\FieldConfigInterface;
+use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 /**
@@ -17,21 +17,21 @@ class CommandContext implements CommandContextInterface {
   /**
    * The entity that owns the field being edited.
    *
-   * @var Drupal\Core\Entity\EntityInterface
+   * @var \Drupal\Core\Entity\EntityInterface
    */
   protected $entity;
 
   /**
    * The field configuration for the field being edited.
    *
-   * @var Drupal\field\FieldConfigInterface
+   * @var \Drupal\Core\Field\FieldConfigInterface
    */
   protected $fieldDefinition;
 
   /**
    * The edit buffer associated with the editor instance.
    *
-   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
+   * @var \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
    */
   protected $editBuffer;
 
@@ -47,7 +47,7 @@ class CommandContext implements CommandContextInterface {
    *
    * If this is empty, we allow all paragraph items.
    *
-   * @var Drupal\paragraphs_editor\EditorCommand\BundleFilterInterface
+   * @var \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
    */
   protected $bundleFilter;
 
@@ -73,14 +73,24 @@ class CommandContext implements CommandContextInterface {
   protected $additionalContext = [];
 
   /**
+   * The random build id identifying this context instance.
+   *
+   * @var string|null
+   */
+  protected $buildId = NULL;
+
+  /**
    * Creates a command context object.
    *
-   * @param Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface|null $entity
    *   The entity that the field being edited belongs to.
-   * @param Drupal\field\FieldConfigInterface $field_config
+   * @param \Drupal\Core\Field\FieldConfigInterface|null $field_config
    *   The field configuration object for the field being edited.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferInterface $edit_buffer
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface|null $edit_buffer
    *   The edit buffer associated with the editor instance.
+   * @param \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface|null $bundle_filter
+   *   The bundle filter for determining which paragraph bundles can be children
+   *   of this context.
    * @param array $settings
    *   The field widget settings for the editor.
    */
@@ -90,8 +100,10 @@ class CommandContext implements CommandContextInterface {
     $this->editBuffer = $edit_buffer;
     $this->bundleFilter = $bundle_filter;
     $this->settings = $settings;
-    $context_parts = explode(':', $edit_buffer->getContextString());
-    $this->buildId = end($context_parts);
+    if ($edit_buffer) {
+      $context_parts = explode(':', $edit_buffer->getContextString());
+      $this->buildId = end($context_parts);
+    }
   }
 
   /**
@@ -106,13 +118,6 @@ class CommandContext implements CommandContextInterface {
    */
   public function getFieldConfig() {
     return $this->fieldDefinition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isValidBundle($bundle_name) {
-    return !empty($this->allowedBundles[$bundle_name]) || empty($this->allowedBundles);
   }
 
   /**
@@ -218,7 +223,7 @@ class CommandContext implements CommandContextInterface {
    * {@inheritdoc}
    */
   public function getAdditionalContext($key = NULL) {
-    if ($key) {
+    if (!empty($key)) {
       return isset($this->additionalContext[$key]) ? $this->additionalContext[$key] : NULL;
     }
     else {

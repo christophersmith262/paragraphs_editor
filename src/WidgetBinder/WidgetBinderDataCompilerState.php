@@ -2,8 +2,8 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder;
 
-use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
+use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
 
 /**
  * Holds the state of the widget binder data compiler.
@@ -62,8 +62,6 @@ class WidgetBinderDataCompilerState {
    *   The context containing the edit buffer item being compiled.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface $item
    *   The edit buffer item being compiled.
-   *
-   * @constructor
    */
   public function __construct(array $generators, WidgetBinderData $data, CommandContextInterface $context, EditBufferItemInterface $item) {
     $this->compiledData = $data;
@@ -105,7 +103,7 @@ class WidgetBinderDataCompilerState {
   /**
    * Gets a generator by its generator id.
    *
-   * @return \Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface
+   * @return \Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface|null
    *   The generator service implementation assocaited with a generator id, or
    *   NULL if no such generator exists.
    */
@@ -116,7 +114,7 @@ class WidgetBinderDataCompilerState {
   /**
    * Gets a key from the temporary state store.
    *
-   * @param string $key
+   * @param string|null $key
    *   A key entry to get the value for, or NULL to return an array of all
    *   values.
    *

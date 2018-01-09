@@ -3,11 +3,11 @@
 namespace Drupal\Tests\paragraphs_editor\Kernel\WidgetBinder;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface;
-use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompiler;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
 use Drupal\Tests\paragraphs_editor\Traits\TestContentGenerationTrait;
+use Drupal\paragraphs_editor\WidgetBinder\GeneratorInterface;
+use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompiler;
 use Prophecy\Argument;
 
 /**

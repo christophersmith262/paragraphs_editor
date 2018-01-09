@@ -50,8 +50,6 @@ class EditableField {
    *   Attributes to be attached when rendering the editable area. These
    *   attributes will flag that this is an editable field and where the edits
    *   are persisted.
-   *
-   * @constructor
    */
   public function __construct(CommandContextInterface $context, $markup, array $attributes) {
     $this->context = $context;

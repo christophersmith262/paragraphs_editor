@@ -2,8 +2,8 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder;
 
-use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Render\RenderContext;
 use Drupal\paragraphs\ParagraphInterface;
 
 /**
@@ -112,7 +112,7 @@ interface GeneratorInterface {
    *   The compiled data to add models to.
    * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState $state
    *   The compiler state.
-   * @param Drupal\Core\Render\RenderContext $render_context
+   * @param \Drupal\Core\Render\RenderContext $render_context
    *   The Drupal render context containing the bubbled metadata for the
    *   rendered item.
    * @param string $markup

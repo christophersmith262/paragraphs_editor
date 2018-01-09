@@ -5,6 +5,7 @@ namespace Drupal\paragraphs_editor\WidgetBinder\Generators;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\paragraphs\ParagraphInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\GeneratorBase;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
@@ -37,7 +38,7 @@ class ItemGenerator extends GeneratorBase {
    */
   public function processParagraph(WidgetBinderData $data, WidgetBinderDataCompilerState $state, ParagraphInterface $paragraph) {
     $top = $this->topPath($state);
-    if ($top) {
+    if (!empty($top)) {
       $this->pushPath($state, [
         'type' => 'widget',
         'uuid' => $paragraph->uuid(),
@@ -57,8 +58,7 @@ class ItemGenerator extends GeneratorBase {
    * {@inheritdoc}
    */
   public function processField(WidgetBinderData $data, WidgetBinderDataCompilerState $state, EntityReferenceFieldItemListInterface $items, $is_editor_field) {
-    $paragraph = $items->getEntity();
-    $field_definition = $items->getFieldDefinition();
+    $field_definition = TypeUtility::ensureFieldConfig($items->getFieldDefinition());
     $path = [
       'type' => 'field',
       'name' => $field_definition->getName(),

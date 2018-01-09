@@ -26,16 +26,16 @@ class CommandContextConverter implements ParamConverterInterface {
   /**
    * The current page request to pull widget field settings from.
    *
-   * @var Symfony\Component\Routing\Route
+   * @var \Symfony\Component\HttpFoundation\Request
    */
   protected $request;
 
   /**
    * Creates a paragraphs ckeditor command context route parameter converter.
    *
-   * @param Symfony\Component\HttpFoundation\RequestStack $request_stack
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The symfony request stack service that is managing page requests.
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory to use for creating command contexts.
    */
   public function __construct(RequestStack $request_stack, CommandContextFactoryInterface $context_factory) {

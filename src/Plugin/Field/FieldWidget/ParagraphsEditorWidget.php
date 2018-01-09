@@ -4,13 +4,16 @@ namespace Drupal\paragraphs_editor\Plugin\Field\FieldWidget;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
-use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -64,7 +67,27 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
   protected $entityDisplayRepository;
 
   /**
-   * {@inheritdoc}
+   * Creates a paragraphs editor field widget.
+   *
+   * @param string $plugin_id
+   *   The field widget plugin id.
+   * @param mixed $plugin_definition
+   *   The plugin definition.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The paragraphs editor field definition.
+   * @param array $settings
+   *   The paragraphs editor field widget settings.
+   * @param array $third_party_settings
+   *   The third party settings for the widget.
+   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
+   *   The field value manager for getting and setting paragraphs editor field
+   *   information.
+   * @param \Drupal\dom_processor\DomProcessor\DomProcessorInterface $dom_processor
+   *   The DOM processor for reading and writing markup.
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The view mode manager.
+   * @param array $plugin_managers
+   *   The paragraphs editor plugin managers.
    */
   public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor, EntityDisplayRepositoryInterface $entity_display_repository, array $plugin_managers) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
@@ -79,6 +102,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    $plugin_managers = [];
     foreach ($container->getParameter('paragraphs_editor.plugin_managers') as $name => $def) {
       $plugin_managers[$name] = $container->get($def->id);
     }
@@ -103,7 +127,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       'title' => t('Paragraph'),
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
-      'filter_format' => 'paragraphs_ckeditor',
       'view_mode' => 'default',
       'prerender_count' => '10',
     ];
@@ -181,21 +204,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       '#required' => TRUE,
     ];
 
-    $options = [];
-    foreach (filter_formats() as $filter_format) {
-      $options[$filter_format->id()] = $filter_format->label();
-    }
-
-    $elements['filter_format'] = [
-      '#type' => 'select',
-      '#title' => 'Default Filter Format',
-      '#description' => $this->t('The default filter format to use for the Editor instance.'),
-      '#options' => $options,
-      '#default_value' => $this->getSetting('filter_format'),
-      '#required' => TRUE,
-    ];
-
-    $options = [];
     $elements['view_mode'] = [
       '#type' => 'select',
       '#title' => 'Editor View Mode',
@@ -226,7 +234,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    $text_bundle = $this->getSetting('text_bundle');
     $bundle_selector = $this->bundleSelectorManager->getDefinition($this->getSetting('bundle_selector'));
     $delivery_provider = $this->deliveryProviderManager->getDefinition($this->getSetting('delivery_provider'));
     $prerender_count = $this->getSetting('prerender_count');
@@ -240,9 +247,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     $summary[] = $this->t('Title: @title', ['@title' => $this->getSetting('title')]);
     $summary[] = $this->t('Bundle Selector: @bundle_selector', ['@bundle_selector' => $bundle_selector['title']]);
     $summary[] = $this->t('Delivery Provider: @delivery_provider', ['@delivery_provider' => $delivery_provider['title']]);
-    $summary[] = $this->t('Default Format: @filter_format', ['@filter_format' => $this->getSetting('filter_format')]);
-    $view_mode = $this->getSetting('view_mode');
-    $summary[] = t('View Mode: @mode', ['@mode' => $this->getSetting('view_mode')]);
+    $summary[] = $this->t('View Mode: @mode', ['@mode' => $this->getSetting('view_mode')]);
     $summary[] = $this->t('Maximum Pre-Render Items: @prerender_count', ['@prerender_count' => $prerender_count]);
     return $summary;
   }
@@ -251,7 +256,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
-    $field_name = $this->fieldDefinition->getName();
+    $field_name = $this->getFieldConfig()->getName();
     $path = array_merge($form['#parents'], [$field_name]);
     $values = NestedArray::getValue($form_state->getValues(), $path);
     $this->process('update', $items, $form_state, $values['markup']['format'], $values['markup']['value'], $values['context_id']);
@@ -268,7 +273,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   protected function mergeDefaults() {
-    $this->settings += $this->fieldDefinition->getThirdPartySettings('paragraphs_editor');
+    $this->settings += $this->getFieldConfig()->getThirdPartySettings('paragraphs_editor');
     $this->settings += static::defaultSettings();
     $this->defaultSettingsMerged = TRUE;
   }
@@ -285,12 +290,12 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    *   entities. Note that neither of these operations perform entity saves.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state for the form that the field widget belongs to.
-   * @param string $format
+   * @param string|null $format
    *   The default filter format name to apply to created text entities.
-   * @param string $markup
+   * @param string|null $markup
    *   The markup to be processed. Defaults to the markup inside the text
    *   entity.
-   * @param string $context_id
+   * @param string|null $context_id
    *   The id of the root editing context to pull edits from.
    *
    * @see \Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer
@@ -312,12 +317,18 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       $format = $field_value_wrapper->getFormat();
     }
 
-    if (!$format) {
-      $format = $this->getSetting('text_format');
+    if (empty($format)) {
+      $format = $this->getFieldConfig()->getThirdPartySetting('paragraphs_editor', 'filter_format');
+    }
+
+    // Ensure that we can get an entity to savethe updates to.
+    $form_object = $form_state->getFormObject();
+    if (!$form_object instanceof EntityFormInterface) {
+      throw new \Exception('Could not locate entity to save changes to in paragraphs editor widget.');
     }
 
     // Check revisioning status.
-    $entity = $form_state->getFormObject()->getEntity();
+    $entity = $form_object->getEntity();
     $new_revision = FALSE;
     if ($entity instanceof RevisionableInterface) {
       if ($entity->isNewRevision()) {
@@ -343,6 +354,16 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       'settings' => $this->getSettings(),
       'filter_format' => $format,
     ]);
+  }
+
+  /**
+   * Safely gets the field config associated with this widget.
+   *
+   * @return \Drupal\Core\Field\FieldConfigInterface
+   *   The field config object.
+   */
+  protected function getFieldConfig() {
+    return TypeUtility::ensureFieldConfig($this->fieldDefinition);
   }
 
 }

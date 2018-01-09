@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\WidgetGenerator;

@@ -67,7 +67,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context for the editor instance.
-   * @param string $bundle_name
+   * @param string|null $bundle_name
    *   The name of a paragraph bundle to be inserted or NULL to display the
    *   bundle selection form.
    *
@@ -75,7 +75,7 @@ class EditorCommandController implements ContainerInjectionInterface {
    *   The ajax response for the command.
    */
   public function insert(CommandContextInterface $context, $bundle_name = NULL) {
-    if (!$bundle_name) {
+    if (empty($bundle_name)) {
       $response = $this->responseHandler->deliverBundleSelectForm($context);
     }
     else {

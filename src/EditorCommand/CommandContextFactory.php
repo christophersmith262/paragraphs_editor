@@ -3,10 +3,11 @@
 namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 
 /**
  * The default command context factory.
@@ -18,21 +19,21 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * The entity type manager for looking up entity info.
    *
-   * @var Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
    * The buffer cache for looking up existing edit buffers.
    *
-   * @var Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface
+   * @var \Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface
    */
   protected $bufferCache;
 
   /**
    * The field config storage handler.
    *
-   * @var Drupal\Core\Entity\EntityStorageInterface
+   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $fieldConfigStorage;
 
@@ -46,24 +47,23 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   /**
    * The entity bundle info service.
    *
-   * @var Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
   protected $bundleInfo;
 
   /**
    * Create a command context factory object.
    *
-   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager to use for looking up the entities and fields.
-   * @param Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface $buffer_cache
+   * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferCacheInterface $buffer_cache
    *   The edit buffer cache to use for looking up existing edit buffers that
    *   have been persisted in the database cache.
-   * @param Drupal\Component\Plugin\PluginManagerInterface $delivery_provider_manager
-   *   The delivery provider plugin manager to use for creating delivery
-   *   provider plugin instances.
-   * @param Drupal\Component\Plugin\PluginManagerInterface $bundle_selector_manager
-   *   The delivery provider plugin manager to use for creating bundle selector
-   *   plugin instances.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   *   The bundle manager service for creating paragraph bundle filters.
+   * @param array $plugin_managers
+   *   A key value pair of paragraphs editor plugin managers. This should
+   *   include a 'bundle_selector' and 'delivery_provider'.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, EntityTypeBundleInfoInterface $bundle_info, array $plugin_managers) {
     $this->entityTypeManager = $entity_type_manager;
@@ -74,7 +74,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function parseContextString($context_string) {
     $context_params = explode(':', $context_string);
@@ -85,7 +85,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function get($context_id) {
     list($field_config_id, $widget_build_id, $entity_id) = $this->parseContextString($context_id);
@@ -98,7 +98,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   public function create($field_config_id, $entity_id, array $settings = [], $widget_build_id = NULL, $edit_buffer_prototype = NULL) {
 
     // If a widget build id isn't specified, we create a new one.
-    if (!$widget_build_id) {
+    if (empty($widget_build_id)) {
       $widget_build_id = $this->generateBuildId();
     }
 
@@ -109,12 +109,12 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     // with it instead of the core exception handling.
     try {
       $context_keys = [$field_config_id, $widget_build_id];
-      $field_config = $this->fieldConfigStorage->load($field_config_id);
+      $field_config = TypeUtility::ensureFieldConfig($this->fieldConfigStorage->load($field_config_id));
       $entity_type = $field_config->getTargetEntityTypeId();
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
       if ($entity_id) {
-        $entity = $entity_storage->load($entity_id, $context_keys);
+        $entity = $entity_storage->load($entity_id);
         $context_keys[] = $entity_id;
       }
       else {
@@ -140,7 +140,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function regenerate(CommandContextInterface $from) {
     $field_config_id = $from->getFieldConfig()->id();
@@ -168,16 +168,10 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
-   * Creates a bundle filter object.
-   *
-   * @param Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The field definition to create the filter for.
-   *
-   * @return Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   *   A filter object for the field definition.
+   * {@inheritdoc}
    */
-  public function createBundleFilter(FieldDefinitionInterface $field_definition) {
-    return new ParagraphBundleFilter($this->bundleInfo, $field_definition);
+  public function createBundleFilter(FieldConfigInterface $field_config) {
+    return new ParagraphBundleFilter($this->bundleInfo, $field_config);
   }
 
   /**
@@ -187,7 +181,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    *   The type of plugin to be attached.
    * @param array $settings
    *   The field widget settings specifying which plugin to use.
-   * @param Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
    *   The context to attach the instantiated plugin to.
    */
   protected function attachPlugin($type, array $settings, CommandContextInterface $context) {
@@ -201,7 +195,10 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   }
 
   /**
+   * Generates a build id when new contexts are created.
    *
+   * @return string
+   *   The newly created build id.
    */
   protected function generateBuildId() {
     return Crypt::randomBytesBase64();

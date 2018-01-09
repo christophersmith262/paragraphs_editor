@@ -29,7 +29,10 @@ class ContextAccessCheck implements AccessInterface {
   protected $requirementsKey = '_paragraphs_editor_access_context';
 
   /**
+   * Creates a context access check object.
    *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
@@ -45,11 +48,11 @@ class ContextAccessCheck implements AccessInterface {
    * This method will also filter out "invalid" context objects before the
    * actual controller method that executes the request is called.
    *
-   * @param Symfony\Component\Routing\Route $route
+   * @param \Symfony\Component\Routing\Route $route
    *   The route the user is attempting to access.
-   * @param Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match for the route the user is attempting to access.
-   * @param Drupal\Core\Session\AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   The account to check access against.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -61,20 +64,15 @@ class ContextAccessCheck implements AccessInterface {
     $ands = explode('+', $requirement);
     $chain = [];
     foreach ($ands as $requirement) {
-      if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
-        $context = $route_match->getParameter($matches[1]);
-      }
-      else {
+      $context = static::extractContext($route_match, $requirement);
+      if (empty($context)) {
         return AccessResult::forbidden();
       }
 
       // If no field config could be loaded for the context, we treat this as
       // the user not being able to access the endpoint.
       $field_config = $context->getFieldConfig();
-      if (!$field_config) {
-        $access = AccessResult::forbidden();
-      }
-      else {
+      if ($field_config) {
         $entity_type = $field_config->getTargetEntityTypeId();
         $entity_bundle = $field_config->getTargetBundle();
         $entity = $context->getEntity();
@@ -90,9 +88,12 @@ class ContextAccessCheck implements AccessInterface {
             ->createAccess($entity_bundle, $account, [], TRUE);
         }
       }
+      else {
+        return AccessResult::forbidden();
+      }
     }
 
-    if ($chain) {
+    if (!empty($chain)) {
       $access = AccessResult::allowed();
       foreach ($chain as $next_access) {
         $access = $access->andIf($next_access);
@@ -103,6 +104,26 @@ class ContextAccessCheck implements AccessInterface {
     }
 
     return $access;
+  }
+
+  /**
+   * Extracts the context from a route match, given a requirement.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The route match for the route the user is attempting to access.
+   * @param string $requirement
+   *   The requirement string to get the parameter name from.
+   *
+   * @return \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface|null
+   *   The extracted context id or NULL if none could be extracted.
+   */
+  public static function extractContext(RouteMatchInterface $route_match, $requirement) {
+    if (preg_match('/\{(.*)\}$/', $requirement, $matches)) {
+      return $route_match->getParameter($matches[1]);
+    }
+    else {
+      return NULL;
+    }
   }
 
 }
