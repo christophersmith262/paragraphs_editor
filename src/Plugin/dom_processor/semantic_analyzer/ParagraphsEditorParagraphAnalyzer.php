@@ -195,6 +195,7 @@ class ParagraphsEditorParagraphAnalyzer implements SemanticAnalyzerInterface, Co
 
     if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
       $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
+      $field_value_wrapper->setReferencedEntities([]);
       $context_id = $this->getAttribute($data->node(), 'field', '<context>');
     }
     else {
