@@ -4,7 +4,7 @@ namespace Drupal\paragraphs_editor\EditorCommand;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
-use Drupal\field\FieldConfigInterface;
+use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferInterface;
 
 /**
@@ -24,7 +24,7 @@ class CommandContext implements CommandContextInterface {
   /**
    * The field configuration for the field being edited.
    *
-   * @var \Drupal\field\FieldConfigInterface
+   * @var \Drupal\Core\Field\FieldConfigInterface
    */
   protected $fieldDefinition;
 
@@ -84,7 +84,7 @@ class CommandContext implements CommandContextInterface {
    *
    * @param \Drupal\Core\Entity\EntityInterface|null $entity
    *   The entity that the field being edited belongs to.
-   * @param \Drupal\field\FieldConfigInterface|null $field_config
+   * @param \Drupal\Core\Field\FieldConfigInterface|null $field_config
    *   The field configuration object for the field being edited.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface|null $edit_buffer
    *   The edit buffer associated with the editor instance.

@@ -28,7 +28,7 @@ interface CommandContextInterface {
   /**
    * Gets the field configuration for the field being edited.
    *
-   * @return \Drupal\field\FieldConfigInterface
+   * @return \Drupal\Core\Field\FieldConfigInterface
    *   The field configuration object for the field being edited.
    */
   public function getFieldConfig();
