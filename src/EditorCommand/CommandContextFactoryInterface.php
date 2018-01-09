@@ -87,7 +87,7 @@ interface CommandContextFactoryInterface {
   /**
    * Creates a bundle filter object.
    *
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   * @param \Drupal\Core\Field\FieldConfigInterface $field_config
    *   The field definition to create the filter for.
    *
    * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
