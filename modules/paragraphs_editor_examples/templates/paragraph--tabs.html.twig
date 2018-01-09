@@ -48,11 +48,11 @@
 {% block paragraph %}
   <div{{ attributes.addClass(classes) }}>
     <ul>
-      {% for tab in content.field_tabs %} 
+      {% for tab in tabs %}
         <li><a href="#{{ tab.id }}">{{ tab.link.title }}</a></li>
       {% endfor %}
     </ul>
-    {% for tab in content.field_tabs %}
+    {% for tab in tabs %}
       <div id="{{ tab.id }}">
         <div{{ tab.attributes }}>
           {{ tab.content }}

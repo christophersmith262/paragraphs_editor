@@ -31,9 +31,8 @@ function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables
 
   // Use the tabs entity to build the content to be rendered.
   $tabs = $variables['elements']['#paragraph'];
-  $variables['content'] = [];
   foreach ($tabs->field_tabs as $delta => $tab) {
-    $variables['content']['field_tabs'][$delta] = [
+    $variables['tabs'][$delta] = [
       'id' => Html::getId('tabs-' . $delta),
       'link' => [
         'title' => $tab->entity->field_title->value,
@@ -42,7 +41,15 @@ function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables
 
     // Attach inline editing data to the tab. We have to do this since we aren't
     // going to directly render the 'field_content' field in the twig template.
-    RenderUtility::getEditableData($variables, $tab->entity->field_content)
-      ->preprocessField($variables['content']['field_tabs'][$delta]);
+    $editable = RenderUtility::getEditableData($variables, $tab->entity->field_content);
+    if (!empty($editable)) {
+      $editable->preprocessField($variables['tabs'][$delta]);
+    }
+    else {
+      $variables['tabs'][$delta]['content'] = $tab->entity->field_content->view([
+        'type' => 'entity_reference_paragraphs_editor',
+        'label' => 'hidden',
+      ]);
+    }
   }
 }
