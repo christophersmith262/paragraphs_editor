@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Render\RenderContext;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\ContextGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
@@ -93,7 +93,7 @@ class ContextGeneratorUnitTest extends UnitTestCase {
   }
 
   protected function createFieldItems($id, $uuid, $field_id) {
-    $prophecy = $this->prophesize(EntityReferenceFieldItemListInterface::CLASS);
+    $prophecy = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS);
     $prophecy->getEntity()->willReturn($this->createMockParagraph([ 'id' => $id, 'uuid' => $uuid ]));
     $prophecy_factory = $this;
     $prophecy->getFieldDefinition()->will(function () use ($prophecy_factory, $field_id) {

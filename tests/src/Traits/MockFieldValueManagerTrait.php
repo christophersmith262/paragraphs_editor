@@ -81,12 +81,17 @@ trait MockFieldValueManagerTrait {
     return $return_prophecy ? $prophecy : $prophecy->reveal();
   }
 
-  protected function createFieldValueWrapper(array $options = []) {
+  protected function createFieldValueWrapper(array $options = [], $return_prophecy = FALSE) {
     $options += [
       'markup' => '',
+      'format' => 'default_format',
     ];
     $prophecy = $this->prophesize(FieldValueWrapperInterface::CLASS);
+    $prophecy->getFormat()->willReturn($options['format']);
     $prophecy->getMarkup()->willReturn($options['markup']);
-    return $prophecy->reveal();
+    $prophecy->setReferencedEntities(Argument::cetera())->will(function ($args) use($options, $prophecy) {
+      $prophecy->getReferencedEntities()->willReturn($args);
+    });
+    return $return_prophecy ? $prophecy : $prophecy->reveal();
   }
 }

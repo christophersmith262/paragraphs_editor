@@ -50,12 +50,8 @@ trait MockContextTrait {
     $prophecy->getFieldConfig()->willReturn($options['field_definition']);
 
     if (!empty($options['bundle_filter'])) {
-      $prophecy->isValidBundle(Argument::any())->will(function ($args) use ($options) {
-        return isset(array_flip($options)[$args[0]]);
-      });
     }
     else {
-      $prophecy->isValidBundle(Argument::any())->willReturn(TRUE);
     }
 
     $prophecy->getEditBuffer()->willReturn($this->createEditBuffer($options['edit_buffer']));

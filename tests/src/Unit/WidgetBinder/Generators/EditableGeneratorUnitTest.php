@@ -2,13 +2,13 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\WidgetBinder\Generators;
 
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\ContextGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\Generators\EditableGenerator;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
@@ -93,7 +93,7 @@ class EditableGeneratorUnitTest extends UnitTestCase {
   }
 
   protected function createFieldItems($id, $uuid, $field_id) {
-    $prophecy = $this->prophesize(EntityReferenceFieldItemListInterface::CLASS);
+    $prophecy = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS);
     $prophecy->getEntity()->willReturn($this->createMockParagraph([ 'id' => $id, 'uuid' => $uuid ]));
     $prophecy_factory = $this;
     $prophecy->getFieldDefinition()->will(function () use ($prophecy_factory, $field_id) {

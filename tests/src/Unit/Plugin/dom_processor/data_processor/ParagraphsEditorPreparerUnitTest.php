@@ -3,16 +3,15 @@
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\data_processor;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldConfigInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
 use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorPreparer;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
@@ -68,7 +67,7 @@ class ParagraphsEditorPreparerUnitTest extends UnitTestCase {
     $child_prophecy->getFields()->willReturn([$child_items]);
     $child_entity = $child_prophecy->reveal();
 
-    $prophecy = $this->prophesize(FieldValueWrapperInterface::CLASS);
+    $prophecy = $this->createFieldValueWrapper([], TRUE);
     $prophecy->getReferencedEntities()->willReturn([$nested_entity]);
     $field_value_wrapper = $prophecy->reveal();
     $manager_prophecy->wrapItems($child_items)->willReturn($field_value_wrapper);
@@ -78,8 +77,9 @@ class ParagraphsEditorPreparerUnitTest extends UnitTestCase {
     $manager_prophecy->isParagraphsEditorField($nested_field_definition)->willReturn(FALSE);
     $manager_prophecy->getReferencedEntities($nested_items)->willReturn([]);
 
-    $prophecy = $this->prophesize(FieldValueWrapperInterface::CLASS);
-    $prophecy->getFormat()->willReturn('test_format');
+    $prophecy = $this->createFieldValueWrapper([
+      'format' => 'test_format',
+    ], TRUE);
     $owner_field_value_wrapper = $prophecy->reveal();
 
     $field_value_manager = $manager_prophecy->reveal();
@@ -129,6 +129,7 @@ class ParagraphsEditorPreparerUnitTest extends UnitTestCase {
       ],
       'field' => [
         'context_id' => 'owner_context',
+        'wrapper' => $owner_field_value_wrapper,
       ],
     ]);
     $processor->process($data, $result);
@@ -139,6 +140,7 @@ class ParagraphsEditorPreparerUnitTest extends UnitTestCase {
       ],
       'field' => [
         'context_id' => 'owner_context',
+        'wrapper' => $owner_field_value_wrapper,
       ],
     ]);
     $processor->process($data, $result);
@@ -177,7 +179,7 @@ class ParagraphsEditorPreparerUnitTest extends UnitTestCase {
   }
 
   protected function createChildFieldItemsProphecy() {
-    $prophecy = $this->prophesize(EntityReferenceFieldItemListInterface::CLASS);
+    $prophecy = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS);
     return $prophecy;
   }
 

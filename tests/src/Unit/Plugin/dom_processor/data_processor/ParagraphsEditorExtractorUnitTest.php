@@ -2,12 +2,12 @@
 
 namespace Drupal\Tests\paragraphs_editor\Unit\Plugin\dom_processor\data_processor;
 
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\dom_processor\Traits\DomProcessorTestTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockContextTrait;
 use Drupal\Tests\paragraphs_editor\Traits\MockFieldValueManagerTrait;
 use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
+use Drupal\entity_reference_revisions\EntityReferenceRevisionsFieldItemList;
 use Drupal\paragraphs_editor\EditorFieldValue\FieldValueWrapperInterface;
 use Drupal\paragraphs_editor\Plugin\dom_processor\data_processor\ParagraphsEditorExtractor;
 
@@ -91,7 +91,7 @@ class ParagraphsEditorExtractorUnitTest extends UnitTestCase {
       else {
         $entities = [$paragraph];
       }
-      $items = $this->prophesize(FieldItemListInterface::CLASS)->reveal();
+      $items = $this->prophesize(EntityReferenceRevisionsFieldItemList::CLASS)->reveal();
       $prophecy = $this->createFieldValueManagerProphecy();
       $prophecy->setItems($items, $entities, $new_revision, $langcode)
         ->shouldBeCalledTimes(1);
