@@ -29,6 +29,7 @@
     "gulp-replace": "^0.5.4",
     "gulp-uglify": "^2.1.2",
     "gulp-util": "^3.0.8",
-    "pump": "^1.0.2"
+    "pump": "^1.0.2",
+    "uglify-js": "^3.3.5"
   }
 }
