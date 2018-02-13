@@ -50,9 +50,13 @@ services:
     class: Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
     arguments: ['@entity_field.manager', '@entity_type.manager', '%paragraphs_editor.field_value.elements%']
 
+  paragraphs_editor.widget_binder.renderer_factory:
+    class: Drupal\paragraphs_editor\WidgetBinder\WidgetRendererFactory
+    arguments: ['@config.factory', '@library.discovery.collector', '@renderer', '@theme_handler', '@theme.initialization', '@theme.manager']
+
   paragraphs_editor.widget_binder.data_compiler:
     class: Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompiler
-    arguments: ['@entity_type.manager', '@renderer', '@paragraphs_editor.field_value.manager']
+    arguments: ['@entity_type.manager', '@paragraphs_editor.widget_binder.renderer_factory', '@paragraphs_editor.field_value.manager']
     tags:
       - { name: service_collector, tag: paragraphs_editor_data_generator, call: addGenerator }
 

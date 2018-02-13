@@ -4,8 +4,6 @@ namespace Drupal\paragraphs_editor\WidgetBinder;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\Element;
-use Drupal\Core\Render\RenderContext;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
@@ -24,11 +22,11 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
   protected $viewBuilder;
 
   /**
-   * The renderer service.
+   * The renderer factory service.
    *
-   * @var \Drupal\Core\Render\RendererInterface
+   * @var \Drupal\paragraphs_editor\WidgetBinder\WidgetRendererFactoryInterface
    */
-  protected $renderer;
+  protected $rendererFactory;
 
   /**
    * The paragraphs editor field value manager.
@@ -49,15 +47,15 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service to get the paragraph view builder from.
-   * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer service for rendering the paragraph.
+   * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetRendererFactoryInterface $renderer_factory
+   *   The factory for creating widget renderers.
    * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
    *   The field value manager service for reading paragraphs editor field
    *   information.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, FieldValueManagerInterface $field_value_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WidgetRendererFactoryInterface $renderer_factory, FieldValueManagerInterface $field_value_manager) {
     $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');
-    $this->renderer = $renderer;
+    $this->rendererFactory = $renderer_factory;
     $this->fieldValueManager = $field_value_manager;
   }
 
@@ -72,6 +70,14 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
    * {@inheritdoc}
    */
   public function compile(CommandContextInterface $context, EditBufferItemInterface $item, $view_mode = 'full', $langcode = NULL) {
+    // Creates a tightly scoped renderer that will render the widget in the
+    // default site theme, regardless of which page of the site it is invoked
+    // from. When this variable goes out of scope the active theme will be set
+    // back to the current theme.
+    $renderer = $this->rendererFactory->createForDefaultTheme();
+
+    // Allow generators to initialize and preprocess paragraphs before
+    // rendering.
     $data = new WidgetBinderData();
     $state = new WidgetBinderDataCompilerState($this->generators, $data, $context, $item);
     $paragraph = $item->getEntity();
@@ -80,18 +86,17 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
 
     // Attach the view builder that will decorate the view with information
     // needed to make nested paragraphs into nested editables.
-    $render_context = new RenderContext();
     $view = $this->viewBuilder->view($paragraph, $view_mode, $langcode);
     $this->processElement($view, $state);
 
     // Render the rendered markup for the view and collect any bubbled
     // attachment information from the context.
-    $renderer = $this->renderer;
-    $markup = $renderer->executeInRenderContext($render_context, function () use ($renderer, $view) {
-      return $renderer->render($view);
-    });
+    $markup = $renderer->render($view);
+    $render_context = $renderer->getRenderContext();
 
+    // Allow generators to finalize and attach models to the data object.
     $this->applyGenerators('complete', $data, $state, $render_context, $markup);
+
     return $data;
   }
 
