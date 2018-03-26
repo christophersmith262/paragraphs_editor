@@ -2,8 +2,13 @@
 
 namespace Drupal\paragraphs_editor\ParamConverter;
 
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Form\FormCacheInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\ParamConverter\ParamConverterInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
@@ -17,13 +22,6 @@ use Symfony\Component\Routing\Route;
 class CommandContextConverter implements ParamConverterInterface {
 
   /**
-   * The context factory for creating command contexts.
-   *
-   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
-   */
-  protected $contextFactory;
-
-  /**
    * The current page request to pull widget field settings from.
    *
    * @var \Symfony\Component\HttpFoundation\Request
@@ -31,14 +29,31 @@ class CommandContextConverter implements ParamConverterInterface {
   protected $request;
 
   /**
+   * The Drupal form cache service.
+   *
+   * @var \Drupal\Core\Form\FormCacheInterface
+   */
+  protected $formCache;
+
+  /**
+   * The context factory for creating command contexts.
+   *
+   * @var \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface
+   */
+  protected $contextFactory;
+
+  /**
    * Creates a paragraphs ckeditor command context route parameter converter.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The symfony request stack service that is managing page requests.
+   * @param \Drupal\Core\Form\FormCacheInterface $form_cache
+   *   The Drupal form cache service.
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory to use for creating command contexts.
    */
-  public function __construct(RequestStack $request_stack, CommandContextFactoryInterface $context_factory) {
+  public function __construct(RequestStack $request_stack, FormCacheInterface $form_cache, CommandContextFactoryInterface $context_factory) {
+    $this->formCache = $form_cache;
     $this->contextFactory = $context_factory;
     $this->request = $request_stack->getCurrentRequest();
   }
@@ -67,6 +82,7 @@ class CommandContextConverter implements ParamConverterInterface {
       'editableContexts',
       'edits',
       'module',
+      'formBuildId',
     ];
 
     foreach ($request_whitelist as $name) {
@@ -88,6 +104,17 @@ class CommandContextConverter implements ParamConverterInterface {
       }
     }
 
+    $form_build_id = $context->getAdditionalContext('formBuildId');
+    if ($form_build_id) {
+      $form_state = new FormState();
+      $this->formCache->getCache($form_build_id, $form_state);
+      $form = $form_state->getFormObject();
+      if ($form instanceof ContentEntityForm) {
+        $entity = $form_state->getFormObject()->getEntity();
+        $context->addAdditionalContext('formStateEntities', $this->buildMap($entity));
+      }
+    }
+
     // If the parameter definition gave any additional context about the command
     // that is being executed, we add that here so that delivery or bundle
     // selector plugins have access to it.
@@ -105,6 +132,23 @@ class CommandContextConverter implements ParamConverterInterface {
    */
   public function applies($definition, $name, Route $route) {
     return (!empty($definition['type']) && $definition['type'] == 'paragraphs_editor_command_context');
+  }
+
+  protected function buildMap(ContentEntityInterface $entity) {
+    $map = [];
+    foreach ($entity->getFields() as $items) {
+      $field_definition = $items->getFieldDefinition();
+      if (TypeUtility::isEntityReferenceRevisionsField($field_definition)) {
+        foreach ($items as $item) {
+          $value = $item->getValue();
+          if (!empty($value['entity'])) {
+            $map[$value['entity']->uuid()] = $value['entity'];
+            $map += $this->buildMap($value['entity']);
+          }
+        }
+      }
+    }
+    return $map;
   }
 
 }

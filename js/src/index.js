@@ -7,7 +7,7 @@ var _ = require('underscore'),
   Drupal = require('drupal'),
   drupalSettings = require('drupal-settings'),
   $ = require('jquery'),
-  WidgetBindingProtocol = require('./WidgetBindingProtocol');
+  WidgetBindingProtocol = require('./WidgetBindingProtocol'),
   WidgetBinder = require('widget-binder');
 
 require('./BundleSelector');
@@ -40,10 +40,7 @@ Drupal.AjaxCommands.prototype.paragraphs_editor_data = function(ajax, response, 
  *   A string representing a DOM fragment.
  */
 Drupal.theme.paragraphsEditorWidget = function(elementFactory, markup, actions) {
-  _.each(actions, function(def, id) {
-    def.title = Drupal.t(def.title);
-  });
-  return WidgetBinder.defaults.views['editor'].options.template(elementFactory, markup, actions);
+  return WidgetBinder.defaults.views['editor'].options.template(elementFactory, markup, {});
 }
 
 /**

@@ -7,8 +7,9 @@ use Drupal\dom_processor\DomProcessor\DomProcessorResultInterface;
 use Drupal\dom_processor\DomProcessor\SemanticDataInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\ParagraphsEditorElementTrait;
+use Drupal\paragraphs_editor\EntityReferenceRevisionsCache;
+use Drupal\paragraphs_editor\ParagraphsEditorElements;
+use Drupal\paragraphs_editor\ParagraphsEditorElementTrait;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderData;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 use Drupal\paragraphs_editor\Utility\TypeUtility;
@@ -30,6 +31,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
   use ParagraphsEditorElementTrait;
+
+  /**
+   * The entity revision cache.
+   *
+   * @var \Drupal\paragraphs_editor\EntityReferenceRevisionsCache
+   */
+  protected $entityCache;
 
   /**
    * The widget data collection that will be delivered to the client initially.
@@ -62,16 +70,19 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
   /**
    * Creates a paragraph editor preparation plugin.
    *
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The field value manager service to initialize the element trait.
+   * @param \Drupal\paragraphs_editor\ParagraphsEditorElements $elements
+   *   The elements service to initialize the element trait.
+   * @param \Drupal\paragraphs_editor\EntityReferenceRevisionsCache $entity_cache
+   *   The entity cache for loading revisions.
    * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextFactoryInterface $context_factory
    *   The context factory for generating new edit contexts.
    * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface $data_compiler
    *   The widget binder data compiler service for generating dthe initial data
    *   binder models that will be delivered to the client.
    */
-  public function __construct(FieldValueManagerInterface $field_value_manager, CommandContextFactoryInterface $context_factory, WidgetBinderDataCompilerInterface $data_compiler) {
-    $this->initializeParagraphsEditorElementTrait($field_value_manager);
+  public function __construct(ParagraphsEditorElements $elements, EntityReferenceRevisionsCache $entity_cache, CommandContextFactoryInterface $context_factory, WidgetBinderDataCompilerInterface $data_compiler) {
+    $this->initializeParagraphsEditorElementTrait($elements);
+    $this->entityCache = $entity_cache;
     $this->contextFactory = $context_factory;
     $this->dataCompiler = $data_compiler;
   }
@@ -81,7 +92,8 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
-      $container->get('paragraphs_editor.field_value.manager'),
+      $container->get('paragraphs_editor.elements'),
+      $container->get('paragraphs_editor.entity_reference_revisions_cache'),
       $container->get('paragraphs_editor.command.context_factory'),
       $container->get('paragraphs_editor.widget_binder.data_compiler')
     );
@@ -125,11 +137,10 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
       'ready' => TRUE,
     ], TRUE);
 
-    $field_value_wrapper = $data->get('field.wrapper');
-    $data = $data->tag('filter_format', $field_value_wrapper->getFormat());
+    $items = $data->get('field.items');
 
     // Create a new editing context for the field.
-    $field_definition = $data->get('field.items')->getFieldDefinition();
+    $field_definition = $items->getFieldDefinition();
     $owner_entity = $data->get('owner.entity');
     $settings = $data->get('settings');
     $context = $this->contextFactory->create($field_definition->id(), $owner_entity->id(), $settings);
@@ -140,13 +151,6 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
       'schemaId' => $field_definition->id(),
       'settings' => $settings,
       'bufferItems' => [],
-    ]);
-    $widget_data->addModel('schema', $field_definition->id(), [
-      'id' => $field_definition->id(),
-      'allowed' => [
-        'paragraphs_editor_text' => TRUE,
-        'tabs' => TRUE,
-      ],
     ]);
     $this->widgetData = $widget_data;
     $data = $data->tag('field', [
@@ -188,7 +192,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     foreach ($entity->getFields() as $items) {
       $field_definition = $items->getFieldDefinition();
 
-      if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+      if (TypeUtility::isParagraphsField($field_definition) || TypeUtility::isParagraphsEditorField($field_definition)) {
         $items = TypeUtility::ensureEntityReferenceRevisions($items);
         $field_definition = TypeUtility::ensureFieldConfig($field_definition);
 
@@ -196,8 +200,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
           '<name>' => $field_definition->getName(),
         ]);
 
-        if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
-
+        if (TypeUtility::isParagraphsEditorField($field_definition)) {
           $context_id = $this->widgetData->getContextId($entity->uuid(), $field_definition->id());
           if (!$context_id) {
             return;
@@ -206,11 +209,12 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
           $this->setAttribute($field_node, 'field', '<editable>', 'true');
           $this->setAttribute($field_node, 'field', '<context>', $context_id);
 
-          $referenced_entities = $this->fieldValueManager->wrapItems($items)->getReferencedEntities();
+          $paragraph_items = $items->entity->paragraphs;
         }
         else {
-          $referenced_entities = $this->fieldValueManager->getReferencedEntities($items);
+          $paragraph_items = $items;
         }
+        $referenced_entities = $this->entityCache->getReferencedEntities($paragraph_items);
 
         foreach ($referenced_entities as $child_entity) {
           $child_paragraph_node = $this->createElement($field_node->ownerDocument, 'widget', [
@@ -257,7 +261,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
    *   editor field widget.
    */
   protected function finishResult(SemanticDataInterface $data, DomProcessorResultInterface $result) {
-    $field_value_wrapper = $data->get('field.wrapper');
+    $items = $data->get('field.items');
 
     // Add the core paragraphs editor library.
     $result = $result->merge([
@@ -272,7 +276,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
         'class' => [
           'class' => 'paragraphs-editor',
         ],
-        $this->fieldValueManager->getAttributeName('field', '<context>') => $data->get('field.context_id'),
+        $this->elements->getAttributeName('field', '<context>') => $data->get('field.context_id'),
       ],
     ]);
 
@@ -287,7 +291,7 @@ class ParagraphsEditorPreparer implements ContainerFactoryPluginInterface {
     ]);
 
     $result = $result->merge([
-      'filter_format' => $field_value_wrapper->getFormat(),
+      'filter_format' => $data->get('filter_format'),
     ]);
 
     return $result;

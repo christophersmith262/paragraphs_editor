@@ -14,9 +14,17 @@ services:
 
   paragraphs_editor.command.context_converter:
     class: Drupal\paragraphs_editor\ParamConverter\CommandContextConverter
-    arguments: ['@request_stack', '@paragraphs_editor.command.context_factory']
+    arguments: ['@request_stack', '@form_cache', '@paragraphs_editor.command.context_factory']
     tags:
       - { name: paramconverter }
+
+  paragraphs_editor.entity_reference_revisions_cache:
+    class: Drupal\paragraphs_editor\EntityReferenceRevisionsCache
+    arguments: ['@entity_type.manager']
+
+  paragraphs_editor.elements:
+    class: Drupal\paragraphs_editor\ParagraphsEditorElements
+    arguments: ['%paragraphs_editor.element_definitions%']
 
   paragraphs_editor.command.context_factory:
     class: Drupal\paragraphs_editor\EditorCommand\CommandContextFactory
@@ -24,19 +32,25 @@ services:
       - '@entity_type.manager'
       - '@paragraphs_editor.edit_buffer.cache'
       - '@entity_type.bundle.info'
-      - '%paragraphs_editor.plugin_managers%'
+      - '@paragraphs_editor.bundle_selector.manager'
+      - '@paragraphs_editor.delivery_provider.manager'
 
   paragraphs_editor.command.response_handler:
     class: Drupal\paragraphs_editor\EditorCommand\ResponseHandler
-    arguments: ['@form_builder', '@entity_type.manager', '@module_handler', '@entity.manager', '@paragraphs_editor.widget_binder.data_compiler']
+    arguments:
+      - '@form_builder'
+      - '@entity_type.manager'
+      - '@module_handler'
+      - '@entity.manager'
+      - '@paragraphs_editor.widget_binder.data_compiler'
 
   paragraphs_editor.edit_buffer.cache:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferCache
-    arguments: ['@keyvalue.expirable', '%paragraphs_editor.edit_buffer.cache.lifetime%', '@current_user']
+    arguments: ['@user.private_tempstore']
 
   paragraphs_editor.edit_buffer.item_factory:
     class: Drupal\paragraphs_editor\EditBuffer\EditBufferItemFactory
-    arguments: ['@entity_type.manager', '@paragraphs_editor.field_value.manager']
+    arguments: ['@entity_type.manager', '@uuid']
 
   paragraphs_editor.delivery_provider.manager:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
@@ -46,17 +60,22 @@ services:
     class: Drupal\paragraphs_editor\Plugin\ParagraphsEditor\PluginManager
     arguments: [bundle_selector, '@container.namespaces', '@cache.discovery', '@module_handler']
 
-  paragraphs_editor.field_value.manager:
-    class: Drupal\paragraphs_editor\EditorFieldValue\FieldValueManager
-    arguments: ['@entity_field.manager', '@entity_type.manager', '%paragraphs_editor.field_value.elements%']
-
   paragraphs_editor.widget_binder.renderer_factory:
     class: Drupal\paragraphs_editor\WidgetBinder\WidgetRendererFactory
-    arguments: ['@config.factory', '@library.discovery.collector', '@renderer', '@theme_handler', '@theme.initialization', '@theme.manager']
+    arguments:
+      - '@library.discovery'
+      - '@config.factory'
+      - '@renderer'
+      - '@theme_handler'
+      - '@theme.initialization'
+      - '@theme.manager'
 
   paragraphs_editor.widget_binder.data_compiler:
     class: Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompiler
-    arguments: ['@entity_type.manager', '@paragraphs_editor.widget_binder.renderer_factory', '@paragraphs_editor.field_value.manager']
+    arguments:
+      - '@entity_type.manager'
+      - '@paragraphs_editor.widget_binder.renderer_factory'
+      - '@paragraphs_editor.entity_reference_revisions_cache'
     tags:
       - { name: service_collector, tag: paragraphs_editor_data_generator, call: addGenerator }
 
@@ -74,12 +93,13 @@ services:
 
   paragraphs_editor.widget_binder.data_compiler.generators.editable:
     class: Drupal\paragraphs_editor\WidgetBinder\Generators\EditableGenerator
-    arguments: ['@paragraphs_editor.field_value.manager', '@dom_processor.dom_processor']
+    arguments: ['@paragraphs_editor.elements', '@dom_processor.dom_processor']
     tags:
       - { name: paragraphs_editor_data_generator }
 
   paragraphs_editor.widget_binder.data_compiler.generators.item:
     class: Drupal\paragraphs_editor\WidgetBinder\Generators\ItemGenerator
+    arguments: ['@entity_type.manager']
     tags:
       - { name: paragraphs_editor_data_generator }
 
@@ -90,13 +110,7 @@ services:
 
 parameters:
 
-  paragraphs_editor.plugin_managers:
-    bundle_selector: '@paragraphs_editor.bundle_selector.manager'
-    delivery_provider: '@paragraphs_editor.delivery_provider.manager'
-
-  paragraphs_editor.edit_buffer.cache.lifetime: 24000
-
-  paragraphs_editor.field_value.elements:
+  paragraphs_editor.element_definitions:
     widget:
       tag: 'paragraph'
       attributes:

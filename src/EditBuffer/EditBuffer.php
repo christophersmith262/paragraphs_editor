@@ -56,19 +56,9 @@ class EditBuffer implements EditBufferInterface {
    *
    * @param string $context_string
    *   The id of the context this edit buffer belongs to.
-   * @param int $uid
-   *   The user entity id that owns this buffer.
    */
-  public function __construct($context_string, $uid) {
+  public function __construct($context_string) {
     $this->contextString = $context_string;
-    $this->uid = $uid;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getUser() {
-    return $this->uid;
   }
 
   /**

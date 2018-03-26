@@ -7,4 +7,5 @@ dependencies:
   - dom_processor
   - editor
   - editor_assets
+  - entity_reference_revisions
   - paragraphs

@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies: {  }
+id: paragraphs_editor
+label: 'Paragraphs Editor'
+analyzers:
+  paragraphs_editor_paragraph_analyzer: {  }
+variants:
+  default:
+    processors:
+      paragraphs_editor_renderer: {  }
+  update:
+    label: Update
+    processors:
+      paragraphs_editor_extractor: {  }
+  load:
+    label: Load
+    processors:
+      paragraphs_editor_preparer: {  }
+  decorate:
+    label: Decorate
+    processors:
+      paragraphs_editor_decorator: {  }

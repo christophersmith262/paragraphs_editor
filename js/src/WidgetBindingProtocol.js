@@ -49,6 +49,13 @@ module.exports = WidgetBinder.PluginInterface.SyncProtocol.extend({
       params.push('settings[' + key + ']=' + command.settings[key]);
     }
     params.push('module=' + this.moduleName);
+
+    var form_build_id = $('.widget-binder-open[data-context="' + command.editorContext.id + '"]')
+      .closest('form')
+      .find('[name="form_build_id"]')
+      .val();
+    params.push('formBuildId=' + form_build_id);
+
     path += '?' + params.join('&');
 
     var ajax = Drupal.ajax({

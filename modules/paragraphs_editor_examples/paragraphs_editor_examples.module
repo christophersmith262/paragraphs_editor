@@ -9,17 +9,16 @@ use Drupal\Component\Utility\Html;
 use Drupal\paragraphs_editor\Utility\RenderUtility;
 
 /**
- * Implements hook_theme().
+ * Implements hook_theme_registry_alter().
  */
-function paragraphs_editor_examples_theme($existing) {
+function paragraphs_editor_examples_theme_registry_alter(&$theme_registry) {
   // This hook would not be necessary if the preprocess hooks were implemented
   // in the theme layer.
-  $theme = [];
   $template_path = drupal_get_path('module', 'paragraphs_editor_examples') . '/templates';
-  $theme['paragraph__tabs'] = $existing['paragraph'];
-  $theme['paragraph__tabs']['template'] = 'paragraph--tabs';
-  $theme['paragraph__tabs']['path'] = $template_path;
-  return $theme;
+  $theme_registry['paragraph__tabs'] = $theme_registry['paragraph'];
+  $theme_registry['paragraph__tabs']['template'] = 'paragraph--tabs';
+  $theme_registry['paragraph__tabs']['path'] = $template_path;
+  $theme_registry['paragraph__tabs']['preprocess functions'][] = 'paragraphs_editor_examples_preprocess_paragraph__tabs';
 }
 
 /**
@@ -33,7 +32,7 @@ function paragraphs_editor_examples_preprocess_paragraph__tabs(array &$variables
   $tabs = $variables['elements']['#paragraph'];
   foreach ($tabs->field_tabs as $delta => $tab) {
     $variables['tabs'][$delta] = [
-      'id' => Html::getId('tabs-' . $delta),
+      'id' => Html::getUniqueId('tabs-' . $delta),
       'link' => [
         'title' => $tab->entity->field_title->value,
       ],

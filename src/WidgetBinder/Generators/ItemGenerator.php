@@ -2,6 +2,7 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder\Generators;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\paragraphs\ParagraphInterface;
@@ -17,6 +18,23 @@ use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
  * child fields.
  */
 class ItemGenerator extends GeneratorBase {
+
+  /**
+   * The paragraph type bundle storage handler.
+   *
+   * @var \Drupal\Core\Entity\StorageInterface
+   */
+  protected $bundleStorage;
+
+  /**
+   * Constructs an ItemGenerator object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->bundleStorage = $entity_type_manager->getStorage('paragraphs_type');
+  }
 
   /**
    * {@inheritdoc}
@@ -90,6 +108,7 @@ class ItemGenerator extends GeneratorBase {
     $paragraph = $state->getItem()->getEntity();
 
     $item_model = [
+      'label' => $this->bundleStorage->load($paragraph->bundle())->label(),
       'contextId' => $context->getContextString(),
       'markup' => $markup,
       'type' => $paragraph->bundle(),

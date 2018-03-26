@@ -14,18 +14,6 @@ use Drupal\paragraphs\ParagraphInterface;
 interface EditBufferInterface {
 
   /**
-   * Gets the id of the user the buffer belongs to.
-   *
-   * The owner of the buffer is the content author who created it (the one who
-   * is doing the editing). Keepng track of the user allows us to enforce that
-   * only a user who created a buffer can retrieve its contents.
-   *
-   * @return int
-   *   The user id of the user that created the buffer.
-   */
-  public function getUser();
-
-  /**
    * Gets the id of the context this buffer belongs to.
    *
    * @return string

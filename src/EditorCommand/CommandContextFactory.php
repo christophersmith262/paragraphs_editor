@@ -2,6 +2,7 @@
 
 namespace Drupal\paragraphs_editor\EditorCommand;
 
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Component\Utility\Crypt;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -38,11 +39,18 @@ class CommandContextFactory implements CommandContextFactoryInterface {
   protected $fieldConfigStorage;
 
   /**
-   * A map of plugin types to plugin managers.
+   * The bundle selector plugin manager.
    *
-   * @var array
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
-  protected $pluginManagers;
+  protected $bundleSelectorManager;
+
+  /**
+   * The delivery provider plugin manager.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   */
+  protected $deliveryProviderManager;
 
   /**
    * The entity bundle info service.
@@ -61,15 +69,17 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    *   have been persisted in the database cache.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
    *   The bundle manager service for creating paragraph bundle filters.
-   * @param array $plugin_managers
-   *   A key value pair of paragraphs editor plugin managers. This should
-   *   include a 'bundle_selector' and 'delivery_provider'.
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $bundle_selector_manager
+   *   The bundle selector plugin manager service.
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $delivery_provider_manager
+   *   The delivery provider plugin manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, EntityTypeBundleInfoInterface $bundle_info, array $plugin_managers) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EditBufferCacheInterface $buffer_cache, EntityTypeBundleInfoInterface $bundle_info, PluginManagerInterface $bundle_selector_manager, PluginManagerInterface $delivery_provider_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->bufferCache = $buffer_cache;
     $this->fieldConfigStorage = $entity_type_manager->getStorage('field_config');
-    $this->pluginManagers = $plugin_managers;
+    $this->bundleSelectorManager = $bundle_selector_manager;
+    $this->deliveryProviderManager = $delivery_provider_manager;
     $this->bundleInfo = $bundle_info;
   }
 
@@ -110,6 +120,9 @@ class CommandContextFactory implements CommandContextFactoryInterface {
     try {
       $context_keys = [$field_config_id, $widget_build_id];
       $field_config = TypeUtility::ensureFieldConfig($this->fieldConfigStorage->load($field_config_id));
+      $settings = $field_config->getThirdPartySettings('paragraphs_editor') + [
+        'allowed_bundles' => $this->getAllowedBundles($field_config),
+      ] + $settings;
       $entity_type = $field_config->getTargetEntityTypeId();
       $entity_storage = $this->entityTypeManager->getStorage($entity_type);
 
@@ -128,8 +141,7 @@ class CommandContextFactory implements CommandContextFactoryInterface {
       else {
         $edit_buffer = $this->bufferCache->get($context_string);
       }
-      $bundle_filter = $this->createBundleFilter($field_config);
-      $context = new CommandContext($entity, $field_config, $edit_buffer, $bundle_filter, $settings);
+      $context = new CommandContext($entity, $field_config, $edit_buffer, $settings);
       $this->attachPlugin('delivery_provider', $settings, $context);
       $this->attachPlugin('bundle_selector', $settings, $context);
     }
@@ -164,14 +176,54 @@ class CommandContextFactory implements CommandContextFactoryInterface {
    * {@inheritdoc}
    */
   public function getPluginManager($type) {
-    return isset($this->pluginManagers[$type]) ? $this->pluginManagers[$type] : NULL;
+    if ($type == 'bundle_selector') {
+      return $this->bundleSelectorManager;
+    }
+    elseif ($type == 'delivery_provider') {
+      return $this->deliveryProviderManager;
+    }
+    else {
+      return NULL;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createBundleFilter(FieldConfigInterface $field_config) {
-    return new ParagraphBundleFilter($this->bundleInfo, $field_config);
+  public function getAllowedBundles(FieldConfigInterface $field_config) {
+    $settings = $field_config->getThirdPartySetting('paragraphs_editor', 'handler_settings', []);
+    $return_bundles = [];
+
+    $bundles = $this->bundleInfo->getBundleInfo('paragraph');
+    if (isset($settings['target_bundles'])) {
+      $bundles = array_intersect_key($bundles, $settings['target_bundles']);
+    }
+
+    // Support for the paragraphs reference type.
+    if (!empty($settings['target_bundles_drag_drop'])) {
+      $drag_drop_settings = $settings['target_bundles_drag_drop'];
+      $max_weight = count($bundles);
+
+      foreach ($drag_drop_settings as $bundle_info) {
+        if (isset($bundle_info['weight']) && $bundle_info['weight'] && $bundle_info['weight'] > $max_weight) {
+          $max_weight = $bundle_info['weight'];
+        }
+      }
+
+      // Default weight for new items.
+      $weight = $max_weight + 1;
+      foreach ($bundles as $machine_name => $bundle) {
+        $return_bundles[$machine_name] = [
+          'label' => $bundle['label'],
+          'weight' => isset($drag_drop_settings[$machine_name]['weight']) ? $drag_drop_settings[$machine_name]['weight'] : $weight,
+        ];
+        $weight++;
+      }
+    }
+
+    uasort($return_bundles, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+
+    return $return_bundles;
   }
 
   /**

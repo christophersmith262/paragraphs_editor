@@ -2,7 +2,7 @@
 
 namespace Drupal\paragraphs_editor\WidgetBinder;
 
-use Drupal\Core\Cache\CacheCollectorInterface;
+use Drupal\Core\Asset\LibraryDiscoveryInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Render\RenderContext;
 use Drupal\Core\Theme\ActiveTheme;
@@ -23,11 +23,11 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 class WidgetRenderer implements RendererInterface {
 
   /**
-   * The library discovery cache collector service.
+   * The library discovery service.
    *
-   * @var \Drupal\Core\Cache\CacheCollectorInterface
+   * @var \Drupal\Core\Asset\LibraryDiscoveryInterface
    */
-  protected $libraryCollector;
+  protected $libraryDiscovery;
 
   /**
    * The renderer service.
@@ -60,9 +60,9 @@ class WidgetRenderer implements RendererInterface {
   /**
    * Creates a tightly scoped renderer object.
    *
-   * @param \Drupal\Core\Cache\CacheCollectorInterface $library_collector
-   *   The library discovery collector service that must reload its cache when
-   *   the active theme is switched.
+   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $library_discovery
+   *   The library discovery service that must reload its static cache when the
+   *   active theme is switched.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer for performing render requests.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
@@ -70,8 +70,8 @@ class WidgetRenderer implements RendererInterface {
    * @param \Drupal\Core\Theme\ActiveTheme $active_render_theme
    *   The theme to make active for this render scope.
    */
-  public function __construct(CacheCollectorInterface $library_collector, RendererInterface $renderer, ThemeManagerInterface $theme_manager, ActiveTheme $active_render_theme) {
-    $this->libraryCollector = $library_collector;
+  public function __construct(LibraryDiscoveryInterface $library_discovery, RendererInterface $renderer, ThemeManagerInterface $theme_manager, ActiveTheme $active_render_theme) {
+    $this->libraryDiscovery = $library_discovery;
     $this->renderer = $renderer;
     $this->themeManager = $theme_manager;
     $this->restoreTheme = $this->themeManager->getActiveTheme();
@@ -168,12 +168,13 @@ class WidgetRenderer implements RendererInterface {
   protected function setActiveTheme(ActiveTheme $theme) {
     $this->themeManager->setActiveTheme($theme);
 
-    // Since libraries can be overridden at the theme level, we need to instruct
-    // the library discovery collector to reload its cache based on the new
-    // theme. Otherwise, if a library by two themes being used in the current
-    // request, and overridden by one of them, causing the library to leak out
-    // to higher level render calls.
-    $this->libraryCollector->reset();
+    // Since libraries can be overridden at the theme level, and the library
+    // discovery static cache does not pay attention to the theme a library was
+    // defined in, we need to instruct the library discovery to reload its cache
+    // based on the new theme. Otherwise, if two themes define an override for
+    // the same library, the first definition encountered is used for all render
+    // calls, regardless of the currently active theme.
+    $this->libraryDiscovery->clearCachedDefinitions();
   }
 
   /**

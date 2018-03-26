@@ -85,14 +85,16 @@ interface CommandContextFactoryInterface {
   public function parseContextString($context_string);
 
   /**
-   * Creates a bundle filter object.
+   * Builds the list of allowed bundles for a given field definition.
    *
    * @param \Drupal\Core\Field\FieldConfigInterface $field_config
-   *   The field definition to create the filter for.
+   *   The field to build the list for.
    *
-   * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   *   A filter object for the field definition.
+   * @return array
+   *   A map where keys are allowed bundle machine names and values are maps
+   *   containing the 'label' of the bundles and the 'weight' of the bundle as
+   *   shown in the admin UI.
    */
-  public function createBundleFilter(FieldConfigInterface $field_config);
+  public function getAllowedBundles(FieldConfigInterface $field_config);
 
 }

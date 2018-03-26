@@ -63,7 +63,9 @@ class ContextGenerator extends GeneratorBase {
       // edits fro mthe old context to the new one.
       $entity = $items->getEntity();
       $uuid = $entity->uuid();
-      $field_config_id = TypeUtility::ensureFieldConfig($items->getFieldDefinition())->id();
+      $field_config = TypeUtility::ensureFieldConfig($items->getFieldDefinition());
+      $field_config_id = $field_config->id();
+      $field_config_label = $field_config->label();
       if (!empty($regenerate_contexts[$uuid][$field_config_id])) {
         $from_context = $this->contextFactory->get($regenerate_contexts[$uuid][$field_config_id]);
         $context = $this->contextFactory->regenerate($from_context);
@@ -71,6 +73,7 @@ class ContextGenerator extends GeneratorBase {
           'id' => $context->getContextString(),
           'ownerId' => $uuid,
           'fieldId' => $field_config_id,
+          'fieldLabel' => $field_config_label,
         ]);
       }
       else {
@@ -79,6 +82,7 @@ class ContextGenerator extends GeneratorBase {
           'id' => $context->getContextString(),
           'ownerId' => $uuid,
           'fieldId' => $field_config_id,
+          'fieldLabel' => $field_config_label,
           'schemaId' => $field_config_id,
         ]);
       }

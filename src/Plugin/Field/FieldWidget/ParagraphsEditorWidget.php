@@ -2,17 +2,17 @@
 
 namespace Drupal\paragraphs_editor\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\NestedArray;
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
-use Drupal\paragraphs\Plugin\Field\FieldWidget\InlineParagraphsWidget;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\ParagraphsEditorFormInterface;
 use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @FieldWidget(
  *   id = "entity_reference_paragraphs_editor",
- *   label = @Translation("Paragraphs (Editor)"),
+ *   label = @Translation("Paragraphs Editor"),
  *   multiple_values = TRUE,
  *   description = @Translation("Editor paragraphs form widget."),
  *   field_types = {
@@ -29,14 +29,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class ParagraphsEditorWidget extends InlineParagraphsWidget implements ContainerFactoryPluginInterface {
-
-  /**
-   * The editor field value manager for wrapping items.
-   *
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
-   */
-  protected $fieldValueManager;
+class ParagraphsEditorWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
    * The dom processor for preparing and extracting editor content.
@@ -79,43 +72,37 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    *   The paragraphs editor field widget settings.
    * @param array $third_party_settings
    *   The third party settings for the widget.
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The field value manager for getting and setting paragraphs editor field
-   *   information.
    * @param \Drupal\dom_processor\DomProcessor\DomProcessorInterface $dom_processor
    *   The DOM processor for reading and writing markup.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
    *   The view mode manager.
-   * @param array $plugin_managers
-   *   The paragraphs editor plugin managers.
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $bundle_selector_manager
+   *   The bundle selector plugin manager service.
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $delivery_provider_manager
+   *   The delivery provider plugin manager service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor, EntityDisplayRepositoryInterface $entity_display_repository, array $plugin_managers) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, DomProcessorInterface $dom_processor, EntityDisplayRepositoryInterface $entity_display_repository, PluginManagerInterface $bundle_selector_manager, PluginManagerInterface $delivery_provider_manager) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-    $this->fieldValueManager = $field_value_manager;
     $this->domProcessor = $dom_processor;
     $this->entityDisplayRepository = $entity_display_repository;
-    $this->bundleSelectorManager = $plugin_managers['bundle_selector'];
-    $this->deliveryProviderManager = $plugin_managers['delivery_provider'];
+    $this->bundleSelectorManager = $bundle_selector_manager;
+    $this->deliveryProviderManager = $delivery_provider_manager;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    $plugin_managers = [];
-    foreach ($container->getParameter('paragraphs_editor.plugin_managers') as $name => $def) {
-      $plugin_managers[$name] = $container->get($def->id);
-    }
     return new static(
       $plugin_id,
       $plugin_definition,
       $configuration['field_definition'],
       $configuration['settings'],
       $configuration['third_party_settings'],
-      $container->get('paragraphs_editor.field_value.manager'),
       $container->get('dom_processor.dom_processor'),
       $container->get('entity_display.repository'),
-      $plugin_managers
+      $container->get('paragraphs_editor.bundle_selector.manager'),
+      $container->get('paragraphs_editor.delivery_provider.manager')
     );
   }
 
@@ -125,6 +112,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
   public static function defaultSettings() {
     return [
       'title' => t('Paragraph'),
+      'filter_format' => 'paragraphs_ckeditor',
       'bundle_selector' => 'list',
       'delivery_provider' => 'modal',
       'view_mode' => 'default',
@@ -136,30 +124,57 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $editable_data = $this->process('load', $items, $form_state);
+    if (!$this->shouldHide($items, $form_state)) {
+      $editable_data = $this->process('load', $items, $form_state);
 
-    // Pretty much all the important parts are generated by the DOM processor.
-    // Offloading things like '#attached' and '#attributes' to the processor
-    // allows it to do things like dynamically load javascript for rendered
-    // entities.
-    return [
-      'markup' => $element + [
-        '#type' => 'text_format',
-        '#format' => $editable_data->get('filter_format'),
-        '#default_value' => $editable_data->get('markup'),
-        '#rows' => 100,
-        '#attributes' => $editable_data->get('attributes'),
-        '#attached' => [
-          'library' => $editable_data->get('libraries'),
-          'drupalSettings' => $editable_data->get('drupalSettings'),
+      // Pretty much all the important parts are generated by the DOM processor.
+      // Offloading things like '#attached' and '#attributes' to the processor
+      // allows it to do things like dynamically load javascript for rendered
+      // entities.
+      $element = [
+        'markup' => $element + [
+          '#type' => 'text_format',
+          '#format' => $editable_data->get('filter_format'),
+          '#default_value' => $editable_data->get('markup'),
+          '#rows' => 100,
+          '#attributes' => $editable_data->get('attributes'),
+          '#attached' => [
+            'library' => $editable_data->get('libraries'),
+            'drupalSettings' => $editable_data->get('drupalSettings'),
+          ],
+          '#allowed_formats' => [$editable_data->get('filter_format')],
+          '#value_callback' => self::CLASS . '::contextSensitiveValueCallback',
         ],
-        '#allowed_formats' => [$editable_data->get('filter_format')],
-      ],
-      'context_id' => [
-        '#type' => 'hidden',
-        '#default_value' => $editable_data->get('context_id'),
-      ],
-    ];
+        'context_id' => [
+          '#type' => 'hidden',
+          '#default_value' => $editable_data->get('context_id'),
+          '#value_callback' => self::CLASS . '::contextSenstiveValueCallback',
+        ],
+      ];
+
+      $element['markup']['#attributes']['class'][] = 'js-text-full';
+      $element['markup']['#attributes']['class'][] = 'text-full';
+      $element['markup']['summary'] = [
+        '#type' => 'textarea',
+        '#default_value' => $items->entity->markup->summary,
+        '#title' => $this->t('Summary'),
+        '#rows' => 5,
+        '#description' => $this->t('Leave blank to use trimmed value of full text as the summary.'),
+        '#attached' => [
+          'library' => ['text/drupal.text'],
+        ],
+        '#attributes' => ['class' => ['js-text-summary', 'text-summary']],
+        '#prefix' => '<div class="js-text-summary-wrapper text-summary-wrapper">',
+        '#suffix' => '</div>',
+        '#weight' => -10,
+        '#base_type' => 'text_format',
+      ];
+    }
+    else {
+      $element = [];
+    }
+
+    return $element;
   }
 
   /**
@@ -171,9 +186,22 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     $elements['title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Paragraph Title'),
-      '#description' => $this->t('Label to appear as title on the button "Insert [title]. This label is translatable.'),
+      '#description' => $this->t('Label to appear as title on the button "Insert [title]". This label is translatable.'),
       '#default_value' => $this->getSetting('title'),
       '#required' => TRUE,
+    ];
+
+    $options = [];
+    foreach (filter_formats() as $filter_format) {
+      $options[$filter_format->id()] = $filter_format->label();
+    }
+
+    $elements['filter_format'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Filter Format'),
+      '#description' => $this->t('The filter format to use for the editor.'),
+      '#options' => $options,
+      '#default_value' => $this->getSetting('filter_format'),
     ];
 
     $options = [];
@@ -209,7 +237,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
       '#title' => 'Editor View Mode',
       '#description' => $this->t('The view mode that will be used to render embedded entities.'),
       '#options' => $this->entityDisplayRepository->getViewModeOptions('paragraph'),
-      '#default_value' => $this->getSetting('prerender_count'),
+      '#default_value' => $this->getSetting('view_mode'),
       '#required' => TRUE,
     ];
 
@@ -245,6 +273,7 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
     }
     $summary = [];
     $summary[] = $this->t('Title: @title', ['@title' => $this->getSetting('title')]);
+    $summary[] = $this->t('Filter Format: @filter_format', ['@filter_format' => $this->getSetting('filter_format')]);
     $summary[] = $this->t('Bundle Selector: @bundle_selector', ['@bundle_selector' => $bundle_selector['title']]);
     $summary[] = $this->t('Delivery Provider: @delivery_provider', ['@delivery_provider' => $delivery_provider['title']]);
     $summary[] = $this->t('View Mode: @mode', ['@mode' => $this->getSetting('view_mode')]);
@@ -256,26 +285,51 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    * {@inheritdoc}
    */
   public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
-    $field_name = $this->getFieldConfig()->getName();
-    $path = array_merge($form['#parents'], [$field_name]);
-    $values = NestedArray::getValue($form_state->getValues(), $path);
-    $this->process('update', $items, $form_state, $values['markup']['format'], $values['markup']['value'], $values['context_id']);
+    if (!$this->shouldHide($items, $form_state)) {
+      $field_name = $this->getFieldConfig()->getName();
+      $path = array_merge($form['#parents'], [$field_name]);
+      $values = $form_state->getValue($path);
+      $this->process('update', $items, $form_state, $values['markup']['format'], $values['markup']['value'], $values['context_id']);
+    }
+    else {
+      $items->setValue([]);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public static function isApplicable(FieldDefinitionInterface $field_definition) {
-    return \Drupal::service('paragraphs_editor.field_value.manager')->isParagraphsEditorField($field_definition);
+    return TypeUtility::isParagraphsEditorField($field_definition);
   }
 
   /**
-   * {@inheritdoc}
+   * A value callback for widget form elements.
+   *
+   * @param array &$element
+   *   The widget form element. This must have a #default_value set.
+   * @param mixed $input
+   *   The user submitted input.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state for the form the widget belongs to.
+   *
+   * @return mixed
+   *   The current value of the field, or NULL to use Drupal's native input
+   *   handling.
    */
-  protected function mergeDefaults() {
-    $this->settings += $this->getFieldConfig()->getThirdPartySettings('paragraphs_editor');
-    $this->settings += static::defaultSettings();
-    $this->defaultSettingsMerged = TRUE;
+  public static function contextSensitiveValueCallback(array &$element, $input, FormStateInterface $form_state) {
+    // Since the widget field value must be rebuilt each time the form is
+    // submitted, and the attached settings and field value will be rebuilt in a
+    // context-sensitive mannor, we only allow user entered data to get into the
+    // form value if the widget is being validated. Validation will trigger the
+    // value extraction from the form input, which will update the field items.
+    // Subsequent element builds will regenerate the value for the field based
+    // on the updated field items, and we want to use that value for the field
+    // instead of the user entered values in order to match the context of the
+    // form element values with its regenerated widget binder metadata.
+    if ($form_state->isValidationComplete()) {
+      return $element['#default_value'];
+    }
   }
 
   /**
@@ -307,18 +361,18 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    *   Processor plugins for more information.
    */
   protected function process($variant, FieldItemListInterface $items, FormStateInterface $form_state, $format = NULL, $markup = NULL, $context_id = NULL) {
-    $field_value_wrapper = $this->fieldValueManager->wrapItems($items);
+    if (!$items->isEmpty()) {
+      if (!isset($markup)) {
+        $markup = $items->entity->getMarkup();
+      }
 
-    if (!isset($markup)) {
-      $markup = $field_value_wrapper->getMarkup();
-    }
-
-    if (!isset($format)) {
-      $format = $field_value_wrapper->getFormat();
+      if (!isset($format)) {
+        $format = $items->entity->getFormat();
+      }
     }
 
     if (empty($format)) {
-      $format = $this->getFieldConfig()->getThirdPartySetting('paragraphs_editor', 'filter_format');
+      $format = $this->getSetting('filter_format');
     }
 
     // Ensure that we can get an entity to savethe updates to.
@@ -344,7 +398,6 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
         'items' => $items,
         'context_id' => $context_id,
         'is_mutable' => TRUE,
-        'wrapper' => $field_value_wrapper,
       ],
       'owner' => [
         'entity' => $entity,
@@ -364,6 +417,22 @@ class ParagraphsEditorWidget extends InlineParagraphsWidget implements Container
    */
   protected function getFieldConfig() {
     return TypeUtility::ensureFieldConfig($this->fieldDefinition);
+  }
+
+  /**
+   * Determines whether the widget should be hidden.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $items
+   *   The field items being edited.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the form the widget is being added to.
+   *
+   * @return bool
+   *   TRUE if the widget should be added to the form, FALSE otherwise.
+   */
+  protected function shouldHide(FieldItemListInterface $items, FormStateInterface $form_state) {
+    return $form_state->getFormObject() instanceof ParagraphsEditorFormInterface
+      || $form_state->getFormObject()->getFormId() == 'field_config_edit_form';
   }
 
 }

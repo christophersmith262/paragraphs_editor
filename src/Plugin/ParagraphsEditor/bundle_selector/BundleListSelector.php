@@ -261,7 +261,7 @@ class BundleListSelector extends EntityListBuilder implements BundleSelectorInte
       $query->condition('label', $search, 'CONTAINS');
     }
 
-    $this->context->getBundleFilter()->filterQuery($query);
+    $query->condition('id', array_keys($this->context->getSetting('allowed_bundles', [])), 'IN');
 
     // Only add the pager if a limit is specified.
     if ($this->limit) {

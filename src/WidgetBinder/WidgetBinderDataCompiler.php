@@ -7,7 +7,8 @@ use Drupal\Core\Render\Element;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\EntityReferenceRevisionsCache;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 
 /**
  * The default implementation of the widget binder data model compiler.
@@ -29,18 +30,18 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
   protected $rendererFactory;
 
   /**
-   * The paragraphs editor field value manager.
-   *
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
-   */
-  protected $fieldValueManager;
-
-  /**
    * The generator objects to run on compile.
    *
    * @var \Drupal\paragraphs_editor\WidgetBinder[]
    */
   protected $generators = [];
+
+  /**
+   * The entity revision cache.
+   *
+   * @var \Drupal\paragraphs_editor\EntityReferenceRevisionsCache
+   */
+  protected $entityCache;
 
   /**
    * Creates a WidgetBinderDataCompiler.
@@ -49,14 +50,13 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
    *   The entity type manager service to get the paragraph view builder from.
    * @param \Drupal\paragraphs_editor\WidgetBinder\WidgetRendererFactoryInterface $renderer_factory
    *   The factory for creating widget renderers.
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The field value manager service for reading paragraphs editor field
-   *   information.
+   * @param \Drupal\paragraphs_editor\EntityReferenceRevisionsCache $entity_cache
+   *   The entity cache for loading revisions.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, WidgetRendererFactoryInterface $renderer_factory, FieldValueManagerInterface $field_value_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, WidgetRendererFactoryInterface $renderer_factory, EntityReferenceRevisionsCache $entity_cache) {
     $this->viewBuilder = $entity_type_manager->getViewBuilder('paragraph');
     $this->rendererFactory = $renderer_factory;
-    $this->fieldValueManager = $field_value_manager;
+    $this->entityCache = $entity_cache;
   }
 
   /**
@@ -117,10 +117,10 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
         $items = $build[$field_name]['#items'];
         $field_definition = $items->getFieldDefinition();
 
-        if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+        if (TypeUtility::isParagraphsField($field_definition) || TypeUtility::isParagraphsEditorField($field_definition)) {
           $this->processElement($build[$field_name], $state, FALSE);
 
-          if (!$this->fieldValueManager->isParagraphsEditorField($field_definition)) {
+          if (!TypeUtility::isParagraphsEditorField($field_definition)) {
             foreach (Element::children($build[$field_name]) as $delta) {
               $this->processElement($build[$field_name][$delta], $state);
             }
@@ -169,12 +169,12 @@ class WidgetBinderDataCompiler implements WidgetBinderDataCompilerInterface {
 
     foreach ($paragraph->getFields() as $items) {
       $field_definition = $items->getFieldDefinition();
-      if ($this->fieldValueManager->isParagraphsField($field_definition)) {
-        $is_editor_field = $this->fieldValueManager->isParagraphsEditorField($field_definition);
+      if (TypeUtility::isParagraphsField($field_definition) || TypeUtility::isParagraphsEditorField($field_definition)) {
+        $is_editor_field = TypeUtility::isParagraphsEditorField($field_definition);
         $this->applyGenerators('processField', $data, $state, $items, $is_editor_field);
 
         if (!$is_editor_field) {
-          foreach ($this->fieldValueManager->getReferencedEntities($items) as $child_paragraph) {
+          foreach ($this->entityCache->getReferencedEntities($items) as $child_paragraph) {
             $this->traverseParagraph($data, $state, $child_paragraph);
           }
         }

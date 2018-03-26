@@ -51,13 +51,12 @@ class SchemaController implements ContainerInjectionInterface {
    *   A JSON response containing a widget binder schema model.
    */
   public function get(FieldConfigInterface $field_config) {
-    $bundle_filter = $this->contextFactory->createBundleFilter($field_config);
     return new JsonResponse([
       [
         'type' => 'schema',
         'id' => $field_config->id(),
         'attributes' => [
-          'allowed' => $bundle_filter->getAllowedBundles(),
+          'allowed' => $this->contextFactory->getAllowedBundles($field_config),
         ],
       ],
     ]);

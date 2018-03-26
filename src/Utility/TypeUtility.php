@@ -59,4 +59,45 @@ class TypeUtility {
     return $items;
   }
 
+  /**
+   * Determines whether a field is a paragraphs field.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to check against.
+   *
+   * @return bool
+   *   TRUE if it is a paragraphs field, FALSE otherwise.
+   */
+  public static function isParagraphsField(FieldDefinitionInterface $field_definition) {
+    return static::isEntityReferenceRevisionsField($field_definition)
+      && $field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'paragraph';
+  }
+
+  /**
+   * Determines whether a field is paragraphs markup field.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to check against.
+   *
+   * @return bool
+   *   TRUE if it is a paragraphs markup field, FALSE otherwise.
+   */
+  public static function isParagraphsEditorField(FieldDefinitionInterface $field_definition) {
+    return static::isEntityReferenceRevisionsField($field_definition)
+      && $field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'paragraphs_markup';
+  }
+
+  /**
+   * Determines whether a field is an entity reference revisions field.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition to check against.
+   *
+   * @return bool
+   *   TRUE if it is an entity reference revisions field, FALSE otherwise.
+   */
+  public static function isEntityReferenceRevisionsField(FieldDefinitionInterface $field_definition) {
+    return $field_definition->getType() == 'entity_reference_revisions';
+  }
+
 }

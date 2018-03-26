@@ -34,14 +34,6 @@ interface CommandContextInterface {
   public function getFieldConfig();
 
   /**
-   * Gets a filter object for determining allowed paragraph bundles.
-   *
-   * @return \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   *   A filter object for getting information about allowed bundles.
-   */
-  public function getBundleFilter();
-
-  /**
    * Gets the edit buffer for the editor instance.
    *
    * @return \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface
@@ -66,24 +58,6 @@ interface CommandContextInterface {
    *   The random build id associated with the context.
    */
   public function getBuildId();
-
-  /**
-   * Set a temporary value for the duration of command execution.
-   *
-   * @param string $name
-   *   The key name for the temporary value.
-   * @param mixed $value
-   *   The temporary value to store.
-   */
-  public function setTemporary($name, $value);
-
-  /**
-   * Gets a temporary value.
-   *
-   * @param string $name
-   *   The key name for the temporary value.
-   */
-  public function getTemporary($name);
 
   /**
    * Returns whether or not a context is valid.
@@ -121,11 +95,13 @@ interface CommandContextInterface {
    *
    * @param string $name
    *   The field widget setting to retrieve.
+   * @param mixed|null $default
+   *   The default value to return if the setting did not exist.
    *
    * @return mixed
    *   The value of the setting or NULL if no such setting is found.
    */
-  public function getSetting($name);
+  public function getSetting($name, $default = NULL);
 
   /**
    * Gets all the field widget settings.

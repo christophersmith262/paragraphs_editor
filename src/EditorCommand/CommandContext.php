@@ -43,27 +43,11 @@ class CommandContext implements CommandContextInterface {
   protected $settings;
 
   /**
-   * An array of paragraph bundles that can be inserted into the field.
-   *
-   * If this is empty, we allow all paragraph items.
-   *
-   * @var \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface
-   */
-  protected $bundleFilter;
-
-  /**
    * A mapping of plugin types to plugin instances associated with the command.
    *
    * @var array
    */
   protected $plugins = [];
-
-  /**
-   * A temporary value store for persisting information across a single request.
-   *
-   * @var array
-   */
-  protected $temporary = [];
 
   /**
    * An array of additional context entries the route provided.
@@ -88,17 +72,14 @@ class CommandContext implements CommandContextInterface {
    *   The field configuration object for the field being edited.
    * @param \Drupal\paragraphs_editor\EditBuffer\EditBufferInterface|null $edit_buffer
    *   The edit buffer associated with the editor instance.
-   * @param \Drupal\paragraphs_editor\EditorCommand\ParagraphBundleFilterInterface|null $bundle_filter
-   *   The bundle filter for determining which paragraph bundles can be children
    *   of this context.
    * @param array $settings
    *   The field widget settings for the editor.
    */
-  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, ParagraphBundleFilterInterface $bundle_filter = NULL, array $settings = []) {
+  public function __construct(EntityInterface $entity = NULL, FieldConfigInterface $field_config = NULL, EditBufferInterface $edit_buffer = NULL, array $settings = []) {
     $this->entity = $entity;
     $this->fieldDefinition = $field_config;
     $this->editBuffer = $edit_buffer;
-    $this->bundleFilter = $bundle_filter;
     $this->settings = $settings;
     if ($edit_buffer) {
       $context_parts = explode(':', $edit_buffer->getContextString());
@@ -118,13 +99,6 @@ class CommandContext implements CommandContextInterface {
    */
   public function getFieldConfig() {
     return $this->fieldDefinition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBundleFilter() {
-    return $this->bundleFilter;
   }
 
   /**
@@ -151,20 +125,6 @@ class CommandContext implements CommandContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTemporary($name, $value) {
-    $this->temporary[$name] = $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTemporary($name) {
-    return isset($this->temporary[$name]) ? $this->temporary[$name] : NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function isValid() {
     return TRUE;
   }
@@ -186,8 +146,8 @@ class CommandContext implements CommandContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSetting($name) {
-    return isset($this->settings[$name]) ? $this->settings[$name] : NULL;
+  public function getSetting($name, $default = NULL) {
+    return isset($this->settings[$name]) ? $this->settings[$name] : $default;
   }
 
   /**

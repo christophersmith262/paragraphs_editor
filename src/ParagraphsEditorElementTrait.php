@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\paragraphs_editor\EditorFieldValue;
+namespace Drupal\paragraphs_editor;
 
 /**
  * Helper trait for working with Paragraphs Editor DOM Elements.
@@ -10,18 +10,18 @@ trait ParagraphsEditorElementTrait {
   /**
    * The field value manager service for looking up element information.
    *
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
+   * @var \Drupal\paragraphs_editor\ParagraphsEditorElements
    */
-  protected $fieldValueManager;
+  protected $elements;
 
   /**
    * Injects field value manager service.
    *
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The field value manager service for looking up element information.
+   * @param \Drupal\paragraphs_editor\ParagraphsEditorElements $elements
+   *   The service for looking up element information.
    */
-  protected function initializeParagraphsEditorElementTrait(FieldValueManagerInterface $field_value_manager) {
-    $this->fieldValueManager = $field_value_manager;
+  protected function initializeParagraphsEditorElementTrait(ParagraphsEditorElements $elements) {
+    $this->elements = $elements;
   }
 
   /**
@@ -35,7 +35,7 @@ trait ParagraphsEditorElementTrait {
    *   exists.
    */
   protected function getSelector($element_name) {
-    return $this->fieldValueManager->getSelector($element_name);
+    return $this->elements->getSelector($element_name);
   }
 
   /**
@@ -53,7 +53,7 @@ trait ParagraphsEditorElementTrait {
    *   extracted.
    */
   protected function getAttribute(\DOMNode $node, $element_name, $attribute_name) {
-    $key = $this->fieldValueManager->getAttributeName($element_name, $attribute_name);
+    $key = $this->elements->getAttributeName($element_name, $attribute_name);
     return $key ? $node->getAttribute($key) : NULL;
   }
 
@@ -70,7 +70,7 @@ trait ParagraphsEditorElementTrait {
    *   The value to be set on the node.
    */
   protected function setAttribute(\DOMNode $node, $element_name, $attribute_name, $value) {
-    $key = $this->fieldValueManager->getAttributeName($element_name, $attribute_name);
+    $key = $this->elements->getAttributeName($element_name, $attribute_name);
     $node->setAttribute($key, $value);
   }
 
@@ -85,7 +85,7 @@ trait ParagraphsEditorElementTrait {
    *   The name of the attribute to be removed.
    */
   protected function removeAttribute(\DOMNode $node, $element_name, $attribute_name) {
-    $key = $this->fieldValueManager->getAttributeName($element_name, $attribute_name);
+    $key = $this->elements->getAttributeName($element_name, $attribute_name);
     $node->removeAttribute($key);
   }
 
@@ -104,7 +104,7 @@ trait ParagraphsEditorElementTrait {
    *   The newly created DOM Element.
    */
   protected function createElement(\DOMDocument $document, $element_name, array $attributes = []) {
-    $node = $document->createElement($this->fieldValueManager->getElement($element_name)['tag']);
+    $node = $document->createElement($this->elements->getElement($element_name)['tag']);
     foreach ($attributes as $key => $value) {
       $this->setAttribute($node, $element_name, $key, $value);
     }

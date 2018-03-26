@@ -10,6 +10,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\paragraphs_editor\EditBuffer\EditBufferItemInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
+use Drupal\paragraphs_editor\ParagraphsEditorFormInterface;
 use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
 
@@ -20,7 +21,7 @@ use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerInterface;
  * ajaxify the experience and integrate with the delivery provider plugin
  * system.
  */
-class ParagraphEntityForm extends ContentEntityForm {
+class ParagraphEntityForm extends ContentEntityForm implements ParagraphsEditorFormInterface {
 
   /**
    * The context the editor command is being executed in.
@@ -111,9 +112,11 @@ class ParagraphEntityForm extends ContentEntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+    $additional_context = $this->bootstrapContext($form_state)->getAdditionalContext();
+    unset($additional_context['formStateEntities']);
     $form['paragraphs_editor_additional_context'] = [
       '#type' => 'hidden',
-      '#default_value' => serialize($this->bootstrapContext($form_state)->getAdditionalContext()),
+      '#default_value' => serialize($additional_context),
     ];
     return $form;
   }

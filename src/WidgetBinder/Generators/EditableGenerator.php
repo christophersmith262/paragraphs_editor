@@ -8,7 +8,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\dom_processor\DomProcessor\DomProcessorInterface;
 use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\ParagraphsEditorElements;
 use Drupal\paragraphs_editor\Utility\TypeUtility;
 use Drupal\paragraphs_editor\WidgetBinder\EditableField;
 use Drupal\paragraphs_editor\WidgetBinder\GeneratorBase;
@@ -21,11 +21,11 @@ use Drupal\paragraphs_editor\WidgetBinder\WidgetBinderDataCompilerState;
 class EditableGenerator extends GeneratorBase {
 
   /**
-   * The paragraphs field value manager for managing elements.
+   * The field value manager service for looking up element information.
    *
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
+   * @var \Drupal\paragraphs_editor\ParagraphsEditorElements
    */
-  protected $fieldValueManager;
+  protected $elements;
 
   /**
    * The dom processor service for creating inline markup.
@@ -37,13 +37,13 @@ class EditableGenerator extends GeneratorBase {
   /**
    * Creates an EditableGenerator object.
    *
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The field value manager service for managing elements.
+   * @param \Drupal\paragraphs_editor\ParagraphsEditorElements $elements
+   *   The service for looking up element information.
    * @param \Drupal\dom_processor\DomProcessor\DomProcessorInterface $dom_processor
    *   The Dom processor for generating inline markup.
    */
-  public function __construct(FieldValueManagerInterface $field_value_manager, DomProcessorInterface $dom_processor) {
-    $this->fieldValueManager = $field_value_manager;
+  public function __construct(ParagraphsEditorElements $elements, DomProcessorInterface $dom_processor) {
+    $this->elements = $elements;
     $this->domProcessor = $dom_processor;
     $this->validateElements();
   }
@@ -69,8 +69,12 @@ class EditableGenerator extends GeneratorBase {
     $field_config = TypeUtility::ensureFieldConfig($items->getFieldDefinition());
     $context_id = $data->getContextId($items->getEntity()->uuid(), $field_config->id());
     if ($context_id) {
+      if ($items->isEmpty()) {
+        $items->setValue(['entity' => \Drupal::entityTypeManager()->getStorage('paragraphs_markup')->create([])]);
+      }
+
       // Prepare the inline field editable markup.
-      $markup = $this->fieldValueManager->wrapItems($items)->getMarkup();
+      $markup = $items->entity->getMarkup();
       $markup = $this->domProcessor->process($markup, 'paragraphs_editor', 'decorator', ['context_id' => $context_id])->get('markup');
       $markup = Markup::create($markup);
 
@@ -81,8 +85,8 @@ class EditableGenerator extends GeneratorBase {
       }
       $context = $context_generator->getContext($context_id);
       $attributes = [
-        'class' => [$this->fieldValueManager->getElement('field')['flag']],
-        $this->fieldValueManager->getAttributeName('field', '<context>') => $context_id,
+        'class' => [$this->elements->getElement('field')['flag']],
+        $this->elements->getAttributeName('field', '<context>') => $context_id,
       ];
       $editable = $this->createEditable($context, $markup, $attributes);
 
@@ -107,7 +111,7 @@ class EditableGenerator extends GeneratorBase {
    */
   public function getEditable(WidgetBinderDataCompilerState $state, FieldItemListInterface $items) {
     $field_definition = $items->getFieldDefinition();
-    if ($this->fieldValueManager->isParagraphsEditorField($field_definition)) {
+    if (TypeUtility::isParagraphsEditorField($field_definition)) {
       $uuid = $items->getEntity()->uuid();
       $field_id = TypeUtility::ensureFieldConfig($field_definition)->id();
       $editables = $state->get('editables');
@@ -141,7 +145,7 @@ class EditableGenerator extends GeneratorBase {
    *   not in the 'field' element definition.
    */
   protected function validateElements() {
-    if (empty($this->fieldValueManager->getElement('field')['flag'])) {
+    if (empty($this->elements->getElement('field')['flag'])) {
       throw new \Exception('Invalid elements array: elements.field.tag required.');
     }
   }

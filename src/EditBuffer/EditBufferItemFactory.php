@@ -2,10 +2,12 @@
 
 namespace Drupal\paragraphs_editor\EditBuffer;
 
+use Drupal\Component\Uuid\UuidInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\paragraphs\ParagraphInterface;
 use Drupal\paragraphs_editor\EditorCommand\CommandContextInterface;
-use Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface;
+use Drupal\paragraphs_editor\ParagraphsMarkupInterface;
+use Drupal\paragraphs_editor\Utility\TypeUtility;
 
 /**
  * A factory for creating edit buffer items.
@@ -20,23 +22,23 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   protected $storage;
 
   /**
-   * The field value manager service.
+   * The uuid generator service.
    *
-   * @var \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface
+   * @var \Drupal\Component\Uuid\UuidGeneratorInterface
    */
-  protected $fieldValueManager;
+  protected $uuidGenerator;
 
   /**
    * Creates an edit buffer item factory.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\paragraphs_editor\EditorFieldValue\FieldValueManagerInterface $field_value_manager
-   *   The service for determining whether a field is a paragraphs field.
+   * @param \Drupal\Component\Uuid\UuidInterface $uuid_generator
+   *   The uudid generator service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, FieldValueManagerInterface $field_value_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, UuidInterface $uuid_generator) {
     $this->storage = $entity_type_manager->getStorage('paragraph');
-    $this->fieldValueManager = $field_value_manager;
+    $this->uuidGenerator = $uuid_generator;
   }
 
   /**
@@ -63,11 +65,9 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
       // belonged to the entity the the editor context belongs to. If that
       // succeeds, we add it to the buffer.
       if (empty($item)) {
-        $paragraph = $this->getParagraph($paragraph_uuid);
+        $paragraph = $this->getParagraph($context, $paragraph_uuid);
         if ($paragraph) {
-          if ($paragraph->getParentEntity() == $context->getEntity()) {
-            $item = $buffer->createItem($paragraph);
-          }
+          $item = $buffer->createItem($paragraph);
         }
       }
     }
@@ -81,7 +81,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
    * {@inheritdoc}
    */
   public function duplicateBufferItem(CommandContextInterface $context, EditBufferItemInterface $item) {
-    $new_item = $context->getEditBuffer()->createItem($item->getEntity()->createDuplicate());
+    $new_item = $context->getEditBuffer()->createItem($this->duplicateEntity($item->getEntity()));
 
     $entity_map = [];
     $this->createEntityMap($item->getEntity(), $new_item->getEntity(), $entity_map);
@@ -92,14 +92,14 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   /**
    * Maps all entities in a duplicated content tree to their originals.
    *
-   * @param \Drupal\paragraphs\ParagraphInterface $entity1
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity1
    *   The original entity.
-   * @param \Drupal\paragraphs\ParagraphInterface $entity2
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity2
    *   The duplicate entity.
    * @param array &$map
    *   The map to be built.
    */
-  protected function createEntityMap(ParagraphInterface $entity1, ParagraphInterface $entity2, array &$map) {
+  protected function createEntityMap(ContentEntityInterface $entity1, ContentEntityInterface $entity2, array &$map) {
     $map[$entity1->uuid()] = $entity2->uuid();
 
     if ($entity1->bundle() != $entity2->bundle()) {
@@ -112,7 +112,7 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
         throw new \Exception('mismatch');
       }
 
-      if ($this->fieldValueManager->isParagraphsField($field_definition)) {
+      if (TypeUtility::isParagraphsField($field_definition) || TypeUtility::isParagraphsEditorField($field_definition)) {
         $items1 = $entity1->{$field_name};
         $items2 = $entity2->{$field_name};
 
@@ -148,16 +148,61 @@ class EditBufferItemFactory implements EditBufferItemFactoryInterface {
   /**
    * Retrieves a paragraph by uuid.
    *
+   * @param \Drupal\paragraphs_editor\EditorCommand\CommandContextInterface $context
+   *   The context for the editor instance.
    * @param string $paragraph_uuid
    *   The uuid of the paragraph to be retrieved.
    *
    * @return \Drupal\paragraphs\ParagraphInterface|null
    *   The retrieved paragraph, or NULL if no such paragraph could be found.
    */
-  protected function getParagraph($paragraph_uuid) {
-    $entities = $this->storage->loadByProperties(['uuid' => $paragraph_uuid]);
-    $entity = reset($entities);
+  protected function getParagraph(CommandContextInterface $context, $paragraph_uuid) {
+    $form_state_entities = $context->getAdditionalContext('formStateEntities');
+
+    $entity = !empty($form_state_entities[$paragraph_uuid]) ? $form_state_entities[$paragraph_uuid] : NULL;
+    if (empty($entity)) {
+      $entities = $this->storage->loadByProperties(['uuid' => $paragraph_uuid]);
+      $entity = reset($entities);
+    }
+
     return $entity ? $entity : NULL;
+  }
+
+  /**
+   * Creates a duplicate entity where all composite entities are duplicated.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity to be duplicated.
+   *
+   * @return \Drupal\Core\Entity\ContentEntityInterface
+   *   The duplicate entity.
+   */
+  protected function duplicateEntity(ContentEntityInterface $entity) {
+    $entity_type = $entity->getEntityType();
+
+    $duplicate = clone $entity;
+    $duplicate->{$entity_type->getKey('id')}->value = NULL;
+    $duplicate->enforceIsNew();
+
+    // Check if the entity type supports UUIDs and generate a new one if so.
+    if ($entity_type->hasKey('uuid')) {
+      $duplicate->{$entity_type->getKey('uuid')}->value = $this->uuidGenerator->generate();
+    }
+
+    // Check whether the entity type supports revisions and initialize it if so.
+    if ($entity_type->isRevisionable()) {
+      $duplicate->{$entity_type->getKey('revision')}->value = NULL;
+    }
+
+    foreach ($duplicate->getFields() as $field) {
+      if ($field->getFieldDefinition()->getType() == 'entity_reference_revisions') {
+        foreach ($field as $item) {
+          $item->entity = $this->duplicateEntity($item->entity);
+        }
+      }
+    }
+
+    return $duplicate;
   }
 
 }
